@@ -373,6 +373,33 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
     return '$_kidProgressPrefix.${widget.childId}.$suffix';
   }
 
+  _KidAvatarOption _avatarFromId(int id) {
+    for (final _KidAvatarOption option in _avatarOptions) {
+      if (option.id == id) {
+        return option;
+      }
+    }
+    return _avatarOptions.first;
+  }
+
+  Future<void> _persistAvatarSelection(
+    _KidAvatarOption option, {
+    SharedPreferences? prefs,
+  }) async {
+    final SharedPreferences storage =
+        prefs ?? await SharedPreferences.getInstance();
+    await storage.setInt(_kidStorageKey('avatar_id'), option.id);
+    await storage.setString(_kidStorageKey('avatar_emoji'), option.emoji);
+    await storage.setInt(
+      _kidStorageKey('avatar_frame'),
+      option.frameColor.toARGB32(),
+    );
+    await storage.setInt(
+      _kidStorageKey('avatar_accent'),
+      option.accentColor.toARGB32(),
+    );
+  }
+
   int _dayStamp(DateTime value) {
     final DateTime d = DateTime(value.year, value.month, value.day);
     return d.millisecondsSinceEpoch;
@@ -405,6 +432,14 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
     await prefs.setInt(lastLoginKey, today);
     await prefs.setInt(streakKey, streak);
     final int stars = prefs.getInt(starsKey) ?? 0;
+    final int? savedAvatarId = prefs.getInt(_kidStorageKey('avatar_id'));
+    final _KidAvatarOption savedAvatar = savedAvatarId == null
+        ? _selectedAvatar
+        : _avatarFromId(savedAvatarId);
+
+    if (savedAvatarId == null) {
+      await _persistAvatarSelection(savedAvatar, prefs: prefs);
+    }
 
     if (!mounted) {
       return;
@@ -412,6 +447,8 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
     setState(() {
       _currentStreak = streak;
       _currentStars = stars;
+      _selectedAvatar = savedAvatar;
+      _activeAvatarCategory = savedAvatar.category;
     });
   }
 
@@ -537,13 +574,18 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
                                           borderRadius: BorderRadius.circular(
                                             16,
                                           ),
-                                          onTap: () {
+                                          onTap: () async {
                                             setState(() {
                                               _selectedAvatar = option;
                                               _activeAvatarCategory =
                                                   option.category;
                                             });
-                                            Navigator.of(sheetContext).pop();
+                                            await _persistAvatarSelection(
+                                              option,
+                                            );
+                                            if (sheetContext.mounted) {
+                                              Navigator.of(sheetContext).pop();
+                                            }
                                           },
                                           child: Container(
                                             decoration: BoxDecoration(
@@ -1553,6 +1595,10 @@ class _SubjectLearningPathScreenState
     return '$_kidProgressPrefix.${widget.kidId}.stars';
   }
 
+  String _reportKey(String suffix) {
+    return '$_kidProgressPrefix.${widget.kidId}.report.$suffix';
+  }
+
   Future<void> _loadProgress() async {
     final _SubjectKind kind = _subjectKind();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -2048,6 +2094,61 @@ class _SubjectLearningPathScreenState
     }
     await prefs.setInt(_starsKey(), recalculatedStars);
 
+    final int testsTaken = (prefs.getInt(_reportKey('tests_taken')) ?? 0) + 1;
+    await prefs.setInt(_reportKey('tests_taken'), testsTaken);
+    final int highestMark = max(
+      prefs.getInt(_reportKey('highest_mark')) ?? 0,
+      result.score,
+    );
+    await prefs.setInt(_reportKey('highest_mark'), highestMark);
+    final List<String> attempts = List<String>.from(
+      prefs.getStringList(_reportKey('attempts')) ?? <String>[],
+    );
+    final DateTime attemptTime = DateTime.now().toUtc();
+    attempts.add(
+      '${attemptTime.toIso8601String()}|${_subjectSlug(subjectKind)}|${result.score}|${result.passed ? 1 : 0}',
+    );
+    if (attempts.length > 160) {
+      attempts.removeRange(0, attempts.length - 160);
+    }
+    await prefs.setStringList(_reportKey('attempts'), attempts);
+
+    final List<Map<String, dynamic>> mistakeMaps = result.mistakes.map((
+      _QuizMistake mistake,
+    ) {
+      final String selectedAnswer =
+          mistake.selectedIndex >= 0 &&
+              mistake.selectedIndex < mistake.question.options.length
+          ? mistake.question.options[mistake.selectedIndex]
+          : '';
+      final String correctAnswer =
+          mistake.question.options[mistake.question.correctIndex];
+      return <String, dynamic>{
+        'prompt': mistake.question.prompt,
+        'selected': selectedAnswer,
+        'correct': correctAnswer,
+        'explanation': mistake.question.explanation,
+      };
+    }).toList();
+    final List<String> attemptJson = List<String>.from(
+      prefs.getStringList(_reportKey('attempts_json')) ?? <String>[],
+    );
+    attemptJson.add(
+      jsonEncode(<String, dynamic>{
+        'timestamp': attemptTime.toIso8601String(),
+        'subject': _subjectSlug(subjectKind),
+        'stage': 1,
+        'score': result.score,
+        'total': result.totalQuestions,
+        'passed': result.passed,
+        'mistakes': mistakeMaps,
+      }),
+    );
+    if (attemptJson.length > 160) {
+      attemptJson.removeRange(0, attemptJson.length - 160);
+    }
+    await prefs.setStringList(_reportKey('attempts_json'), attemptJson);
+
     int updatedUnlocked = _unlockedStage;
     Set<int> updatedCompleted = _completedStages;
     if (result.passed) {
@@ -2298,10 +2399,17 @@ class _QuizMistake {
 }
 
 class _LectureQuizResult {
-  const _LectureQuizResult({required this.score, required this.passed});
+  const _LectureQuizResult({
+    required this.score,
+    required this.passed,
+    required this.totalQuestions,
+    required this.mistakes,
+  });
 
   final int score;
   final bool passed;
+  final int totalQuestions;
+  final List<_QuizMistake> mistakes;
 }
 
 class _SubjectLectureScreen extends StatefulWidget {
@@ -2490,7 +2598,11 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     await _startQuiz();
   }
 
-  Widget _buildSlideCard(_LectureSlide slide, LearnovaPalette palette) {
+  Widget _buildSlideCard(
+    _LectureSlide slide,
+    LearnovaPalette palette, {
+    required int slideNumber,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.all(18),
@@ -2546,6 +2658,12 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 10),
+          _TeachingMascotCoach(
+            subjectName: widget.subjectName,
+            slideNumber: slideNumber,
+            accentColor: slide.accentColor,
           ),
           const SizedBox(height: 16),
           Container(
@@ -2680,6 +2798,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                         return _buildSlideCard(
                           widget.module.slides[index],
                           palette,
+                          slideNumber: index,
                         );
                       },
                     ),
@@ -2772,6 +2891,277 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   }
 }
 
+class _TeachingMascotCoach extends StatelessWidget {
+  const _TeachingMascotCoach({
+    required this.subjectName,
+    required this.slideNumber,
+    required this.accentColor,
+  });
+
+  final String subjectName;
+  final int slideNumber;
+  final Color accentColor;
+
+  String _coachLine() {
+    final String subject = subjectName.toLowerCase();
+    if (subject.contains('english')) {
+      const List<String> lines = <String>[
+        'Let us sound it out together.',
+        'Great! Read this line with me.',
+        'Try saying this word clearly.',
+        'Nice! Spot the letter pattern.',
+      ];
+      return lines[slideNumber % lines.length];
+    }
+    if (subject.contains('math')) {
+      const List<String> lines = <String>[
+        'Count with me step by step.',
+        'Awesome! Let us solve it slowly.',
+        'You can do this sum.',
+        'Great job, now one more!',
+      ];
+      return lines[slideNumber % lines.length];
+    }
+    const List<String> lines = <String>[
+      'Let us explore this fact together.',
+      'Nice! Remember this fun idea.',
+      'You are learning fast!',
+      'Great thinking, keep going!',
+    ];
+    return lines[slideNumber % lines.length];
+  }
+
+  IconData _coachIcon() {
+    final String subject = subjectName.toLowerCase();
+    if (subject.contains('english')) {
+      return Icons.menu_book_rounded;
+    }
+    if (subject.contains('math')) {
+      return Icons.calculate_rounded;
+    }
+    return Icons.public_rounded;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final LearnovaPalette palette = _palette(context);
+    final bool leftMascot = slideNumber.isEven;
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOutBack,
+      switchOutCurve: Curves.easeIn,
+      child: Container(
+        key: ValueKey<int>(slideNumber),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          color: accentColor.withValues(alpha: 0.12),
+          border: Border.all(color: accentColor.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          children: <Widget>[
+            if (leftMascot) ...<Widget>[
+              _AnimatedCatTeacher(
+                accentColor: accentColor,
+                moodIndex: slideNumber,
+                icon: _coachIcon(),
+              ),
+              const SizedBox(width: 10),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'Teacher Cat',
+                    style: GoogleFonts.fredoka(
+                      color: palette.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    _coachLine(),
+                    style: TextStyle(
+                      color: palette.textSecondary,
+                      fontWeight: FontWeight.w700,
+                      height: 1.25,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!leftMascot) ...<Widget>[
+              const SizedBox(width: 10),
+              _AnimatedCatTeacher(
+                accentColor: accentColor,
+                moodIndex: slideNumber,
+                icon: _coachIcon(),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedCatTeacher extends StatelessWidget {
+  const _AnimatedCatTeacher({
+    required this.accentColor,
+    required this.moodIndex,
+    required this.icon,
+  });
+
+  final Color accentColor;
+  final int moodIndex;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool wink = moodIndex % 3 == 1;
+    final bool smile = moodIndex % 4 != 2;
+    final bool tilted = moodIndex.isOdd;
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOut,
+      builder: (BuildContext context, double value, Widget? child) {
+        final double bob = sin(value * pi) * 3;
+        return Transform.translate(
+          offset: Offset(0, -bob),
+          child: Transform.rotate(angle: tilted ? -0.04 : 0.04, child: child),
+        );
+      },
+      child: SizedBox(
+        width: 78,
+        height: 70,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: <Widget>[
+            Positioned(
+              top: 6,
+              left: 7,
+              child: Transform.rotate(
+                angle: -0.35,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFC48A),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 6,
+              right: 7,
+              child: Transform.rotate(
+                angle: 0.35,
+                child: Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFC48A),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 8,
+              right: 8,
+              top: 14,
+              bottom: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: <Color>[
+                      const Color(0xFFFFDCB4),
+                      const Color(0xFFFFB97F),
+                    ],
+                  ),
+                  border: Border.all(color: Colors.white, width: 1.3),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 24,
+              top: 34,
+              child: Container(
+                width: wink ? 4 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF2B2B2B),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 24,
+              top: 34,
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF2B2B2B),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 32,
+              right: 32,
+              top: 43,
+              child: Container(
+                width: 8,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8876D),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 26,
+              right: 26,
+              top: 51,
+              child: Container(
+                height: smile ? 5 : 2,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E2E2E),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            Positioned(
+              right: -4,
+              top: 0,
+              child: Container(
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accentColor.withValues(alpha: 0.95),
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                child: Icon(icon, size: 14, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SubjectQuizScreen extends StatefulWidget {
   const _SubjectQuizScreen({
     required this.subjectName,
@@ -2805,16 +3195,25 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
       return;
     }
 
-    final _QuizQuestion question = _currentQuestion;
-    final bool correct = optionIndex == question.correctIndex;
     setState(() {
       _selectedOption = optionIndex;
+    });
+  }
+
+  void _checkAnswer() {
+    if (_answered || _finished || _selectedOption == null) {
+      return;
+    }
+
+    final _QuizQuestion question = _currentQuestion;
+    final bool correct = _selectedOption == question.correctIndex;
+    setState(() {
       _answered = true;
       if (correct) {
         _score += 1;
       } else {
         _mistakes.add(
-          _QuizMistake(question: question, selectedIndex: optionIndex),
+          _QuizMistake(question: question, selectedIndex: _selectedOption!),
         );
       }
     });
@@ -2822,9 +3221,14 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
 
   void _finishQuiz() {
     final bool passed = _score >= 6;
-    Navigator.of(
-      context,
-    ).pop(_LectureQuizResult(score: _score, passed: passed));
+    Navigator.of(context).pop(
+      _LectureQuizResult(
+        score: _score,
+        passed: passed,
+        totalQuestions: widget.questions.length,
+        mistakes: List<_QuizMistake>.from(_mistakes),
+      ),
+    );
   }
 
   String _explanationText(_QuizQuestion question) {
@@ -2892,7 +3296,7 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Score: $_score / 10',
+                        'Score: $_score / ${widget.questions.length}',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 20,
@@ -2913,7 +3317,7 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                       Text(
                         passed
                             ? 'You unlocked the next lecture.'
-                            : 'You need at least 6/10 to unlock next lecture.',
+                            : 'You need at least 6/${widget.questions.length} to unlock next lecture.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: palette.textSecondary,
@@ -3016,6 +3420,9 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
     }
 
     final _QuizQuestion question = _currentQuestion;
+    final bool reveal = _answered && _selectedOption != null;
+    final bool selectedIsCorrect =
+        _selectedOption != null && _selectedOption == question.correctIndex;
     return Scaffold(
       appBar: AppBar(title: Text('${widget.subjectName} Quiz')),
       body: SafeArea(
@@ -3030,24 +3437,82 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
-                      vertical: 10,
+                      vertical: 12,
                     ),
                     decoration: _cardDecoration(context),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text(
-                          'Question ${_index + 1} of ${widget.questions.length}',
-                          style: TextStyle(
-                            color: palette.textSecondary,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                'Question ${_index + 1} of ${widget.questions.length}',
+                                style: TextStyle(
+                                  color: palette.textSecondary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Icon(
+                                  Icons.favorite_rounded,
+                                  size: 19,
+                                  color: const Color(0xFFFF5A5A),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Focus',
+                                  style: TextStyle(
+                                    color: palette.textSecondary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
                         LinearProgressIndicator(
                           value: (_index + 1) / widget.questions.length,
-                          minHeight: 10,
+                          minHeight: 11,
                           borderRadius: BorderRadius.circular(10),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: palette.brandPrimary.withValues(alpha: 0.12),
+                      border: Border.all(
+                        color: palette.brandPrimary.withValues(alpha: 0.34),
+                      ),
+                    ),
+                    child: Row(
+                      children: <Widget>[
+                        _AnimatedCatTeacher(
+                          accentColor: palette.brandPrimary,
+                          moodIndex: _index,
+                          icon: Icons.school_rounded,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            reveal
+                                ? (selectedIsCorrect
+                                      ? 'Nice one! Tap continue.'
+                                      : 'Good try! Read why and continue.')
+                                : 'Teacher Cat says: choose your answer, then tap CHECK.',
+                            style: TextStyle(
+                              color: palette.textPrimary,
+                              fontWeight: FontWeight.w700,
+                              height: 1.25,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -3059,7 +3524,7 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                     child: Text(
                       question.prompt,
                       style: GoogleFonts.fredoka(
-                        fontSize: 28,
+                        fontSize: 30,
                         color: palette.textPrimary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -3074,8 +3539,6 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                         final bool picked = _selectedOption == optionIndex;
                         final bool correct =
                             optionIndex == question.correctIndex;
-                        final bool reveal =
-                            _answered && _selectedOption != null;
 
                         Color tileColor = palette.surfaceSoft;
                         Color borderColor = palette.borderStrong;
@@ -3087,7 +3550,7 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                           borderColor = const Color(0xFFE26868);
                         } else if (picked) {
                           tileColor = palette.brandPrimary.withValues(
-                            alpha: 0.12,
+                            alpha: 0.14,
                           );
                           borderColor = palette.brandPrimary;
                         }
@@ -3095,51 +3558,64 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                         return Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(20),
                             onTap: _answered
                                 ? null
                                 : () => _chooseOption(optionIndex),
                             child: Ink(
-                              padding: const EdgeInsets.all(14),
+                              padding: const EdgeInsets.all(15),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(20),
                                 color: tileColor,
                                 border: Border.all(
                                   color: borderColor,
-                                  width: 1.6,
+                                  width: 1.8,
                                 ),
                               ),
                               child: Row(
                                 children: <Widget>[
                                   Container(
-                                    width: 30,
-                                    height: 30,
+                                    width: 34,
+                                    height: 34,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: Colors.white,
-                                      border: Border.all(color: borderColor),
+                                      border: Border.all(
+                                        color: borderColor,
+                                        width: 1.4,
+                                      ),
                                     ),
                                     child: Center(
                                       child: Text(
                                         String.fromCharCode(65 + optionIndex),
                                         style: TextStyle(
                                           color: palette.textSecondary,
-                                          fontWeight: FontWeight.w700,
+                                          fontWeight: FontWeight.w800,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 11),
                                   Expanded(
                                     child: Text(
                                       question.options[optionIndex],
                                       style: TextStyle(
-                                        fontSize: 17,
+                                        fontSize: 18,
                                         color: palette.textPrimary,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                   ),
+                                  if (reveal && correct)
+                                    const Icon(
+                                      Icons.check_circle_rounded,
+                                      color: Color(0xFF55B629),
+                                    ),
+                                  if (reveal && picked && !correct)
+                                    const Icon(
+                                      Icons.cancel_rounded,
+                                      color: Color(0xFFE04F4F),
+                                    ),
                                 ],
                               ),
                             ),
@@ -3154,11 +3630,11 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(14),
-                        color: (_selectedOption == question.correctIndex)
+                        color: selectedIsCorrect
                             ? const Color(0xFFE7F9D8)
                             : const Color(0xFFFFEFE4),
                         border: Border.all(
-                          color: (_selectedOption == question.correctIndex)
+                          color: selectedIsCorrect
                               ? const Color(0xFF6BC64A)
                               : const Color(0xFFFFBA8B),
                         ),
@@ -3167,7 +3643,9 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'Correct answer: ${question.options[question.correctIndex]}',
+                            selectedIsCorrect
+                                ? 'Correct! ${question.options[question.correctIndex]}'
+                                : 'Correct answer: ${question.options[question.correctIndex]}',
                             style: TextStyle(
                               color: palette.textPrimary,
                               fontWeight: FontWeight.w700,
@@ -3188,16 +3666,22 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: _answered ? _nextQuestion : null,
+                      onPressed: _answered
+                          ? _nextQuestion
+                          : (_selectedOption == null ? null : _checkAnswer),
                       icon: Icon(
-                        _index == widget.questions.length - 1
-                            ? Icons.done_rounded
-                            : Icons.navigate_next_rounded,
+                        _answered
+                            ? (_index == widget.questions.length - 1
+                                  ? Icons.done_rounded
+                                  : Icons.navigate_next_rounded)
+                            : Icons.check_rounded,
                       ),
                       label: Text(
-                        _index == widget.questions.length - 1
-                            ? 'Finish Quiz'
-                            : 'Next Question',
+                        _answered
+                            ? (_index == widget.questions.length - 1
+                                  ? 'Finish Quiz'
+                                  : 'Continue')
+                            : 'Check',
                       ),
                     ),
                   ),
@@ -4599,6 +5083,9 @@ class DashboardShell extends StatelessWidget {
     required this.onOpenThemePicker,
     required this.onExit,
     required this.body,
+    this.menuAccountEmail,
+    this.menuLinkedKids,
+    this.onOpenKidManagement,
     super.key,
   });
 
@@ -4607,6 +5094,9 @@ class DashboardShell extends StatelessWidget {
   final ThemePickerHandler onOpenThemePicker;
   final NavigationHandler onExit;
   final Widget body;
+  final String? menuAccountEmail;
+  final int? menuLinkedKids;
+  final Future<void> Function()? onOpenKidManagement;
 
   @override
   Widget build(BuildContext context) {
@@ -4622,6 +5112,9 @@ class DashboardShell extends StatelessWidget {
                 roleTitle: roleTitle,
                 onExit: onExit,
                 inDrawer: true,
+                accountEmail: menuAccountEmail,
+                linkedKids: menuLinkedKids,
+                onOpenKidManagement: onOpenKidManagement,
               ),
             ),
             body: Column(
@@ -4642,7 +5135,13 @@ class DashboardShell extends StatelessWidget {
             children: <Widget>[
               SizedBox(
                 width: 270,
-                child: _DashboardMenu(roleTitle: roleTitle, onExit: onExit),
+                child: _DashboardMenu(
+                  roleTitle: roleTitle,
+                  onExit: onExit,
+                  accountEmail: menuAccountEmail,
+                  linkedKids: menuLinkedKids,
+                  onOpenKidManagement: onOpenKidManagement,
+                ),
               ),
               Expanded(
                 child: Column(
@@ -4674,6 +5173,81 @@ class _DashboardHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LearnovaPalette palette = _palette(context);
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool hasSubtitle = subtitle.trim().isNotEmpty;
+
+    if (!showTitle && !hasSubtitle) {
+      return const SizedBox.shrink();
+    }
+
+    if (!showTitle && hasSubtitle) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: <Color>[
+              palette.headerGradientStart,
+              palette.headerGradientEnd,
+            ],
+          ),
+          border: Border(
+            bottom: BorderSide(
+              color: palette.borderSoft.withValues(alpha: 0.75),
+            ),
+          ),
+        ),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.07)
+                : Colors.white.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: palette.borderSoft),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: palette.cardShadow.withValues(alpha: isDark ? 0.3 : 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: <Widget>[
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: palette.brandPrimary.withValues(alpha: 0.16),
+                ),
+                child: Icon(
+                  Icons.insights_rounded,
+                  size: 19,
+                  color: palette.brandPrimary,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: palette.textSecondary,
+                    height: 1.25,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
@@ -4705,10 +5279,14 @@ class _DashboardHeader extends StatelessWidget {
                     ),
                   ),
                 if (showTitle) const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 14, color: palette.textSecondary),
-                ),
+                if (hasSubtitle)
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: palette.textSecondary,
+                    ),
+                  ),
               ],
             ),
           ),
@@ -4839,16 +5417,35 @@ class _DashboardMenu extends StatelessWidget {
   const _DashboardMenu({
     required this.roleTitle,
     required this.onExit,
+    this.accountEmail,
+    this.linkedKids,
+    this.onOpenKidManagement,
     this.inDrawer = false,
   });
 
   final String roleTitle;
   final NavigationHandler onExit;
+  final String? accountEmail;
+  final int? linkedKids;
+  final Future<void> Function()? onOpenKidManagement;
   final bool inDrawer;
 
   @override
   Widget build(BuildContext context) {
     final LearnovaPalette palette = _palette(context);
+    final bool isParent = roleTitle.toLowerCase().contains('parent');
+
+    void closeDrawerIfNeeded() {
+      if (inDrawer) {
+        Navigator.of(context).pop();
+      }
+    }
+
+    Future<void> showMenuInfo(String text) async {
+      _showMessage(context, text, color: Theme.of(context).colorScheme.primary);
+      closeDrawerIfNeeded();
+    }
+
     return Container(
       color: palette.menuBackground,
       child: SafeArea(
@@ -4874,32 +5471,136 @@ class _DashboardMenu extends StatelessWidget {
                 ],
               ),
             ),
+            if (isParent)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: palette.menuTile,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: palette.menuDivider),
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.15),
+                        ),
+                        child: const Icon(
+                          Icons.family_restroom_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            const Text(
+                              'Parent Account',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              accountEmail ?? 'parent@learnova.com',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: palette.menuSubtext,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              linkedKids == null
+                                  ? 'Kids linked'
+                                  : '$linkedKids kids linked',
+                              style: TextStyle(
+                                color: palette.menuSubtext,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             Divider(color: palette.menuDivider, height: 1),
             _MenuTile(
               icon: Icons.dashboard_outlined,
               title: 'Dashboard',
               subtitle: roleTitle,
               onTap: () {
-                if (inDrawer) {
-                  Navigator.of(context).pop();
-                }
+                closeDrawerIfNeeded();
               },
             ),
-            _MenuTile(
-              icon: Icons.menu_book_outlined,
-              title: 'Menu',
-              subtitle: 'More options soon',
-              onTap: () {
-                _showMessage(
-                  context,
-                  'Menu placeholder: more options will be added.',
-                  color: Theme.of(context).colorScheme.primary,
-                );
-                if (inDrawer) {
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
+            if (isParent)
+              _MenuTile(
+                icon: Icons.groups_2_outlined,
+                title: 'Kid Management',
+                subtitle: 'Create and update child accounts',
+                onTap: () async {
+                  closeDrawerIfNeeded();
+                  if (onOpenKidManagement != null) {
+                    await onOpenKidManagement!.call();
+                    return;
+                  }
+                  _showMessage(
+                    context,
+                    'Open Kid Management from the dashboard card.',
+                    color: Theme.of(context).colorScheme.primary,
+                  );
+                },
+              ),
+            if (isParent)
+              _MenuTile(
+                icon: Icons.analytics_outlined,
+                title: 'Kid Reports',
+                subtitle: 'Streaks, stars, tests, and progress',
+                onTap: () {
+                  showMenuInfo(
+                    'Kid reports are available below in the parent dashboard.',
+                  );
+                },
+              ),
+            if (isParent)
+              _MenuTile(
+                icon: Icons.tune_rounded,
+                title: 'Learning Settings',
+                subtitle: 'Levels, flow, and controls',
+                onTap: () {
+                  showMenuInfo('Learning settings panel will be added next.');
+                },
+              ),
+            if (isParent)
+              _MenuTile(
+                icon: Icons.support_agent_rounded,
+                title: 'Help & Support',
+                subtitle: 'Guides for parents',
+                onTap: () {
+                  showMenuInfo(
+                    'Support center will be connected in backend phase.',
+                  );
+                },
+              ),
+            if (!isParent)
+              _MenuTile(
+                icon: Icons.menu_book_outlined,
+                title: 'Menu',
+                subtitle: 'More options soon',
+                onTap: () {
+                  showMenuInfo('Menu placeholder: more options will be added.');
+                },
+              ),
             const Spacer(),
             Padding(
               padding: const EdgeInsets.all(14),
