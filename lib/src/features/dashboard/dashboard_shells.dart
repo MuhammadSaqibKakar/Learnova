@@ -1602,6 +1602,7 @@ class _SubjectLearningPathScreenState
             prompt: 'Which letter starts "Apple"?',
             options: <String>['A', 'B', 'C', 'D'],
             correctIndex: 0,
+            explanation: 'Apple begins with the letter A sound.',
           ),
           _QuizQuestion(
             prompt: 'Which one is a vowel?',
@@ -1665,6 +1666,7 @@ class _SubjectLearningPathScreenState
             prompt: 'What is 2 + 1?',
             options: <String>['1', '2', '3', '4'],
             correctIndex: 2,
+            explanation: 'Adding one more to two gives three.',
           ),
           _QuizQuestion(
             prompt: 'What is 5 - 2?',
@@ -1728,6 +1730,7 @@ class _SubjectLearningPathScreenState
             prompt: 'Which animal says "meow"?',
             options: <String>['Dog', 'Cat', 'Cow', 'Duck'],
             correctIndex: 1,
+            explanation: 'Cats make the meow sound.',
           ),
           _QuizQuestion(
             prompt: 'What color is the sun often drawn as?',
@@ -1788,133 +1791,227 @@ class _SubjectLearningPathScreenState
     }
   }
 
+  List<_LectureSlide> _buildSlides({
+    required List<String> titles,
+    required List<String> bodies,
+    required List<String> examples,
+    required List<IconData> icons,
+    required List<Color> colors,
+  }) {
+    const List<String> phases = <String>['Basics', 'Practice', 'Challenge'];
+    final List<_LectureSlide> slides = <_LectureSlide>[];
+    for (int round = 0; round < 3; round++) {
+      for (int i = 0; i < titles.length; i++) {
+        final String roundHint = switch (round) {
+          0 => 'Learn and repeat slowly.',
+          1 => 'Try this with confidence.',
+          _ => 'You are getting stronger. Keep going.',
+        };
+        slides.add(
+          _LectureSlide(
+            title: '${titles[i]} - ${phases[round]}',
+            body: '${bodies[i]} $roundHint',
+            example: examples[i],
+            icon: icons[(i + round) % icons.length],
+            accentColor: colors[(i + round) % colors.length],
+          ),
+        );
+      }
+    }
+    return slides;
+  }
+
+  List<_LectureSlide> _englishSlides() {
+    return _buildSlides(
+      titles: const <String>[
+        'Letter Sounds',
+        'Vowel Friends',
+        'Blend Letters',
+        'Read Small Words',
+        'Capital Start',
+        'Rhyming Words',
+        'Word Families',
+        'Sentence Sense',
+        'Listening Skills',
+        'Daily Reading',
+      ],
+      bodies: const <String>[
+        'Say each letter sound clearly and match it with a word.',
+        'A, E, I, O, U help words sound complete.',
+        'Blend two and three sounds to read short words.',
+        'Read simple CVC words from left to right.',
+        'Use capital letters at the start of names and sentences.',
+        'Rhyming words share ending sounds.',
+        'Word families help us read many words quickly.',
+        'A sentence should begin correctly and make full sense.',
+        'Listen carefully before choosing a word.',
+        'Practice reading every day to become faster.',
+      ],
+      examples: const <String>[
+        'A says /a/ in apple',
+        'bed, pin, hot, sun',
+        'c + a + t = cat',
+        'cat, dog, red, box',
+        'Ali reads books.',
+        'cat, hat, bat',
+        '-at: cat, bat, mat',
+        'I play with a ball.',
+        'Listen and point to word',
+        'Read 5 words before sleep',
+      ],
+      icons: const <IconData>[
+        Icons.auto_stories_rounded,
+        Icons.record_voice_over_rounded,
+        Icons.merge_type_rounded,
+        Icons.menu_book_rounded,
+        Icons.text_fields_rounded,
+        Icons.music_note_rounded,
+        Icons.extension_rounded,
+        Icons.notes_rounded,
+        Icons.hearing_rounded,
+        Icons.check_circle_rounded,
+      ],
+      colors: const <Color>[
+        Color(0xFF4BB9FF),
+        Color(0xFF58CC02),
+        Color(0xFFFFB84B),
+        Color(0xFF7B6BFF),
+        Color(0xFFFF7F9D),
+      ],
+    );
+  }
+
+  List<_LectureSlide> _mathSlides() {
+    return _buildSlides(
+      titles: const <String>[
+        'Counting Objects',
+        'Compare Numbers',
+        'Addition Intro',
+        'Subtraction Intro',
+        'Number Order',
+        'Shape Time',
+        'More Or Less',
+        'Math In Life',
+        'Check Answers',
+        'Speed Practice',
+      ],
+      bodies: const <String>[
+        'Count objects one by one and touch each object once.',
+        'Find which number is bigger and which is smaller.',
+        'Addition joins groups together.',
+        'Subtraction takes objects away.',
+        'Put numbers in correct ascending order.',
+        'Identify circle, square, triangle and rectangle.',
+        'Use groups to see more and less.',
+        'Use math while shopping, sharing, and playing.',
+        'Verify your answer with fingers or drawings.',
+        'Practice short questions to improve speed.',
+      ],
+      examples: const <String>[
+        '1, 2, 3, 4 toys',
+        '9 is bigger than 4',
+        '2 + 3 = 5',
+        '7 - 2 = 5',
+        '1, 2, 3, 4, 5',
+        'Triangle has 3 sides',
+        '8 marbles is more than 5',
+        '2 apples + 1 apple = 3',
+        'Draw dots to confirm answer',
+        '5 quick sums in 1 minute',
+      ],
+      icons: const <IconData>[
+        Icons.pin_rounded,
+        Icons.compare_arrows_rounded,
+        Icons.add_circle_rounded,
+        Icons.remove_circle_rounded,
+        Icons.format_list_numbered_rounded,
+        Icons.change_history_rounded,
+        Icons.bar_chart_rounded,
+        Icons.shopping_basket_rounded,
+        Icons.lightbulb_rounded,
+        Icons.timer_rounded,
+      ],
+      colors: const <Color>[
+        Color(0xFFFFA338),
+        Color(0xFF58CC02),
+        Color(0xFF1CB0F6),
+        Color(0xFF8E7CFF),
+        Color(0xFFFF7F9D),
+      ],
+    );
+  }
+
+  List<_LectureSlide> _gkSlides() {
+    return _buildSlides(
+      titles: const <String>[
+        'Our Planet Earth',
+        'Animals Around',
+        'Birds And Sky',
+        'Plants And Trees',
+        'Water And Weather',
+        'Safe Habits',
+        'People Who Help',
+        'Healthy Choices',
+        'Transport World',
+        'Curious Questions',
+      ],
+      bodies: const <String>[
+        'Earth is our home where people, animals, and plants live.',
+        'Animals live in different places and eat different foods.',
+        'Birds use wings and live in nests.',
+        'Plants need water, air, and sunlight.',
+        'Weather changes between sunny, rainy, and cloudy days.',
+        'Follow simple rules to stay safe at home and school.',
+        'Many people help us in daily life.',
+        'Healthy food and habits keep our body strong.',
+        'Transport helps us move from one place to another.',
+        'Ask questions to learn new things every day.',
+      ],
+      examples: const <String>[
+        'Earth has land and water',
+        'Fish in water, lion on land',
+        'Bird flies in sky',
+        'Water the plant daily',
+        'Carry umbrella when raining',
+        'Wash hands before eating',
+        'Teacher, doctor, firefighter',
+        'Eat fruits and drink water',
+        'Bus, car, bike, train',
+        'Why do stars shine at night?',
+      ],
+      icons: const <IconData>[
+        Icons.public_rounded,
+        Icons.pets_rounded,
+        Icons.flutter_dash_rounded,
+        Icons.eco_rounded,
+        Icons.cloud_rounded,
+        Icons.health_and_safety_rounded,
+        Icons.groups_rounded,
+        Icons.favorite_rounded,
+        Icons.directions_bus_rounded,
+        Icons.travel_explore_rounded,
+      ],
+      colors: const <Color>[
+        Color(0xFF4BB9FF),
+        Color(0xFF58CC02),
+        Color(0xFFFFB84B),
+        Color(0xFF7A6FFF),
+        Color(0xFFFF7F9D),
+      ],
+    );
+  }
+
   _LectureModule _lectureModule(_SubjectKind kind) {
     switch (kind) {
       case _SubjectKind.english:
-        return const _LectureModule(
+        return _LectureModule(
           title: 'English Lecture 1',
-          slides: <_LectureSlide>[
-            _LectureSlide(
-              title: 'Welcome To Letters',
-              body:
-                  'English starts with letters. We join letters to make words.',
-              example: 'A + p + p + l + e = Apple',
-              icon: Icons.auto_stories_rounded,
-              accentColor: Color(0xFF4BB9FF),
-            ),
-            _LectureSlide(
-              title: 'Meet The Vowels',
-              body: 'Vowels are A, E, I, O, U. They make words sound alive.',
-              example: 'cat, bed, fish, hot, sun',
-              icon: Icons.record_voice_over_rounded,
-              accentColor: Color(0xFF58CC02),
-            ),
-            _LectureSlide(
-              title: 'Read Out Loud',
-              body: 'Read slowly and clearly. Use your finger to follow words.',
-              example: 'I can read. You can read.',
-              icon: Icons.volume_up_rounded,
-              accentColor: Color(0xFFFFB84B),
-            ),
-            _LectureSlide(
-              title: 'Capital Letters',
-              body:
-                  'Use capital letters for names and at the start of sentences.',
-              example: 'Ali plays. Sara reads.',
-              icon: Icons.text_fields_rounded,
-              accentColor: Color(0xFF7B6BFF),
-            ),
-            _LectureSlide(
-              title: 'Daily Practice',
-              body: 'Practice five easy words every day to get better quickly.',
-              example: 'book, cat, sun, tree, red',
-              icon: Icons.check_circle_rounded,
-              accentColor: Color(0xFFFF7F9D),
-            ),
-          ],
+          slides: _englishSlides(),
         );
       case _SubjectKind.math:
-        return const _LectureModule(
-          title: 'Math Lecture 1',
-          slides: <_LectureSlide>[
-            _LectureSlide(
-              title: 'Count Everything',
-              body: 'Math starts with counting objects one by one.',
-              example: '1 apple, 2 apples, 3 apples',
-              icon: Icons.pin_rounded,
-              accentColor: Color(0xFFFFA338),
-            ),
-            _LectureSlide(
-              title: 'Addition',
-              body: 'Addition means joining groups together.',
-              example: '2 + 3 = 5',
-              icon: Icons.add_circle_rounded,
-              accentColor: Color(0xFF58CC02),
-            ),
-            _LectureSlide(
-              title: 'Subtraction',
-              body: 'Subtraction means taking away.',
-              example: '5 - 2 = 3',
-              icon: Icons.remove_circle_rounded,
-              accentColor: Color(0xFFFF6B6B),
-            ),
-            _LectureSlide(
-              title: 'Compare Numbers',
-              body: 'Find which number is bigger or smaller.',
-              example: '9 is bigger than 4',
-              icon: Icons.compare_arrows_rounded,
-              accentColor: Color(0xFF1CB0F6),
-            ),
-            _LectureSlide(
-              title: 'Check Your Answer',
-              body: 'Use fingers, blocks, or drawings to verify your result.',
-              example: 'Draw 4 circles and add 2 circles',
-              icon: Icons.lightbulb_rounded,
-              accentColor: Color(0xFF8E7CFF),
-            ),
-          ],
-        );
+        return _LectureModule(title: 'Math Lecture 1', slides: _mathSlides());
       case _SubjectKind.gk:
-        return const _LectureModule(
-          title: 'GK Lecture 1',
-          slides: <_LectureSlide>[
-            _LectureSlide(
-              title: 'Our World',
-              body: 'We live on Earth with people, animals, and plants.',
-              example: 'Earth is our home planet',
-              icon: Icons.public_rounded,
-              accentColor: Color(0xFF4BB9FF),
-            ),
-            _LectureSlide(
-              title: 'Nature Basics',
-              body: 'Air, water, and sunlight help life grow.',
-              example: 'Plants need water and sunlight',
-              icon: Icons.eco_rounded,
-              accentColor: Color(0xFF58CC02),
-            ),
-            _LectureSlide(
-              title: 'Animals Around Us',
-              body: 'Different animals live in land, water, and sky.',
-              example: 'Fish in water, birds in sky',
-              icon: Icons.pets_rounded,
-              accentColor: Color(0xFFFFB84B),
-            ),
-            _LectureSlide(
-              title: 'Safe Habits',
-              body: 'Follow rules at home and school to stay safe.',
-              example: 'Wash hands and walk carefully',
-              icon: Icons.health_and_safety_rounded,
-              accentColor: Color(0xFF7A6FFF),
-            ),
-            _LectureSlide(
-              title: 'Be Curious',
-              body: 'Observe and ask questions every day.',
-              example: 'Why is the sky blue? Why do leaves fall?',
-              icon: Icons.travel_explore_rounded,
-              accentColor: Color(0xFFFF7F9D),
-            ),
-          ],
-        );
+        return _LectureModule(title: 'GK Lecture 1', slides: _gkSlides());
     }
   }
 
@@ -1937,40 +2034,30 @@ class _SubjectLearningPathScreenState
       return;
     }
 
-    if (!result.passed) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Score ${result.score}/10. You need 6/10 to unlock next lecture.',
-          ),
-        ),
-      );
-      return;
-    }
-
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final _SubjectKind subjectKind = _subjectKind();
-    final Set<int> updatedCompleted = <int>{..._completedStages, 1};
-    final int updatedUnlocked = max(_unlockedStage, 2);
+    await prefs.setInt(_subjectKey(subjectKind, 'stage_1_stars'), result.score);
 
-    await _saveProgress(
-      kind: subjectKind,
-      unlocked: updatedUnlocked,
-      completed: updatedCompleted,
-    );
+    int recalculatedStars = 0;
+    final String subjectPrefix = '$_kidProgressPrefix.${widget.kidId}.subject.';
+    for (final String key in prefs.getKeys()) {
+      if (!key.startsWith(subjectPrefix) || !key.endsWith('_stars')) {
+        continue;
+      }
+      recalculatedStars += prefs.getInt(key) ?? 0;
+    }
+    await prefs.setInt(_starsKey(), recalculatedStars);
 
-    final bool alreadyRewarded =
-        prefs.getBool(_subjectKey(subjectKind, 'reward_stage_1')) ?? false;
-    int earnedStars = 0;
-    int totalStars = _totalStars;
-    if (!alreadyRewarded) {
-      earnedStars = result.score;
-      totalStars += earnedStars;
-      await prefs.setBool(_subjectKey(subjectKind, 'reward_stage_1'), true);
-      await prefs.setInt(_starsKey(), totalStars);
+    int updatedUnlocked = _unlockedStage;
+    Set<int> updatedCompleted = _completedStages;
+    if (result.passed) {
+      updatedCompleted = <int>{..._completedStages, 1};
+      updatedUnlocked = max(_unlockedStage, 2);
+      await _saveProgress(
+        kind: subjectKind,
+        unlocked: updatedUnlocked,
+        completed: updatedCompleted,
+      );
     }
 
     if (!mounted) {
@@ -1979,15 +2066,15 @@ class _SubjectLearningPathScreenState
     setState(() {
       _completedStages = updatedCompleted;
       _unlockedStage = updatedUnlocked;
-      _totalStars = totalStars;
+      _totalStars = recalculatedStars;
     });
 
-    final String rewardMessage = earnedStars > 0
-        ? 'Great job! +$earnedStars stars earned.'
-        : 'Great job! Stage 1 already rewarded, lecture 2 unlocked.';
+    final String message = result.passed
+        ? 'Passed with ${result.score}/10. Next lecture unlocked. Stars updated to $recalculatedStars.'
+        : 'Score ${result.score}/10. Need 6/10 to unlock next lecture. Stars updated to $recalculatedStars.';
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(SnackBar(content: Text(rewardMessage)));
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _onTapStage(int stage) {
@@ -2194,11 +2281,20 @@ class _QuizQuestion {
     required this.prompt,
     required this.options,
     required this.correctIndex,
+    this.explanation = '',
   });
 
   final String prompt;
   final List<String> options;
   final int correctIndex;
+  final String explanation;
+}
+
+class _QuizMistake {
+  const _QuizMistake({required this.question, required this.selectedIndex});
+
+  final _QuizQuestion question;
+  final int selectedIndex;
 }
 
 class _LectureQuizResult {
@@ -2231,6 +2327,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   int _slideIndex = 0;
   bool _speaking = false;
   bool _openingQuiz = false;
+  String _lastQuizSignature = '';
 
   Future<void> _configureTts() async {
     _tts.setCompletionHandler(() {
@@ -2271,9 +2368,23 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     return '${slide.title}. ${slide.body}. Example: ${slide.example}.';
   }
 
-  Future<void> _playVoice() async {
+  Future<void> _stopVoice() async {
     try {
       await _tts.stop();
+    } catch (_) {}
+    if (!mounted) {
+      return;
+    }
+    if (_speaking) {
+      setState(() {
+        _speaking = false;
+      });
+    }
+  }
+
+  Future<void> _playVoice() async {
+    try {
+      await _stopVoice();
       if (!mounted) {
         return;
       }
@@ -2295,14 +2406,35 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   }
 
   List<_QuizQuestion> _randomQuizSet() {
-    final List<_QuizQuestion> shuffled = List<_QuizQuestion>.from(
-      widget.quizBank,
-    )..shuffle(_random);
-    return shuffled.take(min(10, shuffled.length)).toList();
+    if (widget.quizBank.length <= 10) {
+      final List<_QuizQuestion> fallback = List<_QuizQuestion>.from(
+        widget.quizBank,
+      )..shuffle(_random);
+      return fallback;
+    }
+
+    List<_QuizQuestion> selected = <_QuizQuestion>[];
+    String signature = '';
+    for (int attempt = 0; attempt < 6; attempt++) {
+      final List<_QuizQuestion> shuffled = List<_QuizQuestion>.from(
+        widget.quizBank,
+      )..shuffle(_random);
+      selected = shuffled.take(10).toList();
+      signature = selected.map((q) => q.prompt).join('|');
+      if (signature != _lastQuizSignature) {
+        break;
+      }
+    }
+    _lastQuizSignature = signature;
+    return selected;
   }
 
   Future<void> _startQuiz() async {
     if (_openingQuiz) {
+      return;
+    }
+    await _stopVoice();
+    if (!mounted) {
       return;
     }
     setState(() {
@@ -2331,24 +2463,14 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     if (result == null) {
       return;
     }
-    if (result.passed) {
-      Navigator.of(context).pop(result);
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Score ${result.score}/10. Review lecture and try quiz again.',
-        ),
-      ),
-    );
+    Navigator.of(context).pop(result);
   }
 
   void _goPreviousSlide() {
     if (_slideIndex == 0) {
       return;
     }
+    _stopVoice();
     _pageController.previousPage(
       duration: const Duration(milliseconds: 260),
       curve: Curves.easeOutCubic,
@@ -2358,6 +2480,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   Future<void> _goNextOrQuiz() async {
     final bool isLast = _slideIndex == widget.module.slides.length - 1;
     if (!isLast) {
+      await _stopVoice();
       await _pageController.nextPage(
         duration: const Duration(milliseconds: 260),
         curve: Curves.easeOutCubic,
@@ -2547,8 +2670,10 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                       controller: _pageController,
                       itemCount: widget.module.slides.length,
                       onPageChanged: (int value) {
+                        _tts.stop();
                         setState(() {
                           _slideIndex = value;
+                          _speaking = false;
                         });
                       },
                       itemBuilder: (BuildContext context, int index) {
@@ -2560,25 +2685,28 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List<Widget>.generate(
-                      widget.module.slides.length,
-                      (int index) {
-                        final bool active = index == _slideIndex;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 220),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: active ? 26 : 9,
-                          height: 9,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(9),
-                            color: active
-                                ? palette.brandPrimary
-                                : palette.borderStrong.withValues(alpha: 0.8),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                    decoration: _cardDecoration(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'Lecture progress',
+                          style: TextStyle(
+                            color: palette.textSecondary,
+                            fontWeight: FontWeight.w700,
                           ),
-                        );
-                      },
+                        ),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value:
+                              (_slideIndex + 1) /
+                              max(widget.module.slides.length, 1),
+                          minHeight: 11,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -2594,14 +2722,14 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: _speaking ? null : _playVoice,
+                          onPressed: _speaking ? _stopVoice : _playVoice,
                           icon: Icon(
                             _speaking
-                                ? Icons.graphic_eq_rounded
+                                ? Icons.stop_circle_rounded
                                 : Icons.volume_up_rounded,
                           ),
                           label: Text(
-                            _speaking ? 'Playing Voice...' : 'Play This Slide',
+                            _speaking ? 'Stop Voice' : 'Play This Slide',
                           ),
                         ),
                       ),
@@ -2661,7 +2789,8 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
   int _index = 0;
   int _score = 0;
   int? _selectedOption;
-  bool _checking = false;
+  bool _answered = false;
+  final List<_QuizMistake> _mistakes = <_QuizMistake>[];
 
   bool get _finished {
     return _index >= widget.questions.length;
@@ -2671,38 +2800,23 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
     return widget.questions[_index];
   }
 
-  Future<void> _chooseOption(int optionIndex) async {
-    if (_checking || _finished) {
+  void _chooseOption(int optionIndex) {
+    if (_answered || _finished) {
       return;
     }
 
     final _QuizQuestion question = _currentQuestion;
+    final bool correct = optionIndex == question.correctIndex;
     setState(() {
       _selectedOption = optionIndex;
-      _checking = true;
-      if (optionIndex == question.correctIndex) {
+      _answered = true;
+      if (correct) {
         _score += 1;
+      } else {
+        _mistakes.add(
+          _QuizMistake(question: question, selectedIndex: optionIndex),
+        );
       }
-    });
-
-    await Future<void>.delayed(const Duration(milliseconds: 420));
-    if (!mounted) {
-      return;
-    }
-
-    final bool isLast = _index == widget.questions.length - 1;
-    if (isLast) {
-      setState(() {
-        _index += 1;
-        _checking = false;
-      });
-      return;
-    }
-
-    setState(() {
-      _index += 1;
-      _selectedOption = null;
-      _checking = false;
     });
   }
 
@@ -2713,6 +2827,33 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
     ).pop(_LectureQuizResult(score: _score, passed: passed));
   }
 
+  String _explanationText(_QuizQuestion question) {
+    if (question.explanation.trim().isNotEmpty) {
+      return question.explanation;
+    }
+    final String correctText = question.options[question.correctIndex];
+    return 'Because "$correctText" is the right answer for this question.';
+  }
+
+  void _nextQuestion() {
+    if (!_answered || _finished) {
+      return;
+    }
+    final bool isLast = _index == widget.questions.length - 1;
+    if (isLast) {
+      setState(() {
+        _index += 1;
+      });
+      return;
+    }
+
+    setState(() {
+      _index += 1;
+      _selectedOption = null;
+      _answered = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final LearnovaPalette palette = _palette(context);
@@ -2720,67 +2861,152 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
       final bool passed = _score >= 6;
       return Scaffold(
         appBar: AppBar(title: Text('${widget.subjectName} Quiz')),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: _cardDecoration(context),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Icon(
-                      passed
-                          ? Icons.emoji_events_rounded
-                          : Icons.refresh_rounded,
-                      size: 54,
-                      color: passed ? palette.success : palette.brandAccent,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      passed ? 'Great Work!' : 'Try Again',
-                      style: GoogleFonts.fredoka(
-                        fontSize: 30,
-                        color: palette.textPrimary,
-                        fontWeight: FontWeight.w600,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 760),
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: _cardDecoration(context),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Icon(
+                        passed
+                            ? Icons.emoji_events_rounded
+                            : Icons.refresh_rounded,
+                        size: 54,
+                        color: passed ? palette.success : palette.brandAccent,
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Your score: $_score / 10',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: palette.textSecondary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      passed
-                          ? 'You unlocked the next lecture.'
-                          : 'You need at least 6/10 to unlock next lecture.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: palette.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _finishQuiz,
-                        icon: Icon(
-                          passed
-                              ? Icons.arrow_forward_rounded
-                              : Icons.menu_book_rounded,
+                      const SizedBox(height: 10),
+                      Text(
+                        passed ? 'Great Work!' : 'Try Again',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.fredoka(
+                          fontSize: 30,
+                          color: palette.textPrimary,
+                          fontWeight: FontWeight.w600,
                         ),
-                        label: Text(passed ? 'Continue' : 'Back To Lecture'),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+                      Text(
+                        'Score: $_score / 10',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: palette.textSecondary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Stars earned this attempt: $_score',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: palette.textSecondary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        passed
+                            ? 'You unlocked the next lecture.'
+                            : 'You need at least 6/10 to unlock next lecture.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: palette.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Mistakes Review',
+                        style: GoogleFonts.fredoka(
+                          fontSize: 24,
+                          color: palette.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (_mistakes.isEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: const Color(0xFFE9F8D7),
+                          ),
+                          child: const Text(
+                            'Perfect run! No mistakes in this quiz.',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        )
+                      else
+                        for (int i = 0; i < _mistakes.length; i++) ...<Widget>[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              color: const Color(0xFFFFF6E5),
+                              border: Border.all(
+                                color: const Color(0xFFFFE0B1),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  '${i + 1}. ${_mistakes[i].question.prompt}',
+                                  style: TextStyle(
+                                    color: palette.textPrimary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Your answer: ${_mistakes[i].question.options[_mistakes[i].selectedIndex]}',
+                                  style: const TextStyle(
+                                    color: Color(0xFFC54A38),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  'Correct answer: ${_mistakes[i].question.options[_mistakes[i].question.correctIndex]}',
+                                  style: const TextStyle(
+                                    color: Color(0xFF2D8A42),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  _explanationText(_mistakes[i].question),
+                                  style: TextStyle(
+                                    color: palette.textSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (i != _mistakes.length - 1)
+                            const SizedBox(height: 8),
+                        ],
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _finishQuiz,
+                          icon: Icon(
+                            passed
+                                ? Icons.arrow_forward_rounded
+                                : Icons.menu_book_rounded,
+                          ),
+                          label: Text(passed ? 'Continue' : 'Back To Lecture'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -2849,7 +3075,7 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                         final bool correct =
                             optionIndex == question.correctIndex;
                         final bool reveal =
-                            _checking && _selectedOption != null;
+                            _answered && _selectedOption != null;
 
                         Color tileColor = palette.surfaceSoft;
                         Color borderColor = palette.borderStrong;
@@ -2870,7 +3096,7 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(16),
-                            onTap: _checking
+                            onTap: _answered
                                 ? null
                                 : () => _chooseOption(optionIndex),
                             child: Ink(
@@ -2920,6 +3146,59 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                           ),
                         );
                       },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (_answered)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        color: (_selectedOption == question.correctIndex)
+                            ? const Color(0xFFE7F9D8)
+                            : const Color(0xFFFFEFE4),
+                        border: Border.all(
+                          color: (_selectedOption == question.correctIndex)
+                              ? const Color(0xFF6BC64A)
+                              : const Color(0xFFFFBA8B),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            'Correct answer: ${question.options[question.correctIndex]}',
+                            style: TextStyle(
+                              color: palette.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _explanationText(question),
+                            style: TextStyle(
+                              color: palette.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _answered ? _nextQuestion : null,
+                      icon: Icon(
+                        _index == widget.questions.length - 1
+                            ? Icons.done_rounded
+                            : Icons.navigate_next_rounded,
+                      ),
+                      label: Text(
+                        _index == widget.questions.length - 1
+                            ? 'Finish Quiz'
+                            : 'Next Question',
+                      ),
                     ),
                   ),
                 ],
