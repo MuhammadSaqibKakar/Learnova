@@ -1793,47 +1793,127 @@ class _SubjectLearningPathScreenState
       case _SubjectKind.english:
         return const _LectureModule(
           title: 'English Lecture 1',
-          points: <String>[
-            'Letters build words. Words build sentences.',
-            'Vowels are A, E, I, O, U.',
-            'Read slowly and say sounds clearly.',
-            'Capital letters start names and sentences.',
-            'Practice 5 words every day.',
+          slides: <_LectureSlide>[
+            _LectureSlide(
+              title: 'Welcome To Letters',
+              body:
+                  'English starts with letters. We join letters to make words.',
+              example: 'A + p + p + l + e = Apple',
+              icon: Icons.auto_stories_rounded,
+              accentColor: Color(0xFF4BB9FF),
+            ),
+            _LectureSlide(
+              title: 'Meet The Vowels',
+              body: 'Vowels are A, E, I, O, U. They make words sound alive.',
+              example: 'cat, bed, fish, hot, sun',
+              icon: Icons.record_voice_over_rounded,
+              accentColor: Color(0xFF58CC02),
+            ),
+            _LectureSlide(
+              title: 'Read Out Loud',
+              body: 'Read slowly and clearly. Use your finger to follow words.',
+              example: 'I can read. You can read.',
+              icon: Icons.volume_up_rounded,
+              accentColor: Color(0xFFFFB84B),
+            ),
+            _LectureSlide(
+              title: 'Capital Letters',
+              body:
+                  'Use capital letters for names and at the start of sentences.',
+              example: 'Ali plays. Sara reads.',
+              icon: Icons.text_fields_rounded,
+              accentColor: Color(0xFF7B6BFF),
+            ),
+            _LectureSlide(
+              title: 'Daily Practice',
+              body: 'Practice five easy words every day to get better quickly.',
+              example: 'book, cat, sun, tree, red',
+              icon: Icons.check_circle_rounded,
+              accentColor: Color(0xFFFF7F9D),
+            ),
           ],
-          narration:
-              'Welcome to English lecture one. Letters build words and words build sentences. '
-              'Vowels are A, E, I, O, U. Read slowly and say each sound clearly. '
-              'Use capital letters to start names and sentences. Practice five words every day.',
         );
       case _SubjectKind.math:
         return const _LectureModule(
           title: 'Math Lecture 1',
-          points: <String>[
-            'Count objects one by one carefully.',
-            'Addition means putting groups together.',
-            'Subtraction means taking away.',
-            'Compare numbers to find bigger and smaller.',
-            'Use fingers or blocks to check answers.',
+          slides: <_LectureSlide>[
+            _LectureSlide(
+              title: 'Count Everything',
+              body: 'Math starts with counting objects one by one.',
+              example: '1 apple, 2 apples, 3 apples',
+              icon: Icons.pin_rounded,
+              accentColor: Color(0xFFFFA338),
+            ),
+            _LectureSlide(
+              title: 'Addition',
+              body: 'Addition means joining groups together.',
+              example: '2 + 3 = 5',
+              icon: Icons.add_circle_rounded,
+              accentColor: Color(0xFF58CC02),
+            ),
+            _LectureSlide(
+              title: 'Subtraction',
+              body: 'Subtraction means taking away.',
+              example: '5 - 2 = 3',
+              icon: Icons.remove_circle_rounded,
+              accentColor: Color(0xFFFF6B6B),
+            ),
+            _LectureSlide(
+              title: 'Compare Numbers',
+              body: 'Find which number is bigger or smaller.',
+              example: '9 is bigger than 4',
+              icon: Icons.compare_arrows_rounded,
+              accentColor: Color(0xFF1CB0F6),
+            ),
+            _LectureSlide(
+              title: 'Check Your Answer',
+              body: 'Use fingers, blocks, or drawings to verify your result.',
+              example: 'Draw 4 circles and add 2 circles',
+              icon: Icons.lightbulb_rounded,
+              accentColor: Color(0xFF8E7CFF),
+            ),
           ],
-          narration:
-              'Welcome to Math lecture one. Count objects one by one carefully. '
-              'Addition means putting groups together. Subtraction means taking away. '
-              'Compare numbers to find bigger and smaller. Use fingers or blocks to check your answers.',
         );
       case _SubjectKind.gk:
         return const _LectureModule(
           title: 'GK Lecture 1',
-          points: <String>[
-            'Animals, plants, and people live around us.',
-            'Earth is our home planet.',
-            'Water, air, and sunlight are important for life.',
-            'Learn safe habits at home and school.',
-            'Observe nature and ask questions every day.',
+          slides: <_LectureSlide>[
+            _LectureSlide(
+              title: 'Our World',
+              body: 'We live on Earth with people, animals, and plants.',
+              example: 'Earth is our home planet',
+              icon: Icons.public_rounded,
+              accentColor: Color(0xFF4BB9FF),
+            ),
+            _LectureSlide(
+              title: 'Nature Basics',
+              body: 'Air, water, and sunlight help life grow.',
+              example: 'Plants need water and sunlight',
+              icon: Icons.eco_rounded,
+              accentColor: Color(0xFF58CC02),
+            ),
+            _LectureSlide(
+              title: 'Animals Around Us',
+              body: 'Different animals live in land, water, and sky.',
+              example: 'Fish in water, birds in sky',
+              icon: Icons.pets_rounded,
+              accentColor: Color(0xFFFFB84B),
+            ),
+            _LectureSlide(
+              title: 'Safe Habits',
+              body: 'Follow rules at home and school to stay safe.',
+              example: 'Wash hands and walk carefully',
+              icon: Icons.health_and_safety_rounded,
+              accentColor: Color(0xFF7A6FFF),
+            ),
+            _LectureSlide(
+              title: 'Be Curious',
+              body: 'Observe and ask questions every day.',
+              example: 'Why is the sky blue? Why do leaves fall?',
+              icon: Icons.travel_explore_rounded,
+              accentColor: Color(0xFFFF7F9D),
+            ),
           ],
-          narration:
-              'Welcome to General Knowledge lecture one. Animals, plants, and people live around us. '
-              'Earth is our home planet. Water, air, and sunlight are important for life. '
-              'Learn safe habits at home and school. Observe nature and ask questions every day.',
         );
     }
   }
@@ -2087,15 +2167,26 @@ class _SubjectLearningPathScreenState
 }
 
 class _LectureModule {
-  const _LectureModule({
+  const _LectureModule({required this.title, required this.slides});
+
+  final String title;
+  final List<_LectureSlide> slides;
+}
+
+class _LectureSlide {
+  const _LectureSlide({
     required this.title,
-    required this.points,
-    required this.narration,
+    required this.body,
+    required this.example,
+    required this.icon,
+    required this.accentColor,
   });
 
   final String title;
-  final List<String> points;
-  final String narration;
+  final String body;
+  final String example;
+  final IconData icon;
+  final Color accentColor;
 }
 
 class _QuizQuestion {
@@ -2135,6 +2226,9 @@ class _SubjectLectureScreen extends StatefulWidget {
 class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   final FlutterTts _tts = FlutterTts();
   final Random _random = Random();
+  final PageController _pageController = PageController();
+
+  int _slideIndex = 0;
   bool _speaking = false;
   bool _openingQuiz = false;
 
@@ -2172,6 +2266,11 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     } catch (_) {}
   }
 
+  String _slideNarration() {
+    final _LectureSlide slide = widget.module.slides[_slideIndex];
+    return '${slide.title}. ${slide.body}. Example: ${slide.example}.';
+  }
+
   Future<void> _playVoice() async {
     try {
       await _tts.stop();
@@ -2181,7 +2280,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       setState(() {
         _speaking = true;
       });
-      await _tts.speak(widget.module.narration);
+      await _tts.speak(_slideNarration());
     } catch (_) {
       if (!mounted) {
         return;
@@ -2246,6 +2345,138 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     );
   }
 
+  void _goPreviousSlide() {
+    if (_slideIndex == 0) {
+      return;
+    }
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Future<void> _goNextOrQuiz() async {
+    final bool isLast = _slideIndex == widget.module.slides.length - 1;
+    if (!isLast) {
+      await _pageController.nextPage(
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+      return;
+    }
+    await _startQuiz();
+  }
+
+  Widget _buildSlideCard(_LectureSlide slide, LearnovaPalette palette) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[
+            Colors.white.withValues(alpha: 0.98),
+            palette.surfaceSoft.withValues(alpha: 0.94),
+          ],
+        ),
+        border: Border.all(color: palette.borderSoft.withValues(alpha: 0.9)),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: slide.accentColor.withValues(alpha: 0.24),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: <Color>[
+                      slide.accentColor.withValues(alpha: 0.95),
+                      slide.accentColor.withValues(alpha: 0.72),
+                    ],
+                  ),
+                ),
+                child: Icon(slide.icon, color: Colors.white, size: 30),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  slide.title,
+                  style: GoogleFonts.fredoka(
+                    fontSize: 30,
+                    color: palette.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              color: slide.accentColor.withValues(alpha: 0.14),
+            ),
+            child: Text(
+              slide.body,
+              style: TextStyle(
+                color: palette.textSecondary,
+                fontSize: 19,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.white,
+              border: Border.all(
+                color: slide.accentColor.withValues(alpha: 0.4),
+              ),
+            ),
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  Icons.tips_and_updates_rounded,
+                  size: 18,
+                  color: slide.accentColor,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    slide.example,
+                    style: TextStyle(
+                      color: palette.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -2255,93 +2486,112 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   @override
   void dispose() {
     _tts.stop();
+    _pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final LearnovaPalette palette = _palette(context);
+    final bool isLastSlide = _slideIndex == widget.module.slides.length - 1;
+
     return Scaffold(
       appBar: AppBar(title: Text('${widget.subjectName} Lecture 1')),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 860),
+              constraints: const BoxConstraints(maxWidth: 900),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
                     decoration: _cardDecoration(context),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: palette.brandPrimary.withValues(
-                                  alpha: 0.16,
-                                ),
-                              ),
-                              child: Icon(
-                                Icons.school_rounded,
-                                color: palette.brandPrimary,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                widget.module.title,
-                                style: GoogleFonts.fredoka(
-                                  fontSize: 26,
-                                  color: palette.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        for (int i = 0; i < widget.module.points.length; i++)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 2),
-                                  child: Icon(
-                                    Icons.circle,
-                                    size: 8,
-                                    color: palette.brandPrimary,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    widget.module.points[i],
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: palette.textSecondary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        Expanded(
+                          child: Text(
+                            widget.module.title,
+                            style: GoogleFonts.fredoka(
+                              fontSize: 26,
+                              color: palette.textPrimary,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: palette.brandPrimary.withValues(alpha: 0.16),
+                          ),
+                          child: Text(
+                            'Slide ${_slideIndex + 1}/${widget.module.slides.length}',
+                            style: TextStyle(
+                              color: palette.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: widget.module.slides.length,
+                      onPageChanged: (int value) {
+                        setState(() {
+                          _slideIndex = value;
+                        });
+                      },
+                      itemBuilder: (BuildContext context, int index) {
+                        return _buildSlideCard(
+                          widget.module.slides[index],
+                          palette,
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List<Widget>.generate(
+                      widget.module.slides.length,
+                      (int index) {
+                        final bool active = index == _slideIndex;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: active ? 26 : 9,
+                          height: 9,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(9),
+                            color: active
+                                ? palette.brandPrimary
+                                : palette.borderStrong.withValues(alpha: 0.8),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   Row(
                     children: <Widget>[
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _slideIndex == 0 ? null : _goPreviousSlide,
+                          icon: const Icon(Icons.arrow_back_rounded),
+                          label: const Text('Back'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: _speaking ? null : _playVoice,
@@ -2351,17 +2601,25 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                                 : Icons.volume_up_rounded,
                           ),
                           label: Text(
-                            _speaking ? 'Playing Voice...' : 'Play Voice',
+                            _speaking ? 'Playing Voice...' : 'Play This Slide',
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: _openingQuiz ? null : _startQuiz,
-                          icon: const Icon(Icons.quiz_rounded),
+                          onPressed: _openingQuiz ? null : _goNextOrQuiz,
+                          icon: Icon(
+                            isLastSlide
+                                ? Icons.quiz_rounded
+                                : Icons.arrow_forward_rounded,
+                          ),
                           label: Text(
-                            _openingQuiz ? 'Opening...' : 'Start Quiz (10)',
+                            _openingQuiz
+                                ? 'Opening...'
+                                : isLastSlide
+                                ? 'Start Quiz (10)'
+                                : 'Next Slide',
                           ),
                         ),
                       ),
@@ -2374,6 +2632,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                       color: palette.textSecondary,
                       fontWeight: FontWeight.w700,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
