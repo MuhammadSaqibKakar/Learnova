@@ -587,14 +587,22 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
     );
   }
 
-  void _openSubject(String subjectName) {
-    Navigator.of(context).push(
+  Future<void> _openSubject(String subjectName) async {
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
-          return _SubjectLearningPathScreen(subjectName: subjectName);
+          return _SubjectLearningPathScreen(
+            subjectName: subjectName,
+            kidId: widget.childId,
+            kidLevel: widget.level,
+          );
         },
       ),
     );
+    if (!mounted) {
+      return;
+    }
+    await _syncDailyStreak();
   }
 
   _KidAvatarOption _avatarForIndex(int index) {
@@ -623,17 +631,20 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
   }) {
     final bool isStar = icon == Icons.star_rounded;
     final List<Color> cardColors = isStar
-        ? const <Color>[Color(0xFFFFF0A0), Color(0xFFFFD44D)]
-        : const <Color>[Color(0xFFFFDF8D), Color(0xFFFFB85E)];
+        ? const <Color>[Color(0xFFE8F9C7), Color(0xFFC8EE84)]
+        : const <Color>[Color(0xFFE5F9C2), Color(0xFFBDE67B)];
     final List<Color> iconBgColors = isStar
-        ? const <Color>[Color(0xFFFFF5C9), Color(0xFFFFE188)]
-        : const <Color>[Color(0xFFFFEAD1), Color(0xFFFFC892)];
+        ? const <Color>[Color(0xFFFFF6CF), Color(0xFFFFE79A)]
+        : const <Color>[Color(0xFFFFE7D8), Color(0xFFFFC5A3)];
     final Color iconColor = isStar
         ? const Color(0xFFFFB300)
-        : const Color(0xFFFF5A1F);
-    final Color shadowColor = isStar
-        ? const Color(0xFFE5A300)
-        : const Color(0xFFE7842B);
+        : const Color(0xFFFF5A36);
+    const Color valueTextColor = Color(0xFFD39A00);
+    const Color labelTextColor = Color(0xFFC98D00);
+    final Color shadowColor = const Color(0xFF8FCB4F);
+    final Color borderLineColor = isStar
+        ? const Color(0xFFF5D75C)
+        : const Color(0xFFD4ED8C);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 7, 8, 7),
@@ -644,10 +655,7 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
           colors: cardColors,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.8),
-          width: 2,
-        ),
+        border: Border.all(color: borderLineColor, width: 1.8),
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: shadowColor.withValues(alpha: 0.35),
@@ -683,7 +691,7 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
             child: Text(
               '$value',
               style: GoogleFonts.fredoka(
-                color: const Color(0xFF28331C),
+                color: valueTextColor,
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 height: 0.95,
@@ -697,7 +705,7 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.fredoka(
-                color: const Color(0xFF2F4021),
+                color: labelTextColor,
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
@@ -1478,13 +1486,33 @@ class _KidMenuPanel extends StatelessWidget {
   }
 }
 
-class _SubjectLearningPathScreen extends StatelessWidget {
-  const _SubjectLearningPathScreen({required this.subjectName});
+class _SubjectLearningPathScreen extends StatefulWidget {
+  const _SubjectLearningPathScreen({
+    required this.subjectName,
+    required this.kidId,
+    required this.kidLevel,
+  });
 
   final String subjectName;
+  final String kidId;
+  final String kidLevel;
+
+  @override
+  State<_SubjectLearningPathScreen> createState() =>
+      _SubjectLearningPathScreenState();
+}
+
+class _SubjectLearningPathScreenState
+    extends State<_SubjectLearningPathScreen> {
+  static const String _kidProgressPrefix = 'learnova.kid.progress';
+
+  int _unlockedStage = 1;
+  Set<int> _completedStages = <int>{};
+  int _totalStars = 0;
+  bool _loading = true;
 
   IconData _subjectIcon() {
-    final String name = subjectName.toLowerCase();
+    final String name = widget.subjectName.toLowerCase();
     if (name.contains('english')) {
       return Icons.menu_book_rounded;
     }
@@ -1495,7 +1523,7 @@ class _SubjectLearningPathScreen extends StatelessWidget {
   }
 
   _SubjectKind _subjectKind() {
-    final String name = subjectName.toLowerCase();
+    final String name = widget.subjectName.toLowerCase();
     if (name.contains('english')) {
       return _SubjectKind.english;
     }
@@ -1505,133 +1533,1141 @@ class _SubjectLearningPathScreen extends StatelessWidget {
     return _SubjectKind.gk;
   }
 
+  bool get _isLevelOne {
+    return widget.kidLevel.toLowerCase().contains('level 1');
+  }
+
+  String _subjectSlug(_SubjectKind kind) {
+    return switch (kind) {
+      _SubjectKind.english => 'english',
+      _SubjectKind.math => 'math',
+      _SubjectKind.gk => 'gk',
+    };
+  }
+
+  String _subjectKey(_SubjectKind kind, String suffix) {
+    return '$_kidProgressPrefix.${widget.kidId}.subject.${_subjectSlug(kind)}.$suffix';
+  }
+
+  String _starsKey() {
+    return '$_kidProgressPrefix.${widget.kidId}.stars';
+  }
+
+  Future<void> _loadProgress() async {
+    final _SubjectKind kind = _subjectKind();
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int unlocked = max(
+      1,
+      prefs.getInt(_subjectKey(kind, 'unlocked')) ?? 1,
+    );
+    final List<String> completedRaw =
+        prefs.getStringList(_subjectKey(kind, 'completed')) ?? <String>[];
+    final Set<int> completed = completedRaw
+        .map(int.tryParse)
+        .whereType<int>()
+        .where((int stage) => stage >= 1)
+        .toSet();
+    final int stars = prefs.getInt(_starsKey()) ?? 0;
+
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _unlockedStage = unlocked;
+      _completedStages = completed;
+      _totalStars = stars;
+      _loading = false;
+    });
+  }
+
+  Future<void> _saveProgress({
+    required _SubjectKind kind,
+    required int unlocked,
+    required Set<int> completed,
+  }) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_subjectKey(kind, 'unlocked'), unlocked);
+    final List<int> sortedCompleted = completed.toList()..sort();
+    await prefs.setStringList(
+      _subjectKey(kind, 'completed'),
+      sortedCompleted.map((int stage) => '$stage').toList(),
+    );
+  }
+
+  List<_QuizQuestion> _quizBank(_SubjectKind kind) {
+    switch (kind) {
+      case _SubjectKind.english:
+        return const <_QuizQuestion>[
+          _QuizQuestion(
+            prompt: 'Which letter starts "Apple"?',
+            options: <String>['A', 'B', 'C', 'D'],
+            correctIndex: 0,
+          ),
+          _QuizQuestion(
+            prompt: 'Which one is a vowel?',
+            options: <String>['B', 'E', 'R', 'T'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'Pick the small letter of B.',
+            options: <String>['d', 'p', 'b', 'h'],
+            correctIndex: 2,
+          ),
+          _QuizQuestion(
+            prompt: 'Which word begins with C?',
+            options: <String>['Sun', 'Cat', 'Ball', 'Egg'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'How many letters are in "DOG"?',
+            options: <String>['2', '3', '4', '5'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'Pick a rhyming word for "hat".',
+            options: <String>['mat', 'sun', 'top', 'bed'],
+            correctIndex: 0,
+          ),
+          _QuizQuestion(
+            prompt: 'Which letter comes after M?',
+            options: <String>['L', 'N', 'P', 'K'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'Which is a greeting word?',
+            options: <String>['Hello', 'Stone', 'Chair', 'Spoon'],
+            correctIndex: 0,
+          ),
+          _QuizQuestion(
+            prompt: 'Choose the correct spelling.',
+            options: <String>['Bok', 'Book', 'Buk', 'Booc'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'Which one is a sentence starter?',
+            options: <String>['!', 'A capital letter', 'A number', 'A comma'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'Pick the picture word for "pet".',
+            options: <String>['Dog', 'Table', 'Road', 'Cloud'],
+            correctIndex: 0,
+          ),
+          _QuizQuestion(
+            prompt: 'Which one is not a letter?',
+            options: <String>['G', 'H', '7', 'J'],
+            correctIndex: 2,
+          ),
+        ];
+      case _SubjectKind.math:
+        return const <_QuizQuestion>[
+          _QuizQuestion(
+            prompt: 'What is 2 + 1?',
+            options: <String>['1', '2', '3', '4'],
+            correctIndex: 2,
+          ),
+          _QuizQuestion(
+            prompt: 'What is 5 - 2?',
+            options: <String>['2', '3', '4', '5'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'Which number is bigger?',
+            options: <String>['4', '9', '3', '2'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'What comes after 7?',
+            options: <String>['6', '8', '9', '5'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'How many sides does a triangle have?',
+            options: <String>['2', '3', '4', '5'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'What is 10 - 1?',
+            options: <String>['7', '8', '9', '10'],
+            correctIndex: 2,
+          ),
+          _QuizQuestion(
+            prompt: 'Count: 1, 2, 3, __',
+            options: <String>['4', '5', '6', '2'],
+            correctIndex: 0,
+          ),
+          _QuizQuestion(
+            prompt: 'What is 3 + 3?',
+            options: <String>['5', '6', '7', '8'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'Which shape is round?',
+            options: <String>['Square', 'Triangle', 'Circle', 'Rectangle'],
+            correctIndex: 2,
+          ),
+          _QuizQuestion(
+            prompt: 'What is 4 + 2?',
+            options: <String>['4', '5', '6', '7'],
+            correctIndex: 2,
+          ),
+          _QuizQuestion(
+            prompt: 'What is 8 - 3?',
+            options: <String>['4', '5', '6', '7'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'How many fingers on one hand?',
+            options: <String>['4', '5', '6', '7'],
+            correctIndex: 1,
+          ),
+        ];
+      case _SubjectKind.gk:
+        return const <_QuizQuestion>[
+          _QuizQuestion(
+            prompt: 'Which animal says "meow"?',
+            options: <String>['Dog', 'Cat', 'Cow', 'Duck'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'What color is the sun often drawn as?',
+            options: <String>['Blue', 'Green', 'Yellow', 'Black'],
+            correctIndex: 2,
+          ),
+          _QuizQuestion(
+            prompt: 'Which one can fly?',
+            options: <String>['Bird', 'Fish', 'Cow', 'Goat'],
+            correctIndex: 0,
+          ),
+          _QuizQuestion(
+            prompt: 'Where do fish live?',
+            options: <String>['Sky', 'Water', 'Tree', 'Road'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'How many days are in a week?',
+            options: <String>['5', '6', '7', '8'],
+            correctIndex: 2,
+          ),
+          _QuizQuestion(
+            prompt: 'Which season is very cold?',
+            options: <String>['Summer', 'Winter', 'Spring', 'Rainy'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'What do we use to see things?',
+            options: <String>['Ears', 'Nose', 'Eyes', 'Hands'],
+            correctIndex: 2,
+          ),
+          _QuizQuestion(
+            prompt: 'Which planet do we live on?',
+            options: <String>['Mars', 'Venus', 'Earth', 'Jupiter'],
+            correctIndex: 2,
+          ),
+          _QuizQuestion(
+            prompt: 'Which one is a fruit?',
+            options: <String>['Carrot', 'Apple', 'Potato', 'Onion'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'Who helps us learn in school?',
+            options: <String>['Pilot', 'Teacher', 'Chef', 'Driver'],
+            correctIndex: 1,
+          ),
+          _QuizQuestion(
+            prompt: 'Which is a transport?',
+            options: <String>['Bus', 'Tree', 'Book', 'Pencil'],
+            correctIndex: 0,
+          ),
+          _QuizQuestion(
+            prompt: 'What do bees make?',
+            options: <String>['Honey', 'Milk', 'Juice', 'Bread'],
+            correctIndex: 0,
+          ),
+        ];
+    }
+  }
+
+  _LectureModule _lectureModule(_SubjectKind kind) {
+    switch (kind) {
+      case _SubjectKind.english:
+        return const _LectureModule(
+          title: 'English Lecture 1',
+          points: <String>[
+            'Letters build words. Words build sentences.',
+            'Vowels are A, E, I, O, U.',
+            'Read slowly and say sounds clearly.',
+            'Capital letters start names and sentences.',
+            'Practice 5 words every day.',
+          ],
+          narration:
+              'Welcome to English lecture one. Letters build words and words build sentences. '
+              'Vowels are A, E, I, O, U. Read slowly and say each sound clearly. '
+              'Use capital letters to start names and sentences. Practice five words every day.',
+        );
+      case _SubjectKind.math:
+        return const _LectureModule(
+          title: 'Math Lecture 1',
+          points: <String>[
+            'Count objects one by one carefully.',
+            'Addition means putting groups together.',
+            'Subtraction means taking away.',
+            'Compare numbers to find bigger and smaller.',
+            'Use fingers or blocks to check answers.',
+          ],
+          narration:
+              'Welcome to Math lecture one. Count objects one by one carefully. '
+              'Addition means putting groups together. Subtraction means taking away. '
+              'Compare numbers to find bigger and smaller. Use fingers or blocks to check your answers.',
+        );
+      case _SubjectKind.gk:
+        return const _LectureModule(
+          title: 'GK Lecture 1',
+          points: <String>[
+            'Animals, plants, and people live around us.',
+            'Earth is our home planet.',
+            'Water, air, and sunlight are important for life.',
+            'Learn safe habits at home and school.',
+            'Observe nature and ask questions every day.',
+          ],
+          narration:
+              'Welcome to General Knowledge lecture one. Animals, plants, and people live around us. '
+              'Earth is our home planet. Water, air, and sunlight are important for life. '
+              'Learn safe habits at home and school. Observe nature and ask questions every day.',
+        );
+    }
+  }
+
+  Future<void> _openStageOneLecture() async {
+    final _SubjectKind kind = _subjectKind();
+    final _LectureQuizResult? result = await Navigator.of(context)
+        .push<_LectureQuizResult>(
+          MaterialPageRoute<_LectureQuizResult>(
+            builder: (BuildContext context) {
+              return _SubjectLectureScreen(
+                subjectName: widget.subjectName,
+                module: _lectureModule(kind),
+                quizBank: _quizBank(kind),
+              );
+            },
+          ),
+        );
+
+    if (result == null) {
+      return;
+    }
+
+    if (!result.passed) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Score ${result.score}/10. You need 6/10 to unlock next lecture.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final _SubjectKind subjectKind = _subjectKind();
+    final Set<int> updatedCompleted = <int>{..._completedStages, 1};
+    final int updatedUnlocked = max(_unlockedStage, 2);
+
+    await _saveProgress(
+      kind: subjectKind,
+      unlocked: updatedUnlocked,
+      completed: updatedCompleted,
+    );
+
+    final bool alreadyRewarded =
+        prefs.getBool(_subjectKey(subjectKind, 'reward_stage_1')) ?? false;
+    int earnedStars = 0;
+    int totalStars = _totalStars;
+    if (!alreadyRewarded) {
+      earnedStars = result.score;
+      totalStars += earnedStars;
+      await prefs.setBool(_subjectKey(subjectKind, 'reward_stage_1'), true);
+      await prefs.setInt(_starsKey(), totalStars);
+    }
+
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _completedStages = updatedCompleted;
+      _unlockedStage = updatedUnlocked;
+      _totalStars = totalStars;
+    });
+
+    final String rewardMessage = earnedStars > 0
+        ? 'Great job! +$earnedStars stars earned.'
+        : 'Great job! Stage 1 already rewarded, lecture 2 unlocked.';
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(rewardMessage)));
+  }
+
+  void _onTapStage(int stage) {
+    if (stage > _unlockedStage) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Stage $stage is locked. Complete previous stage first.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (!_isLevelOne) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Level-based lectures are coming. Level 1 lecture flow is live now.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    if (stage == 1) {
+      _openStageOneLecture();
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Stage $stage is unlocked. Lecture content for this stage will be added next.',
+        ),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProgress();
+  }
+
   @override
   Widget build(BuildContext context) {
     final LearnovaPalette palette = _palette(context);
     final _SubjectKind subjectKind = _subjectKind();
-    const int unlockedStage = 1;
-    const Set<int> completedStages = <int>{};
 
     return Scaffold(
-      appBar: AppBar(title: Text(subjectName)),
+      appBar: AppBar(title: Text(widget.subjectName)),
       body: Stack(
         children: <Widget>[
           _PlayfulPathBackground(kind: subjectKind),
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 920),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Container(
-                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: <Color>[
-                              palette.brandPrimary,
-                              Color.alphaBlend(
-                                Colors.black.withValues(alpha: 0.08),
+          if (_loading)
+            const Center(child: CircularProgressIndicator())
+          else
+            SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 920),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: <Color>[
                                 palette.brandPrimary,
+                                Color.alphaBlend(
+                                  Colors.black.withValues(alpha: 0.08),
+                                  palette.brandPrimary,
+                                ),
+                              ],
+                            ),
+                            boxShadow: <BoxShadow>[
+                              BoxShadow(
+                                color: palette.brandPrimary.withValues(
+                                  alpha: 0.22,
+                                ),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
                               ),
                             ],
                           ),
-                          boxShadow: <BoxShadow>[
-                            BoxShadow(
-                              color: palette.brandPrimary.withValues(
-                                alpha: 0.22,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  Container(
+                                    width: 52,
+                                    height: 52,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                    ),
+                                    child: Icon(
+                                      _subjectIcon(),
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      widget.subjectName,
+                                      style: GoogleFonts.fredoka(
+                                        fontSize: 31,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              blurRadius: 18,
-                              offset: const Offset(0, 8),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Play Path 1 to 10',
+                                style: GoogleFonts.fredoka(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: <Widget>[
+                                  _PathInfoChip(
+                                    icon: Icons.lock_open_rounded,
+                                    text: 'Unlocked: $_unlockedStage / 10',
+                                  ),
+                                  _PathInfoChip(
+                                    icon: Icons.star_rounded,
+                                    text: 'Stars: $_totalStars',
+                                  ),
+                                  _PathInfoChip(
+                                    icon: Icons.workspace_premium_rounded,
+                                    text: _isLevelOne
+                                        ? 'Level 1 lecture + quiz ready'
+                                        : 'Level 1 module currently active',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        _LearningPathMap(
+                          subjectKind: subjectKind,
+                          totalStages: 10,
+                          unlockedStage: _unlockedStage,
+                          completedStages: _completedStages,
+                          onTapStage: _onTapStage,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LectureModule {
+  const _LectureModule({
+    required this.title,
+    required this.points,
+    required this.narration,
+  });
+
+  final String title;
+  final List<String> points;
+  final String narration;
+}
+
+class _QuizQuestion {
+  const _QuizQuestion({
+    required this.prompt,
+    required this.options,
+    required this.correctIndex,
+  });
+
+  final String prompt;
+  final List<String> options;
+  final int correctIndex;
+}
+
+class _LectureQuizResult {
+  const _LectureQuizResult({required this.score, required this.passed});
+
+  final int score;
+  final bool passed;
+}
+
+class _SubjectLectureScreen extends StatefulWidget {
+  const _SubjectLectureScreen({
+    required this.subjectName,
+    required this.module,
+    required this.quizBank,
+  });
+
+  final String subjectName;
+  final _LectureModule module;
+  final List<_QuizQuestion> quizBank;
+
+  @override
+  State<_SubjectLectureScreen> createState() => _SubjectLectureScreenState();
+}
+
+class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
+  final FlutterTts _tts = FlutterTts();
+  final Random _random = Random();
+  bool _speaking = false;
+  bool _openingQuiz = false;
+
+  Future<void> _configureTts() async {
+    _tts.setCompletionHandler(() {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _speaking = false;
+      });
+    });
+    _tts.setCancelHandler(() {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _speaking = false;
+      });
+    });
+    _tts.setErrorHandler((dynamic message) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _speaking = false;
+      });
+    });
+
+    try {
+      await _tts.setLanguage('en-US');
+      await _tts.setPitch(1.0);
+      await _tts.setSpeechRate(0.45);
+      await _tts.awaitSpeakCompletion(true);
+    } catch (_) {}
+  }
+
+  Future<void> _playVoice() async {
+    try {
+      await _tts.stop();
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _speaking = true;
+      });
+      await _tts.speak(widget.module.narration);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _speaking = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Voice is not available on this device.')),
+      );
+    }
+  }
+
+  List<_QuizQuestion> _randomQuizSet() {
+    final List<_QuizQuestion> shuffled = List<_QuizQuestion>.from(
+      widget.quizBank,
+    )..shuffle(_random);
+    return shuffled.take(min(10, shuffled.length)).toList();
+  }
+
+  Future<void> _startQuiz() async {
+    if (_openingQuiz) {
+      return;
+    }
+    setState(() {
+      _openingQuiz = true;
+    });
+
+    final _LectureQuizResult? result = await Navigator.of(context)
+        .push<_LectureQuizResult>(
+          MaterialPageRoute<_LectureQuizResult>(
+            builder: (BuildContext context) {
+              return _SubjectQuizScreen(
+                subjectName: widget.subjectName,
+                questions: _randomQuizSet(),
+              );
+            },
+          ),
+        );
+
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _openingQuiz = false;
+    });
+
+    if (result == null) {
+      return;
+    }
+    if (result.passed) {
+      Navigator.of(context).pop(result);
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Score ${result.score}/10. Review lecture and try quiz again.',
+        ),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _configureTts();
+  }
+
+  @override
+  void dispose() {
+    _tts.stop();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final LearnovaPalette palette = _palette(context);
+    return Scaffold(
+      appBar: AppBar(title: Text('${widget.subjectName} Lecture 1')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 860),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: _cardDecoration(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: palette.brandPrimary.withValues(
+                                  alpha: 0.16,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.school_rounded,
+                                color: palette.brandPrimary,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                widget.module.title,
+                                style: GoogleFonts.fredoka(
+                                  fontSize: 26,
+                                  color: palette.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Row(
+                        const SizedBox(height: 12),
+                        for (int i = 0; i < widget.module.points.length; i++)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Container(
-                                  width: 52,
-                                  height: 52,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                  ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
                                   child: Icon(
-                                    _subjectIcon(),
-                                    color: Colors.white,
-                                    size: 28,
+                                    Icons.circle,
+                                    size: 8,
+                                    color: palette.brandPrimary,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
+                                const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    subjectName,
-                                    style: GoogleFonts.fredoka(
-                                      fontSize: 31,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
+                                    widget.module.points[i],
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: palette.textSecondary,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Play Path 1 to 10',
-                              style: GoogleFonts.fredoka(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: <Widget>[
-                                _PathInfoChip(
-                                  icon: Icons.lock_open_rounded,
-                                  text: 'Unlocked: 1 / 10',
-                                ),
-                                _PathInfoChip(
-                                  icon: Icons.star_rounded,
-                                  text: 'Stars: 0',
-                                ),
-                              ],
-                            ),
-                          ],
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _speaking ? null : _playVoice,
+                          icon: Icon(
+                            _speaking
+                                ? Icons.graphic_eq_rounded
+                                : Icons.volume_up_rounded,
+                          ),
+                          label: Text(
+                            _speaking ? 'Playing Voice...' : 'Play Voice',
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 14),
-                      _LearningPathMap(
-                        subjectKind: subjectKind,
-                        totalStages: 10,
-                        unlockedStage: unlockedStage,
-                        completedStages: completedStages,
-                        onTapStage: (int stage) {
-                          final bool unlocked = stage <= unlockedStage;
-                          final String message = unlocked
-                              ? 'Stage $stage is open. Lecture and quiz flow will be added next.'
-                              : 'Stage $stage is locked. Finish previous stage first.';
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(SnackBar(content: Text(message)));
-                        },
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _openingQuiz ? null : _startQuiz,
+                          icon: const Icon(Icons.quiz_rounded),
+                          label: Text(
+                            _openingQuiz ? 'Opening...' : 'Start Quiz (10)',
+                          ),
+                        ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Pass rule: score at least 6 out of 10 to unlock next lecture.',
+                    style: TextStyle(
+                      color: palette.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SubjectQuizScreen extends StatefulWidget {
+  const _SubjectQuizScreen({
+    required this.subjectName,
+    required this.questions,
+  });
+
+  final String subjectName;
+  final List<_QuizQuestion> questions;
+
+  @override
+  State<_SubjectQuizScreen> createState() => _SubjectQuizScreenState();
+}
+
+class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
+  int _index = 0;
+  int _score = 0;
+  int? _selectedOption;
+  bool _checking = false;
+
+  bool get _finished {
+    return _index >= widget.questions.length;
+  }
+
+  _QuizQuestion get _currentQuestion {
+    return widget.questions[_index];
+  }
+
+  Future<void> _chooseOption(int optionIndex) async {
+    if (_checking || _finished) {
+      return;
+    }
+
+    final _QuizQuestion question = _currentQuestion;
+    setState(() {
+      _selectedOption = optionIndex;
+      _checking = true;
+      if (optionIndex == question.correctIndex) {
+        _score += 1;
+      }
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 420));
+    if (!mounted) {
+      return;
+    }
+
+    final bool isLast = _index == widget.questions.length - 1;
+    if (isLast) {
+      setState(() {
+        _index += 1;
+        _checking = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _index += 1;
+      _selectedOption = null;
+      _checking = false;
+    });
+  }
+
+  void _finishQuiz() {
+    final bool passed = _score >= 6;
+    Navigator.of(
+      context,
+    ).pop(_LectureQuizResult(score: _score, passed: passed));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final LearnovaPalette palette = _palette(context);
+    if (_finished) {
+      final bool passed = _score >= 6;
+      return Scaffold(
+        appBar: AppBar(title: Text('${widget.subjectName} Quiz')),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: _cardDecoration(context),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Icon(
+                      passed
+                          ? Icons.emoji_events_rounded
+                          : Icons.refresh_rounded,
+                      size: 54,
+                      color: passed ? palette.success : palette.brandAccent,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      passed ? 'Great Work!' : 'Try Again',
+                      style: GoogleFonts.fredoka(
+                        fontSize: 30,
+                        color: palette.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Your score: $_score / 10',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: palette.textSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      passed
+                          ? 'You unlocked the next lecture.'
+                          : 'You need at least 6/10 to unlock next lecture.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: palette.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _finishQuiz,
+                        icon: Icon(
+                          passed
+                              ? Icons.arrow_forward_rounded
+                              : Icons.menu_book_rounded,
+                        ),
+                        label: Text(passed ? 'Continue' : 'Back To Lecture'),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-        ],
+        ),
+      );
+    }
+
+    final _QuizQuestion question = _currentQuestion;
+    return Scaffold(
+      appBar: AppBar(title: Text('${widget.subjectName} Quiz')),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 840),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: _cardDecoration(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          'Question ${_index + 1} of ${widget.questions.length}',
+                          style: TextStyle(
+                            color: palette.textSecondary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value: (_index + 1) / widget.questions.length,
+                          minHeight: 10,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: _cardDecoration(context),
+                    child: Text(
+                      question.prompt,
+                      style: GoogleFonts.fredoka(
+                        fontSize: 28,
+                        color: palette.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: question.options.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 10),
+                      itemBuilder: (BuildContext context, int optionIndex) {
+                        final bool picked = _selectedOption == optionIndex;
+                        final bool correct =
+                            optionIndex == question.correctIndex;
+                        final bool reveal =
+                            _checking && _selectedOption != null;
+
+                        Color tileColor = palette.surfaceSoft;
+                        Color borderColor = palette.borderStrong;
+                        if (reveal && correct) {
+                          tileColor = const Color(0xFFE6F9D8);
+                          borderColor = const Color(0xFF67C63A);
+                        } else if (reveal && picked && !correct) {
+                          tileColor = const Color(0xFFFFE2E2);
+                          borderColor = const Color(0xFFE26868);
+                        } else if (picked) {
+                          tileColor = palette.brandPrimary.withValues(
+                            alpha: 0.12,
+                          );
+                          borderColor = palette.brandPrimary;
+                        }
+
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: _checking
+                                ? null
+                                : () => _chooseOption(optionIndex),
+                            child: Ink(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                color: tileColor,
+                                border: Border.all(
+                                  color: borderColor,
+                                  width: 1.6,
+                                ),
+                              ),
+                              child: Row(
+                                children: <Widget>[
+                                  Container(
+                                    width: 30,
+                                    height: 30,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                      border: Border.all(color: borderColor),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        String.fromCharCode(65 + optionIndex),
+                                        style: TextStyle(
+                                          color: palette.textSecondary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      question.options[optionIndex],
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        color: palette.textPrimary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
