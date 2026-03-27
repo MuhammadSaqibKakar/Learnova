@@ -702,11 +702,11 @@ class _DinoCharacter extends StatelessWidget {
                             ),
                           ),
                           Positioned(
-                            right: size * 0.025,
-                            top: size * 0.285,
+                            right: size * 0.02,
+                            top: size * 0.28,
                             child: Container(
-                              width: size * 0.28,
-                              height: size * 0.19,
+                              width: size * 0.3,
+                              height: size * 0.2,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(
                                   size * 0.11,
@@ -731,7 +731,7 @@ class _DinoCharacter extends StatelessWidget {
                                 children: <Widget>[
                                   Positioned(
                                     left: size * 0.075,
-                                    top: size * 0.075,
+                                    top: size * 0.07,
                                     child: Container(
                                       width: size * 0.024,
                                       height: size * 0.034,
@@ -747,7 +747,7 @@ class _DinoCharacter extends StatelessWidget {
                                   ),
                                   Positioned(
                                     right: size * 0.075,
-                                    top: size * 0.075,
+                                    top: size * 0.07,
                                     child: Container(
                                       width: size * 0.024,
                                       height: size * 0.034,
@@ -766,8 +766,8 @@ class _DinoCharacter extends StatelessWidget {
                             ),
                           ),
                           Positioned(
-                            right: size * 0.11,
-                            top: size * 0.43,
+                            right: size * 0.095,
+                            top: size * 0.455,
                             child: _buildMouth(
                               size: size,
                               openAmount: motion.mouthOpen,
@@ -779,18 +779,18 @@ class _DinoCharacter extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  left: size * 0.21,
-                  top: size * 0.52,
+                  left: size * 0.27,
+                  top: size * 0.57,
                   child: _buildArm(
-                    size: size * 0.19,
+                    size: size * 0.2,
                     angle: motion.leftArmRotate,
                     start: baseColor,
                     end: bodyDark,
                   ),
                 ),
                 Positioned(
-                  right: size * 0.2,
-                  top: size * 0.51,
+                  right: size * 0.23,
+                  top: size * 0.56,
                   child: _buildArm(
                     size: size * 0.2,
                     angle: motion.rightArmRotate,
@@ -799,13 +799,53 @@ class _DinoCharacter extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  left: size * 0.3,
-                  bottom: size * 0.012,
+                  left: size * 0.41,
+                  bottom: size * 0.1,
+                  child: Container(
+                    width: size * 0.1,
+                    height: size * 0.14,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(size * 0.06),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: <Color>[bodyMid, bodyDark],
+                      ),
+                      border: Border.all(
+                        color: outlineColor.withValues(alpha: 0.7),
+                        width: 0.8,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: size * 0.32,
+                  bottom: size * 0.1,
+                  child: Container(
+                    width: size * 0.1,
+                    height: size * 0.14,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(size * 0.06),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: <Color>[bodyMid, bodyDark],
+                      ),
+                      border: Border.all(
+                        color: outlineColor.withValues(alpha: 0.7),
+                        width: 0.8,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: size * 0.33,
+                  bottom: size * 0.006,
                   child: _buildFoot(size: size * 0.16, color: bodyDark),
                 ),
                 Positioned(
-                  right: size * 0.23,
-                  bottom: size * 0.012,
+                  right: size * 0.25,
+                  bottom: size * 0.006,
                   child: _buildFoot(size: size * 0.16, color: bodyDark),
                 ),
                 Positioned(
@@ -974,35 +1014,50 @@ class _DinoCharacter extends StatelessWidget {
   }
 
   Widget _buildMouth({required double size, required double openAmount}) {
-    final double mouthHeight = size * (0.028 + (openAmount * 0.032));
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(size * 0.06),
-      child: Container(
-        width: size * 0.15,
-        height: mouthHeight,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: <Color>[Color(0xFFE7665C), Color(0xFFB8372E)],
-          ),
+    final double mouthWidth = size * 0.13;
+    final double mouthHeight = size * (0.03 + (openAmount * 0.028));
+    return Container(
+      width: mouthWidth,
+      height: mouthHeight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(size * 0.06),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: <Color>[Color(0xFFDF5B4D), Color(0xFFAA2E25)],
         ),
-        child: Stack(
-          children: <Widget>[
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: size * 0.09,
-                height: mouthHeight * 0.34,
-                margin: EdgeInsets.only(bottom: size * 0.005),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFA8A7),
-                  borderRadius: BorderRadius.circular(size * 0.03),
-                ),
+        border: Border.all(
+          color: const Color(0xFF8E261F).withValues(alpha: 0.85),
+          width: 0.7,
+        ),
+      ),
+      child: Stack(
+        children: <Widget>[
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              width: mouthWidth * 0.62,
+              height: size * 0.008,
+              margin: EdgeInsets.only(top: size * 0.004),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(size * 0.02),
               ),
             ),
-          ],
-        ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: mouthWidth * 0.5,
+              height: mouthHeight * 0.33,
+              margin: EdgeInsets.only(bottom: size * 0.004),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFA8A7),
+                borderRadius: BorderRadius.circular(size * 0.03),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1015,47 +1070,78 @@ class _DinoCharacter extends StatelessWidget {
   }) {
     return Transform.rotate(
       angle: angle,
-      alignment: Alignment.topCenter,
+      alignment: Alignment.centerLeft,
       child: SizedBox(
-        width: size * 1.08,
-        height: size * 1.22,
+        width: size * 1.0,
+        height: size * 0.72,
         child: Stack(
-          alignment: Alignment.bottomCenter,
+          clipBehavior: Clip.none,
           children: <Widget>[
-            Container(
-              width: size,
-              height: size * 1.02,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(size * 0.68),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[start, end],
-                ),
-                border: Border.all(
-                  color: const Color(0xFF2F7B2A).withValues(alpha: 0.3),
-                  width: 0.8,
-                ),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 3,
-                    offset: const Offset(0, 1),
+            Positioned(
+              left: size * 0.02,
+              top: size * 0.2,
+              child: Container(
+                width: size * 0.56,
+                height: size * 0.24,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(size * 0.18),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: <Color>[start, end],
                   ),
-                ],
+                  border: Border.all(
+                    color: const Color(0xFF2F7B2A).withValues(alpha: 0.35),
+                    width: 0.8,
+                  ),
+                ),
               ),
             ),
             Positioned(
-              bottom: 0,
+              left: size * 0.46,
+              top: size * 0.07,
+              child: Container(
+                width: size * 0.34,
+                height: size * 0.34,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: <Color>[
+                      Color.alphaBlend(
+                        Colors.white.withValues(alpha: 0.15),
+                        start,
+                      ),
+                      end,
+                    ],
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFF2F7B2A).withValues(alpha: 0.35),
+                    width: 0.8,
+                  ),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: size * 0.63,
+              top: size * 0.33,
               child: Row(
                 children: List<Widget>.generate(3, (int index) {
                   return Container(
-                    width: size * 0.12,
-                    height: size * 0.1,
-                    margin: EdgeInsets.only(left: index == 0 ? 0 : size * 0.03),
+                    width: size * 0.08,
+                    height: size * 0.065,
+                    margin: EdgeInsets.only(left: index == 0 ? 0 : size * 0.02),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF2DE),
-                      borderRadius: BorderRadius.circular(size * 0.05),
+                      borderRadius: BorderRadius.circular(size * 0.04),
                     ),
                   );
                 }),
@@ -1069,30 +1155,23 @@ class _DinoCharacter extends StatelessWidget {
 
   Widget _buildFoot({required double size, required Color color}) {
     return SizedBox(
-      width: size * 1.2,
-      height: size * 0.9,
+      width: size * 1.28,
+      height: size * 0.74,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: <Widget>[
           Positioned(
-            top: 0,
+            top: size * 0.05,
             child: Container(
               width: size,
-              height: size * 0.68,
+              height: size * 0.42,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(size * 0.5),
+                borderRadius: BorderRadius.circular(size * 0.3),
                 color: color,
                 border: Border.all(
                   color: const Color(0xFF2F7B2A).withValues(alpha: 0.28),
                   width: 0.8,
                 ),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 3,
-                    offset: const Offset(0, 1.5),
-                  ),
-                ],
               ),
             ),
           ),
@@ -1101,12 +1180,16 @@ class _DinoCharacter extends StatelessWidget {
             child: Row(
               children: List<Widget>.generate(3, (int index) {
                 return Container(
-                  width: size * 0.22,
-                  height: size * 0.2,
-                  margin: EdgeInsets.only(left: index == 0 ? 0 : size * 0.04),
+                  width: size * 0.23,
+                  height: size * 0.17,
+                  margin: EdgeInsets.only(left: index == 0 ? 0 : size * 0.03),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF2DE),
-                    borderRadius: BorderRadius.circular(size * 0.1),
+                    borderRadius: BorderRadius.circular(size * 0.08),
+                    border: Border.all(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      width: 0.4,
+                    ),
                   ),
                 );
               }),
@@ -1125,8 +1208,8 @@ class _DinoMotion {
     this.xShift = 0,
     this.yShift = 0,
     this.headRotate = 0,
-    this.leftArmRotate = 0.18,
-    this.rightArmRotate = -0.2,
+    this.leftArmRotate = 0.08,
+    this.rightArmRotate = -0.1,
     this.tailRotate = 0,
     this.mouthOpen = 0.14,
     this.blink = false,
@@ -1158,31 +1241,31 @@ _DinoMotion _computeDinoMotion({
   double xShift = 0;
   double yShift = 0;
   double headRotate = loop * 0.028;
-  double leftArmRotate = 0.15 + loop * 0.045;
-  double rightArmRotate = -0.17 - loop * 0.045;
+  double leftArmRotate = 0.08 + loop * 0.03;
+  double rightArmRotate = -0.1 - loop * 0.03;
   double tailRotate = loop * 0.14;
 
   switch (action) {
     case DinoAnimationAction.welcomeWave:
       bodyScale += sin(p * pi) * 0.25;
-      rightArmRotate = -0.64 + sin(p * pi * 4) * 0.68;
+      rightArmRotate = -0.38 + sin(p * pi * 4) * 0.32;
       yShift -= sin(p * pi) * 8;
       headRotate += sin(p * pi * 2) * 0.06;
     case DinoAnimationAction.waveHi:
-      rightArmRotate = -0.58 + sin(p * pi * 4) * 0.62;
+      rightArmRotate = -0.32 + sin(p * pi * 4) * 0.28;
       headRotate += sin(p * pi * 2) * 0.07;
     case DinoAnimationAction.waveBye:
-      leftArmRotate = 0.58 + sin(p * pi * 4) * 0.62;
+      leftArmRotate = 0.32 + sin(p * pi * 4) * 0.28;
       headRotate += sin(p * pi * 2) * 0.07;
     case DinoAnimationAction.jump:
       yShift -= sin(p * pi).abs() * 20;
-      rightArmRotate = -0.26;
-      leftArmRotate = 0.26;
+      rightArmRotate = -0.16;
+      leftArmRotate = 0.16;
       tailRotate += sin(p * pi * 2) * 0.16;
     case DinoAnimationAction.spinAxis:
       bodyRotate += p * pi * 2;
-      rightArmRotate = -0.22;
-      leftArmRotate = 0.22;
+      rightArmRotate = -0.14;
+      leftArmRotate = 0.14;
     case DinoAnimationAction.bounce:
       yShift -= sin(p * pi).abs() * 12;
       bodyScale += sin(p * pi).abs() * 0.06;
@@ -1195,8 +1278,8 @@ _DinoMotion _computeDinoMotion({
     case DinoAnimationAction.dance:
       bodyRotate += sin(p * pi * 4) * 0.16;
       yShift -= sin(p * pi * 2).abs() * 8;
-      leftArmRotate = 0.22 + sin(p * pi * 4) * 0.25;
-      rightArmRotate = -0.22 - sin(p * pi * 4) * 0.25;
+      leftArmRotate = 0.16 + sin(p * pi * 4) * 0.16;
+      rightArmRotate = -0.16 - sin(p * pi * 4) * 0.16;
       tailRotate += sin(p * pi * 4) * 0.22;
     case DinoAnimationAction.twirl:
       bodyRotate += sin(p * pi * 2) * 0.3;
