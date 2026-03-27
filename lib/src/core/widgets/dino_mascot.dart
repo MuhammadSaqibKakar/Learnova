@@ -508,6 +508,29 @@ class _DinoCharacter extends StatelessWidget {
                           ),
                         ),
                         Positioned(
+                          left: size * 0.07,
+                          top: -size * 0.015,
+                          child: Row(
+                            children: List<Widget>.generate(3, (int index) {
+                              return Container(
+                                width: size * 0.03,
+                                height: size * 0.04,
+                                margin: EdgeInsets.only(right: size * 0.01),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(
+                                    size * 0.03,
+                                  ),
+                                  color: bodyLight,
+                                  border: Border.all(
+                                    color: outlineColor.withValues(alpha: 0.65),
+                                    width: 0.6,
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                        Positioned(
                           right: -size * 0.14,
                           child: Container(
                             width: size * 0.22,
@@ -663,30 +686,30 @@ class _DinoCharacter extends StatelessWidget {
                             ),
                           ),
                           Positioned(
-                            left: size * 0.16,
-                            top: size * 0.17,
+                            left: size * 0.12,
+                            top: size * 0.16,
                             child: _buildEye(
-                              size: size * 0.17,
+                              size: size * 0.165,
                               blink: motion.blink,
                             ),
                           ),
                           Positioned(
-                            right: size * 0.16,
-                            top: size * 0.17,
+                            right: size * 0.27,
+                            top: size * 0.16,
                             child: _buildEye(
-                              size: size * 0.17,
+                              size: size * 0.165,
                               blink: motion.blink,
                             ),
                           ),
                           Positioned(
-                            left: size * 0.2,
-                            right: size * 0.2,
-                            top: size * 0.31,
+                            right: size * 0.025,
+                            top: size * 0.285,
                             child: Container(
-                              height: size * 0.16,
+                              width: size * 0.28,
+                              height: size * 0.19,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(
-                                  size * 0.09,
+                                  size * 0.11,
                                 ),
                                 gradient: LinearGradient(
                                   begin: Alignment.topCenter,
@@ -707,8 +730,8 @@ class _DinoCharacter extends StatelessWidget {
                               child: Stack(
                                 children: <Widget>[
                                   Positioned(
-                                    left: size * 0.08,
-                                    top: size * 0.04,
+                                    left: size * 0.075,
+                                    top: size * 0.075,
                                     child: Container(
                                       width: size * 0.024,
                                       height: size * 0.034,
@@ -723,8 +746,8 @@ class _DinoCharacter extends StatelessWidget {
                                     ),
                                   ),
                                   Positioned(
-                                    right: size * 0.08,
-                                    top: size * 0.04,
+                                    right: size * 0.075,
+                                    top: size * 0.075,
                                     child: Container(
                                       width: size * 0.024,
                                       height: size * 0.034,
@@ -743,9 +766,8 @@ class _DinoCharacter extends StatelessWidget {
                             ),
                           ),
                           Positioned(
-                            left: size * 0.24,
-                            right: size * 0.24,
-                            top: size * 0.405,
+                            right: size * 0.11,
+                            top: size * 0.43,
                             child: _buildMouth(
                               size: size,
                               openAmount: motion.mouthOpen,
@@ -799,54 +821,42 @@ class _DinoCharacter extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  left: size * 0.26,
-                  top: size * 0.35,
+                  right: size * 0.22,
+                  top: size * 0.36,
                   child: Container(
-                    width: size * 0.042,
-                    height: size * 0.042,
+                    width: size * 0.032,
+                    height: size * 0.032,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFFFF9EA1).withValues(alpha: 0.92),
+                      color: const Color(0xFFFF9EA1).withValues(alpha: 0.72),
                     ),
                   ),
                 ),
                 Positioned(
-                  right: size * 0.26,
-                  top: size * 0.35,
-                  child: Container(
-                    width: size * 0.042,
-                    height: size * 0.042,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFFF9EA1).withValues(alpha: 0.92),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: size * 0.31,
-                  top: -size * 0.025,
+                  left: size * 0.24,
+                  top: -size * 0.032,
                   child: SizedBox(
-                    width: size * 0.36,
-                    height: size * 0.12,
+                    width: size * 0.46,
+                    height: size * 0.14,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: List<Widget>.generate(3, (int index) {
+                      children: List<Widget>.generate(4, (int index) {
                         final double spikeHeight =
-                            size * (0.085 + (index == 1 ? 0.015 : 0.0));
+                            size * (0.095 + ((index % 2 == 0) ? 0.01 : 0.022));
                         return Container(
-                          width: size * 0.064,
+                          width: size * 0.058,
                           height: spikeHeight,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(size * 0.05),
                             gradient: LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
-                              colors: <Color>[bodyLight, bodyMid],
+                              colors: <Color>[bodyLight, baseColor],
                             ),
                             border: Border.all(
                               color: outlineColor.withValues(alpha: 0.7),
-                              width: 0.8,
+                              width: 0.9,
                             ),
                           ),
                         );
@@ -918,9 +928,24 @@ class _DinoCharacter extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: <Widget>[
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              child: Container(
+                height: size * 0.22,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(size),
+                    topRight: Radius.circular(size),
+                  ),
+                  color: const Color(0xFF42C72D).withValues(alpha: 0.28),
+                ),
+              ),
+            ),
             Container(
-              width: size * 0.52,
-              height: size * 0.52,
+              width: size * 0.5,
+              height: size * 0.5,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const LinearGradient(
@@ -931,8 +956,8 @@ class _DinoCharacter extends StatelessWidget {
               ),
             ),
             Positioned(
-              left: size * 0.12,
-              top: size * 0.1,
+              left: size * 0.11,
+              top: size * 0.095,
               child: Container(
                 width: size * 0.18,
                 height: size * 0.18,
@@ -949,10 +974,11 @@ class _DinoCharacter extends StatelessWidget {
   }
 
   Widget _buildMouth({required double size, required double openAmount}) {
-    final double mouthHeight = size * (0.035 + (openAmount * 0.048));
+    final double mouthHeight = size * (0.028 + (openAmount * 0.032));
     return ClipRRect(
-      borderRadius: BorderRadius.circular(size * 0.07),
+      borderRadius: BorderRadius.circular(size * 0.06),
       child: Container(
+        width: size * 0.15,
         height: mouthHeight,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -964,22 +990,10 @@ class _DinoCharacter extends StatelessWidget {
         child: Stack(
           children: <Widget>[
             Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                width: size * 0.16,
-                height: size * 0.012,
-                margin: EdgeInsets.only(top: size * 0.006),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(size * 0.015),
-                ),
-              ),
-            ),
-            Align(
               alignment: Alignment.bottomCenter,
               child: Container(
-                width: size * 0.12,
-                height: mouthHeight * 0.26,
+                width: size * 0.09,
+                height: mouthHeight * 0.34,
                 margin: EdgeInsets.only(bottom: size * 0.005),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFA8A7),
