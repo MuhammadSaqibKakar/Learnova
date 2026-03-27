@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -17,6 +19,7 @@ part 'src/features/dashboard/dashboard_shells.dart';
 part 'src/features/splash/learnova_splash_screen.dart';
 part 'src/features/auth/auth_shell.dart';
 part 'src/core/widgets/learnova_widgets.dart';
+part 'src/core/widgets/dino_mascot.dart';
 part 'src/core/utils/helpers.dart';
 
 void main() {

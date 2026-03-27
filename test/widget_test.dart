@@ -9,7 +9,7 @@ void main() {
 
   testWidgets('Learnova login screen renders', (WidgetTester tester) async {
     await tester.pumpWidget(const LearnovaApp());
-    await tester.pump(const Duration(milliseconds: 3200));
+    await tester.pump(const Duration(milliseconds: 3800));
 
     expect(find.text('Welcome Back'), findsOneWidget);
     expect(find.text('Demo Credentials'), findsNothing);

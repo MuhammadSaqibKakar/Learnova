@@ -1221,37 +1221,71 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
                 onExit: widget.onExit,
               ),
             ),
-            body: Column(
-              children: <Widget>[
-                _buildKidTopBar(),
-                Expanded(child: _buildKidBody()),
+            body: DinoPageOverlay(
+              size: 100,
+              message: 'Hi ${widget.childName}! Pick a subject and have fun.',
+              playWelcome: true,
+              actionPlaylist: const <DinoAnimationAction>[
+                DinoAnimationAction.waveHi,
+                DinoAnimationAction.jump,
+                DinoAnimationAction.spinAxis,
+                DinoAnimationAction.bounce,
+                DinoAnimationAction.nod,
+                DinoAnimationAction.shake,
+                DinoAnimationAction.dance,
+                DinoAnimationAction.twirl,
+                DinoAnimationAction.tailWag,
+                DinoAnimationAction.waveBye,
               ],
+              child: Column(
+                children: <Widget>[
+                  _buildKidTopBar(),
+                  Expanded(child: _buildKidBody()),
+                ],
+              ),
             ),
           );
         }
 
         return Scaffold(
-          body: Row(
-            children: <Widget>[
-              SizedBox(
-                width: 280,
-                child: _KidMenuPanel(
-                  nickname: widget.childName,
-                  level: widget.level,
-                  selectedAvatar: _selectedAvatar,
-                  onChooseAvatar: () => _openAvatarPicker(context),
-                  onExit: widget.onExit,
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    _buildKidTopBar(),
-                    Expanded(child: _buildKidBody()),
-                  ],
-                ),
-              ),
+          body: DinoPageOverlay(
+            size: 108,
+            message: 'Dino is ready! Explore your subjects.',
+            playWelcome: true,
+            actionPlaylist: const <DinoAnimationAction>[
+              DinoAnimationAction.waveHi,
+              DinoAnimationAction.jump,
+              DinoAnimationAction.spinAxis,
+              DinoAnimationAction.bounce,
+              DinoAnimationAction.nod,
+              DinoAnimationAction.shake,
+              DinoAnimationAction.dance,
+              DinoAnimationAction.twirl,
+              DinoAnimationAction.tailWag,
+              DinoAnimationAction.waveBye,
             ],
+            child: Row(
+              children: <Widget>[
+                SizedBox(
+                  width: 280,
+                  child: _KidMenuPanel(
+                    nickname: widget.childName,
+                    level: widget.level,
+                    selectedAvatar: _selectedAvatar,
+                    onChooseAvatar: () => _openAvatarPicker(context),
+                    onExit: widget.onExit,
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    children: <Widget>[
+                      _buildKidTopBar(),
+                      Expanded(child: _buildKidBody()),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -1849,9 +1883,9 @@ class _SubjectLearningPathScreenState
     for (int round = 0; round < 3; round++) {
       for (int i = 0; i < titles.length; i++) {
         final String roundHint = switch (round) {
-          0 => 'Learn and repeat slowly.',
-          1 => 'Try this with confidence.',
-          _ => 'You are getting stronger. Keep going.',
+          0 => 'Take a tiny step and repeat after Dino.',
+          1 => 'Great! Let us practice this in an easy way.',
+          _ => 'Awesome progress. You are ready for the challenge step.',
         };
         slides.add(
           _LectureSlide(
@@ -2228,127 +2262,145 @@ class _SubjectLearningPathScreenState
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.subjectName)),
-      body: Stack(
-        children: <Widget>[
-          _PlayfulPathBackground(kind: subjectKind),
-          if (_loading)
-            const Center(child: CircularProgressIndicator())
-          else
-            SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 920),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        Container(
-                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: <Color>[
-                                palette.brandPrimary,
-                                Color.alphaBlend(
-                                  Colors.black.withValues(alpha: 0.08),
+      body: DinoPageOverlay(
+        size: 88,
+        right: 8,
+        bottom: 10,
+        message: 'Dino says: Start from Stage 1!',
+        actionPlaylist: const <DinoAnimationAction>[
+          DinoAnimationAction.jump,
+          DinoAnimationAction.waveHi,
+          DinoAnimationAction.tailWag,
+          DinoAnimationAction.bounce,
+          DinoAnimationAction.nod,
+          DinoAnimationAction.shake,
+          DinoAnimationAction.spinAxis,
+          DinoAnimationAction.dance,
+          DinoAnimationAction.twirl,
+          DinoAnimationAction.waveBye,
+        ],
+        child: Stack(
+          children: <Widget>[
+            _PlayfulPathBackground(kind: subjectKind),
+            if (_loading)
+              const Center(child: CircularProgressIndicator())
+            else
+              SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 920),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          Container(
+                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: <Color>[
                                   palette.brandPrimary,
+                                  Color.alphaBlend(
+                                    Colors.black.withValues(alpha: 0.08),
+                                    palette.brandPrimary,
+                                  ),
+                                ],
+                              ),
+                              boxShadow: <BoxShadow>[
+                                BoxShadow(
+                                  color: palette.brandPrimary.withValues(
+                                    alpha: 0.22,
+                                  ),
+                                  blurRadius: 18,
+                                  offset: const Offset(0, 8),
                                 ),
                               ],
                             ),
-                            boxShadow: <BoxShadow>[
-                              BoxShadow(
-                                color: palette.brandPrimary.withValues(
-                                  alpha: 0.22,
-                                ),
-                                blurRadius: 18,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Row(
-                                children: <Widget>[
-                                  Container(
-                                    width: 52,
-                                    height: 52,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    Container(
+                                      width: 52,
+                                      height: 52,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white.withValues(
+                                          alpha: 0.2,
+                                        ),
                                       ),
-                                    ),
-                                    child: Icon(
-                                      _subjectIcon(),
-                                      color: Colors.white,
-                                      size: 28,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      widget.subjectName,
-                                      style: GoogleFonts.fredoka(
-                                        fontSize: 31,
+                                      child: Icon(
+                                        _subjectIcon(),
                                         color: Colors.white,
-                                        fontWeight: FontWeight.w600,
+                                        size: 28,
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Play Path 1 to 10',
-                                style: GoogleFonts.fredoka(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        widget.subjectName,
+                                        style: GoogleFonts.fredoka(
+                                          fontSize: 31,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(height: 10),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: <Widget>[
-                                  _PathInfoChip(
-                                    icon: Icons.lock_open_rounded,
-                                    text: 'Unlocked: $_unlockedStage / 10',
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Play Path 1 to 10',
+                                  style: GoogleFonts.fredoka(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  _PathInfoChip(
-                                    icon: Icons.star_rounded,
-                                    text: 'Stars: $_totalStars',
-                                  ),
-                                  _PathInfoChip(
-                                    icon: Icons.workspace_premium_rounded,
-                                    text: _isLevelOne
-                                        ? 'Level 1 lecture + quiz ready'
-                                        : 'Level 1 module currently active',
-                                  ),
-                                ],
-                              ),
-                            ],
+                                ),
+                                const SizedBox(height: 10),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: <Widget>[
+                                    _PathInfoChip(
+                                      icon: Icons.lock_open_rounded,
+                                      text: 'Unlocked: $_unlockedStage / 10',
+                                    ),
+                                    _PathInfoChip(
+                                      icon: Icons.star_rounded,
+                                      text: 'Stars: $_totalStars',
+                                    ),
+                                    _PathInfoChip(
+                                      icon: Icons.workspace_premium_rounded,
+                                      text: _isLevelOne
+                                          ? 'Level 1 lecture + quiz ready'
+                                          : 'Level 1 module currently active',
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 14),
-                        _LearningPathMap(
-                          subjectKind: subjectKind,
-                          totalStages: 10,
-                          unlockedStage: _unlockedStage,
-                          completedStages: _completedStages,
-                          onTapStage: _onTapStage,
-                        ),
-                      ],
+                          const SizedBox(height: 14),
+                          _LearningPathMap(
+                            subjectKind: subjectKind,
+                            totalStages: 10,
+                            unlockedStage: _unlockedStage,
+                            completedStages: _completedStages,
+                            onTapStage: _onTapStage,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2412,6 +2464,8 @@ class _LectureQuizResult {
   final List<_QuizMistake> mistakes;
 }
 
+enum _VoicePace { normal, slow }
+
 class _SubjectLectureScreen extends StatefulWidget {
   const _SubjectLectureScreen({
     required this.subjectName,
@@ -2436,6 +2490,14 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   bool _speaking = false;
   bool _openingQuiz = false;
   String _lastQuizSignature = '';
+  _VoicePace _voicePace = _VoicePace.normal;
+
+  Future<void> _applyVoiceProfile() async {
+    final bool normal = _voicePace == _VoicePace.normal;
+    await _tts.setPitch(normal ? 1.0 : 0.94);
+    await _tts.setSpeechRate(normal ? 0.43 : 0.29);
+    await _tts.setVolume(1.0);
+  }
 
   Future<void> _configureTts() async {
     _tts.setCompletionHandler(() {
@@ -2465,8 +2527,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
 
     try {
       await _tts.setLanguage('en-US');
-      await _tts.setPitch(1.0);
-      await _tts.setSpeechRate(0.45);
+      await _applyVoiceProfile();
       await _tts.awaitSpeakCompletion(true);
     } catch (_) {}
   }
@@ -2493,6 +2554,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   Future<void> _playVoice() async {
     try {
       await _stopVoice();
+      await _applyVoiceProfile();
       if (!mounted) {
         return;
       }
@@ -2511,6 +2573,53 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
         const SnackBar(content: Text('Voice is not available on this device.')),
       );
     }
+  }
+
+  Future<void> _setVoicePace(_VoicePace pace) async {
+    if (_voicePace == pace) {
+      return;
+    }
+    await _stopVoice();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _voicePace = pace;
+    });
+  }
+
+  Future<void> _playWithPace(_VoicePace pace) async {
+    await _setVoicePace(pace);
+    await _playVoice();
+  }
+
+  String _coachLine(int slideNumber) {
+    final String subject = widget.subjectName.toLowerCase();
+    if (subject.contains('english')) {
+      const List<String> lines = <String>[
+        'Say each sound slowly with me.',
+        'Great reading. Keep your voice clear.',
+        'Nice try. Point and read again.',
+        'Awesome. Let us repeat one more time.',
+      ];
+      return lines[slideNumber % lines.length];
+    }
+    if (subject.contains('math')) {
+      const List<String> lines = <String>[
+        'Count slowly with your finger.',
+        'Add step by step with Dino.',
+        'Great! Check the numbers again.',
+        'Perfect. You are solving like a star.',
+      ];
+      return lines[slideNumber % lines.length];
+    }
+    const List<String> lines = <String>[
+      'Look, listen, and remember this fact.',
+      'Great! Say this fact with me.',
+      'Awesome. You are learning fast.',
+      'Nice work. One more fun fact.',
+    ];
+    return lines[slideNumber % lines.length];
   }
 
   List<_QuizQuestion> _randomQuizSet() {
@@ -2604,116 +2713,98 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     required int slideNumber,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            Colors.white.withValues(alpha: 0.98),
-            palette.surfaceSoft.withValues(alpha: 0.94),
-          ],
-        ),
+        color: Colors.white.withValues(alpha: 0.95),
         border: Border.all(color: palette.borderSoft.withValues(alpha: 0.9)),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: slide.accentColor.withValues(alpha: 0.24),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 7),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: <Color>[
-                      slide.accentColor.withValues(alpha: 0.95),
-                      slide.accentColor.withValues(alpha: 0.72),
-                    ],
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              slide.title,
+              style: GoogleFonts.fredoka(
+                fontSize: 34,
+                color: palette.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _TeachingMascotCoach(
+              subjectName: widget.subjectName,
+              slideNumber: slideNumber,
+              accentColor: slide.accentColor,
+              speaking: _speaking,
+              voicePace: _voicePace,
+              onPlayNormal: () {
+                _playWithPace(_VoicePace.normal);
+              },
+              onPlaySlow: () {
+                _playWithPace(_VoicePace.slow);
+              },
+              coachLine: _coachLine(slideNumber),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                color: const Color(0xFFEFF9E8),
+                border: Border.all(color: const Color(0xFFBDEAA1)),
+              ),
+              child: Text(
+                slide.body,
+                style: TextStyle(
+                  color: palette.textSecondary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  height: 1.35,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: Colors.white,
+                border: Border.all(color: const Color(0xFFCAE6F7)),
+              ),
+              child: Row(
+                children: <Widget>[
+                  const Icon(
+                    Icons.lightbulb_circle_rounded,
+                    size: 20,
+                    color: Color(0xFF2B9CEC),
                   ),
-                ),
-                child: Icon(slide.icon, color: Colors.white, size: 30),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  slide.title,
-                  style: GoogleFonts.fredoka(
-                    fontSize: 30,
-                    color: palette.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          _TeachingMascotCoach(
-            subjectName: widget.subjectName,
-            slideNumber: slideNumber,
-            accentColor: slide.accentColor,
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              color: slide.accentColor.withValues(alpha: 0.14),
-            ),
-            child: Text(
-              slide.body,
-              style: TextStyle(
-                color: palette.textSecondary,
-                fontSize: 19,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
-              border: Border.all(
-                color: slide.accentColor.withValues(alpha: 0.4),
-              ),
-            ),
-            child: Row(
-              children: <Widget>[
-                Icon(
-                  Icons.tips_and_updates_rounded,
-                  size: 18,
-                  color: slide.accentColor,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    slide.example,
-                    style: TextStyle(
-                      color: palette.textSecondary,
-                      fontWeight: FontWeight.w700,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      slide.example,
+                      style: TextStyle(
+                        color: palette.textSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -2750,33 +2841,52 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                   Container(
                     padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
                     decoration: _cardDecoration(context),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            widget.module.title,
-                            style: GoogleFonts.fredoka(
-                              fontSize: 26,
-                              color: palette.textPrimary,
-                              fontWeight: FontWeight.w600,
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Text(
+                                widget.module.title,
+                                style: GoogleFonts.fredoka(
+                                  fontSize: 26,
+                                  color: palette.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
-                          ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: palette.brandPrimary.withValues(
+                                  alpha: 0.16,
+                                ),
+                              ),
+                              child: Text(
+                                'Slide ${_slideIndex + 1}/${widget.module.slides.length}',
+                                style: TextStyle(
+                                  color: palette.textPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: palette.brandPrimary.withValues(alpha: 0.16),
-                          ),
-                          child: Text(
-                            'Slide ${_slideIndex + 1}/${widget.module.slides.length}',
-                            style: TextStyle(
-                              color: palette.textPrimary,
-                              fontWeight: FontWeight.w700,
-                            ),
+                        const SizedBox(height: 9),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(999),
+                          child: LinearProgressIndicator(
+                            value:
+                                (_slideIndex + 1) /
+                                max(widget.module.slides.length, 1),
+                            minHeight: 10,
+                            backgroundColor: const Color(0xFFE3E7EA),
+                            color: const Color(0xFF58CC02),
                           ),
                         ),
                       ],
@@ -2805,81 +2915,104 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                   ),
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-                    decoration: _cardDecoration(context),
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: palette.borderSoft),
+                      boxShadow: <BoxShadow>[
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
+                        LayoutBuilder(
+                          builder:
+                              (
+                                BuildContext context,
+                                BoxConstraints constraints,
+                              ) {
+                                final bool compact = constraints.maxWidth < 430;
+                                return Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: _slideIndex == 0
+                                            ? null
+                                            : _goPreviousSlide,
+                                        icon: const Icon(
+                                          Icons.arrow_back_rounded,
+                                        ),
+                                        label: Text(
+                                          compact ? 'Back' : 'Previous',
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: _speaking
+                                            ? _stopVoice
+                                            : _playVoice,
+                                        icon: Icon(
+                                          _speaking
+                                              ? Icons.stop_circle_rounded
+                                              : Icons.volume_up_rounded,
+                                        ),
+                                        label: Text(
+                                          _speaking
+                                              ? (compact
+                                                    ? 'Stop'
+                                                    : 'Stop Sound')
+                                              : (compact
+                                                    ? 'Play'
+                                                    : 'Play Sound'),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: _openingQuiz
+                                            ? null
+                                            : _goNextOrQuiz,
+                                        icon: Icon(
+                                          isLastSlide
+                                              ? Icons.quiz_rounded
+                                              : Icons.arrow_forward_rounded,
+                                        ),
+                                        label: Text(
+                                          _openingQuiz
+                                              ? 'Opening...'
+                                              : isLastSlide
+                                              ? (compact
+                                                    ? 'Quiz'
+                                                    : 'Start Quiz')
+                                              : (compact
+                                                    ? 'Next'
+                                                    : 'Next Slide'),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                        ),
+                        const SizedBox(height: 8),
                         Text(
-                          'Lecture progress',
+                          'Need 6/10 to unlock next lecture.',
                           style: TextStyle(
                             color: palette.textSecondary,
                             fontWeight: FontWeight.w700,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        LinearProgressIndicator(
-                          value:
-                              (_slideIndex + 1) /
-                              max(widget.module.slides.length, 1),
-                          minHeight: 11,
-                          borderRadius: BorderRadius.circular(10),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _slideIndex == 0 ? null : _goPreviousSlide,
-                          icon: const Icon(Icons.arrow_back_rounded),
-                          label: const Text('Back'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _speaking ? _stopVoice : _playVoice,
-                          icon: Icon(
-                            _speaking
-                                ? Icons.stop_circle_rounded
-                                : Icons.volume_up_rounded,
-                          ),
-                          label: Text(
-                            _speaking ? 'Stop Voice' : 'Play This Slide',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _openingQuiz ? null : _goNextOrQuiz,
-                          icon: Icon(
-                            isLastSlide
-                                ? Icons.quiz_rounded
-                                : Icons.arrow_forward_rounded,
-                          ),
-                          label: Text(
-                            _openingQuiz
-                                ? 'Opening...'
-                                : isLastSlide
-                                ? 'Start Quiz (10)'
-                                : 'Next Slide',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Pass rule: score at least 6 out of 10 to unlock next lecture.',
-                    style: TextStyle(
-                      color: palette.textSecondary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -2896,40 +3029,21 @@ class _TeachingMascotCoach extends StatelessWidget {
     required this.subjectName,
     required this.slideNumber,
     required this.accentColor,
+    required this.speaking,
+    required this.voicePace,
+    required this.onPlayNormal,
+    required this.onPlaySlow,
+    required this.coachLine,
   });
 
   final String subjectName;
   final int slideNumber;
   final Color accentColor;
-
-  String _coachLine() {
-    final String subject = subjectName.toLowerCase();
-    if (subject.contains('english')) {
-      const List<String> lines = <String>[
-        'Let us sound it out together.',
-        'Great! Read this line with me.',
-        'Try saying this word clearly.',
-        'Nice! Spot the letter pattern.',
-      ];
-      return lines[slideNumber % lines.length];
-    }
-    if (subject.contains('math')) {
-      const List<String> lines = <String>[
-        'Count with me step by step.',
-        'Awesome! Let us solve it slowly.',
-        'You can do this sum.',
-        'Great job, now one more!',
-      ];
-      return lines[slideNumber % lines.length];
-    }
-    const List<String> lines = <String>[
-      'Let us explore this fact together.',
-      'Nice! Remember this fun idea.',
-      'You are learning fast!',
-      'Great thinking, keep going!',
-    ];
-    return lines[slideNumber % lines.length];
-  }
+  final bool speaking;
+  final _VoicePace voicePace;
+  final VoidCallback onPlayNormal;
+  final VoidCallback onPlaySlow;
+  final String coachLine;
 
   IconData _coachIcon() {
     final String subject = subjectName.toLowerCase();
@@ -2945,63 +3059,165 @@ class _TeachingMascotCoach extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final LearnovaPalette palette = _palette(context);
-    final bool leftMascot = slideNumber.isEven;
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final bool compact = constraints.maxWidth < 380;
+        final Widget mascot = _AnimatedCatTeacher(
+          accentColor: accentColor,
+          moodIndex: slideNumber,
+          icon: _coachIcon(),
+          speaking: speaking,
+          size: compact ? 60 : 66,
+        );
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      switchInCurve: Curves.easeOutBack,
-      switchOutCurve: Curves.easeIn,
-      child: Container(
-        key: ValueKey<int>(slideNumber),
-        padding: const EdgeInsets.all(12),
+        return Container(
+          key: ValueKey<int>(slideNumber),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            color: const Color(0xFFE9F6FF),
+            border: Border.all(color: const Color(0xFFB9E2FF)),
+          ),
+          child: compact
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        mascot,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Dino Instructor',
+                            style: GoogleFonts.fredoka(
+                              color: palette.textPrimary,
+                              fontSize: 21,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      coachLine,
+                      style: TextStyle(
+                        color: palette.textSecondary,
+                        fontWeight: FontWeight.w700,
+                        height: 1.25,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: <Widget>[
+                        _VoiceCueButton(
+                          icon: Icons.volume_up_rounded,
+                          active: voicePace == _VoicePace.normal,
+                          onTap: onPlayNormal,
+                        ),
+                        _VoiceCueButton(
+                          icon: Icons.slow_motion_video_rounded,
+                          active: voicePace == _VoicePace.slow,
+                          onTap: onPlaySlow,
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    mascot,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            'Dino Instructor',
+                            style: GoogleFonts.fredoka(
+                              color: palette.textPrimary,
+                              fontSize: 21,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            coachLine,
+                            style: TextStyle(
+                              color: palette.textSecondary,
+                              fontWeight: FontWeight.w700,
+                              height: 1.25,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: <Widget>[
+                              _VoiceCueButton(
+                                icon: Icons.volume_up_rounded,
+                                active: voicePace == _VoicePace.normal,
+                                onTap: onPlayNormal,
+                              ),
+                              _VoiceCueButton(
+                                icon: Icons.slow_motion_video_rounded,
+                                active: voicePace == _VoicePace.slow,
+                                onTap: onPlaySlow,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+        );
+      },
+    );
+  }
+}
+
+class _VoiceCueButton extends StatelessWidget {
+  const _VoiceCueButton({
+    required this.icon,
+    required this.active,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final bool active;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Ink(
+        width: 46,
+        height: 46,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: accentColor.withValues(alpha: 0.12),
-          border: Border.all(color: accentColor.withValues(alpha: 0.35)),
-        ),
-        child: Row(
-          children: <Widget>[
-            if (leftMascot) ...<Widget>[
-              _AnimatedCatTeacher(
-                accentColor: accentColor,
-                moodIndex: slideNumber,
-                icon: _coachIcon(),
-              ),
-              const SizedBox(width: 10),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    'Teacher Cat',
-                    style: GoogleFonts.fredoka(
-                      color: palette.textPrimary,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    _coachLine(),
-                    style: TextStyle(
-                      color: palette.textSecondary,
-                      fontWeight: FontWeight.w700,
-                      height: 1.25,
-                    ),
-                  ),
-                ],
-              ),
+          borderRadius: BorderRadius.circular(14),
+          color: active ? const Color(0xFF58CC02) : Colors.white,
+          border: Border.all(
+            color: active ? const Color(0xFF4AB003) : const Color(0xFFBFE0EF),
+            width: 1.5,
+          ),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
-            if (!leftMascot) ...<Widget>[
-              const SizedBox(width: 10),
-              _AnimatedCatTeacher(
-                accentColor: accentColor,
-                moodIndex: slideNumber,
-                icon: _coachIcon(),
-              ),
-            ],
           ],
+        ),
+        child: Icon(
+          icon,
+          color: active ? Colors.white : const Color(0xFF2B9CEC),
+          size: 24,
         ),
       ),
     );
@@ -3013,151 +3229,24 @@ class _AnimatedCatTeacher extends StatelessWidget {
     required this.accentColor,
     required this.moodIndex,
     required this.icon,
+    this.speaking = false,
+    this.size = 70,
   });
 
   final Color accentColor;
   final int moodIndex;
   final IconData icon;
+  final bool speaking;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    final bool wink = moodIndex % 3 == 1;
-    final bool smile = moodIndex % 4 != 2;
-    final bool tilted = moodIndex.isOdd;
-
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 700),
-      curve: Curves.easeOut,
-      builder: (BuildContext context, double value, Widget? child) {
-        final double bob = sin(value * pi) * 3;
-        return Transform.translate(
-          offset: Offset(0, -bob),
-          child: Transform.rotate(angle: tilted ? -0.04 : 0.04, child: child),
-        );
-      },
-      child: SizedBox(
-        width: 78,
-        height: 70,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: <Widget>[
-            Positioned(
-              top: 6,
-              left: 7,
-              child: Transform.rotate(
-                angle: -0.35,
-                child: Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFC48A),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 6,
-              right: 7,
-              child: Transform.rotate(
-                angle: 0.35,
-                child: Container(
-                  width: 18,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFC48A),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 8,
-              right: 8,
-              top: 14,
-              bottom: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: <Color>[
-                      const Color(0xFFFFDCB4),
-                      const Color(0xFFFFB97F),
-                    ],
-                  ),
-                  border: Border.all(color: Colors.white, width: 1.3),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 24,
-              top: 34,
-              child: Container(
-                width: wink ? 4 : 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF2B2B2B),
-                ),
-              ),
-            ),
-            Positioned(
-              right: 24,
-              top: 34,
-              child: Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xFF2B2B2B),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 32,
-              right: 32,
-              top: 43,
-              child: Container(
-                width: 8,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8876D),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 26,
-              right: 26,
-              top: 51,
-              child: Container(
-                height: smile ? 5 : 2,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2E2E2E),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            Positioned(
-              right: -4,
-              top: 0,
-              child: Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: accentColor.withValues(alpha: 0.95),
-                  border: Border.all(color: Colors.white, width: 1.5),
-                ),
-                child: Icon(icon, size: 14, color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return DinoInstructorAvatar(
+      accentColor: accentColor,
+      moodIndex: moodIndex,
+      speaking: speaking,
+      size: size,
+      badgeIcon: icon,
     );
   }
 }
@@ -3265,151 +3354,175 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
       final bool passed = _score >= 6;
       return Scaffold(
         appBar: AppBar(title: Text('${widget.subjectName} Quiz')),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 760),
-                child: Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: _cardDecoration(context),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      Icon(
-                        passed
-                            ? Icons.emoji_events_rounded
-                            : Icons.refresh_rounded,
-                        size: 54,
-                        color: passed ? palette.success : palette.brandAccent,
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        passed ? 'Great Work!' : 'Try Again',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.fredoka(
-                          fontSize: 30,
-                          color: palette.textPrimary,
-                          fontWeight: FontWeight.w600,
+        body: DinoPageOverlay(
+          size: 82,
+          bottom: 10,
+          right: 8,
+          message: 'Dino reviewed your quiz!',
+          actionPlaylist: const <DinoAnimationAction>[
+            DinoAnimationAction.waveHi,
+            DinoAnimationAction.bounce,
+            DinoAnimationAction.nod,
+            DinoAnimationAction.twirl,
+            DinoAnimationAction.tailWag,
+            DinoAnimationAction.waveBye,
+            DinoAnimationAction.jump,
+            DinoAnimationAction.shake,
+            DinoAnimationAction.spinAxis,
+            DinoAnimationAction.dance,
+          ],
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 760),
+                  child: Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: _cardDecoration(context),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        Icon(
+                          passed
+                              ? Icons.emoji_events_rounded
+                              : Icons.refresh_rounded,
+                          size: 54,
+                          color: passed ? palette.success : palette.brandAccent,
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Score: $_score / ${widget.questions.length}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: palette.textSecondary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Stars earned this attempt: $_score',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: palette.textSecondary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        passed
-                            ? 'You unlocked the next lecture.'
-                            : 'You need at least 6/${widget.questions.length} to unlock next lecture.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: palette.textSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        'Mistakes Review',
-                        style: GoogleFonts.fredoka(
-                          fontSize: 24,
-                          color: palette.textPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (_mistakes.isEmpty)
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: const Color(0xFFE9F8D7),
+                        const SizedBox(height: 10),
+                        Text(
+                          passed ? 'Great Work!' : 'Try Again',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.fredoka(
+                            fontSize: 30,
+                            color: palette.textPrimary,
+                            fontWeight: FontWeight.w600,
                           ),
-                          child: const Text(
-                            'Perfect run! No mistakes in this quiz.',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Score: $_score / ${widget.questions.length}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: palette.textSecondary,
+                            fontWeight: FontWeight.w700,
                           ),
-                        )
-                      else
-                        for (int i = 0; i < _mistakes.length; i++) ...<Widget>[
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Stars earned this attempt: $_score',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: palette.textSecondary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          passed
+                              ? 'You unlocked the next lecture.'
+                              : 'You need at least 6/${widget.questions.length} to unlock next lecture.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: palette.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          'Mistakes Review',
+                          style: GoogleFonts.fredoka(
+                            fontSize: 24,
+                            color: palette.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        if (_mistakes.isEmpty)
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(14),
-                              color: const Color(0xFFFFF6E5),
-                              border: Border.all(
-                                color: const Color(0xFFFFE0B1),
+                              borderRadius: BorderRadius.circular(12),
+                              color: const Color(0xFFE9F8D7),
+                            ),
+                            child: const Text(
+                              'Perfect run! No mistakes in this quiz.',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          )
+                        else
+                          for (
+                            int i = 0;
+                            i < _mistakes.length;
+                            i++
+                          ) ...<Widget>[
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                color: const Color(0xFFFFF6E5),
+                                border: Border.all(
+                                  color: const Color(0xFFFFE0B1),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    '${i + 1}. ${_mistakes[i].question.prompt}',
+                                    style: TextStyle(
+                                      color: palette.textPrimary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Your answer: ${_mistakes[i].question.options[_mistakes[i].selectedIndex]}',
+                                    style: const TextStyle(
+                                      color: Color(0xFFC54A38),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Correct answer: ${_mistakes[i].question.options[_mistakes[i].question.correctIndex]}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF2D8A42),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    _explanationText(_mistakes[i].question),
+                                    style: TextStyle(
+                                      color: palette.textSecondary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  '${i + 1}. ${_mistakes[i].question.prompt}',
-                                  style: TextStyle(
-                                    color: palette.textPrimary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Your answer: ${_mistakes[i].question.options[_mistakes[i].selectedIndex]}',
-                                  style: const TextStyle(
-                                    color: Color(0xFFC54A38),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                Text(
-                                  'Correct answer: ${_mistakes[i].question.options[_mistakes[i].question.correctIndex]}',
-                                  style: const TextStyle(
-                                    color: Color(0xFF2D8A42),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  _explanationText(_mistakes[i].question),
-                                  style: TextStyle(
-                                    color: palette.textSecondary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+                            if (i != _mistakes.length - 1)
+                              const SizedBox(height: 8),
+                          ],
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _finishQuiz,
+                            icon: Icon(
+                              passed
+                                  ? Icons.arrow_forward_rounded
+                                  : Icons.menu_book_rounded,
+                            ),
+                            label: Text(
+                              passed ? 'Continue' : 'Back To Lecture',
                             ),
                           ),
-                          if (i != _mistakes.length - 1)
-                            const SizedBox(height: 8),
-                        ],
-                      const SizedBox(height: 14),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _finishQuiz,
-                          icon: Icon(
-                            passed
-                                ? Icons.arrow_forward_rounded
-                                : Icons.menu_book_rounded,
-                          ),
-                          label: Text(passed ? 'Continue' : 'Back To Lecture'),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -3425,267 +3538,289 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
         _selectedOption != null && _selectedOption == question.correctIndex;
     return Scaffold(
       appBar: AppBar(title: Text('${widget.subjectName} Quiz')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 840),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    decoration: _cardDecoration(context),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                'Question ${_index + 1} of ${widget.questions.length}',
-                                style: TextStyle(
-                                  color: palette.textSecondary,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                            Row(
-                              children: <Widget>[
-                                Icon(
-                                  Icons.favorite_rounded,
-                                  size: 19,
-                                  color: const Color(0xFFFF5A5A),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Focus',
+      body: DinoPageOverlay(
+        size: 82,
+        bottom: 10,
+        right: 8,
+        message: reveal
+            ? (selectedIsCorrect
+                  ? 'Great answer! Keep going with Dino.'
+                  : 'Dino says: check the explanation, then continue.')
+            : 'Dino says: pick your best answer and tap CHECK.',
+        actionPlaylist: const <DinoAnimationAction>[
+          DinoAnimationAction.nod,
+          DinoAnimationAction.waveHi,
+          DinoAnimationAction.tailWag,
+          DinoAnimationAction.dance,
+          DinoAnimationAction.jump,
+          DinoAnimationAction.shake,
+          DinoAnimationAction.bounce,
+          DinoAnimationAction.twirl,
+          DinoAnimationAction.waveBye,
+          DinoAnimationAction.spinAxis,
+        ],
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 840),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      decoration: _cardDecoration(context),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: Text(
+                                  'Question ${_index + 1} of ${widget.questions.length}',
                                   style: TextStyle(
                                     color: palette.textSecondary,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        LinearProgressIndicator(
-                          value: (_index + 1) / widget.questions.length,
-                          minHeight: 11,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: palette.brandPrimary.withValues(alpha: 0.12),
-                      border: Border.all(
-                        color: palette.brandPrimary.withValues(alpha: 0.34),
-                      ),
-                    ),
-                    child: Row(
-                      children: <Widget>[
-                        _AnimatedCatTeacher(
-                          accentColor: palette.brandPrimary,
-                          moodIndex: _index,
-                          icon: Icons.school_rounded,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            reveal
-                                ? (selectedIsCorrect
-                                      ? 'Nice one! Tap continue.'
-                                      : 'Good try! Read why and continue.')
-                                : 'Teacher Cat says: choose your answer, then tap CHECK.',
-                            style: TextStyle(
-                              color: palette.textPrimary,
-                              fontWeight: FontWeight.w700,
-                              height: 1.25,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: _cardDecoration(context),
-                    child: Text(
-                      question.prompt,
-                      style: GoogleFonts.fredoka(
-                        fontSize: 30,
-                        color: palette.textPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: question.options.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 10),
-                      itemBuilder: (BuildContext context, int optionIndex) {
-                        final bool picked = _selectedOption == optionIndex;
-                        final bool correct =
-                            optionIndex == question.correctIndex;
-
-                        Color tileColor = palette.surfaceSoft;
-                        Color borderColor = palette.borderStrong;
-                        if (reveal && correct) {
-                          tileColor = const Color(0xFFE6F9D8);
-                          borderColor = const Color(0xFF67C63A);
-                        } else if (reveal && picked && !correct) {
-                          tileColor = const Color(0xFFFFE2E2);
-                          borderColor = const Color(0xFFE26868);
-                        } else if (picked) {
-                          tileColor = palette.brandPrimary.withValues(
-                            alpha: 0.14,
-                          );
-                          borderColor = palette.brandPrimary;
-                        }
-
-                        return Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            onTap: _answered
-                                ? null
-                                : () => _chooseOption(optionIndex),
-                            child: Ink(
-                              padding: const EdgeInsets.all(15),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: tileColor,
-                                border: Border.all(
-                                  color: borderColor,
-                                  width: 1.8,
-                                ),
                               ),
-                              child: Row(
+                              Row(
                                 children: <Widget>[
-                                  Container(
-                                    width: 34,
-                                    height: 34,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white,
-                                      border: Border.all(
-                                        color: borderColor,
-                                        width: 1.4,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        String.fromCharCode(65 + optionIndex),
-                                        style: TextStyle(
-                                          color: palette.textSecondary,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
+                                  Icon(
+                                    Icons.favorite_rounded,
+                                    size: 19,
+                                    color: const Color(0xFFFF5A5A),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Focus',
+                                    style: TextStyle(
+                                      color: palette.textSecondary,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  const SizedBox(width: 11),
-                                  Expanded(
-                                    child: Text(
-                                      question.options[optionIndex],
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        color: palette.textPrimary,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                  ),
-                                  if (reveal && correct)
-                                    const Icon(
-                                      Icons.check_circle_rounded,
-                                      color: Color(0xFF55B629),
-                                    ),
-                                  if (reveal && picked && !correct)
-                                    const Icon(
-                                      Icons.cancel_rounded,
-                                      color: Color(0xFFE04F4F),
-                                    ),
                                 ],
                               ),
-                            ),
+                            ],
                           ),
-                        );
-                      },
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: (_index + 1) / widget.questions.length,
+                            minHeight: 11,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (_answered)
+                    const SizedBox(height: 10),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        color: selectedIsCorrect
-                            ? const Color(0xFFE7F9D8)
-                            : const Color(0xFFFFEFE4),
+                        borderRadius: BorderRadius.circular(16),
+                        color: palette.brandPrimary.withValues(alpha: 0.12),
                         border: Border.all(
-                          color: selectedIsCorrect
-                              ? const Color(0xFF6BC64A)
-                              : const Color(0xFFFFBA8B),
+                          color: palette.brandPrimary.withValues(alpha: 0.34),
                         ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: <Widget>[
-                          Text(
-                            selectedIsCorrect
-                                ? 'Correct! ${question.options[question.correctIndex]}'
-                                : 'Correct answer: ${question.options[question.correctIndex]}',
-                            style: TextStyle(
-                              color: palette.textPrimary,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          _AnimatedCatTeacher(
+                            accentColor: palette.brandPrimary,
+                            moodIndex: _index,
+                            icon: Icons.school_rounded,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _explanationText(question),
-                            style: TextStyle(
-                              color: palette.textSecondary,
-                              fontWeight: FontWeight.w600,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              reveal
+                                  ? (selectedIsCorrect
+                                        ? 'Nice one! Tap continue.'
+                                        : 'Good try! Read why and continue.')
+                                  : 'Dino says: choose your answer, then tap CHECK.',
+                              style: TextStyle(
+                                color: palette.textPrimary,
+                                fontWeight: FontWeight.w700,
+                                height: 1.25,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _answered
-                          ? _nextQuestion
-                          : (_selectedOption == null ? null : _checkAnswer),
-                      icon: Icon(
-                        _answered
-                            ? (_index == widget.questions.length - 1
-                                  ? Icons.done_rounded
-                                  : Icons.navigate_next_rounded)
-                            : Icons.check_rounded,
-                      ),
-                      label: Text(
-                        _answered
-                            ? (_index == widget.questions.length - 1
-                                  ? 'Finish Quiz'
-                                  : 'Continue')
-                            : 'Check',
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: _cardDecoration(context),
+                      child: Text(
+                        question.prompt,
+                        style: GoogleFonts.fredoka(
+                          fontSize: 30,
+                          color: palette.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: ListView.separated(
+                        itemCount: question.options.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        itemBuilder: (BuildContext context, int optionIndex) {
+                          final bool picked = _selectedOption == optionIndex;
+                          final bool correct =
+                              optionIndex == question.correctIndex;
+
+                          Color tileColor = palette.surfaceSoft;
+                          Color borderColor = palette.borderStrong;
+                          if (reveal && correct) {
+                            tileColor = const Color(0xFFE6F9D8);
+                            borderColor = const Color(0xFF67C63A);
+                          } else if (reveal && picked && !correct) {
+                            tileColor = const Color(0xFFFFE2E2);
+                            borderColor = const Color(0xFFE26868);
+                          } else if (picked) {
+                            tileColor = palette.brandPrimary.withValues(
+                              alpha: 0.14,
+                            );
+                            borderColor = palette.brandPrimary;
+                          }
+
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: _answered
+                                  ? null
+                                  : () => _chooseOption(optionIndex),
+                              child: Ink(
+                                padding: const EdgeInsets.all(15),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  color: tileColor,
+                                  border: Border.all(
+                                    color: borderColor,
+                                    width: 1.8,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: <Widget>[
+                                    Container(
+                                      width: 34,
+                                      height: 34,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.white,
+                                        border: Border.all(
+                                          color: borderColor,
+                                          width: 1.4,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          String.fromCharCode(65 + optionIndex),
+                                          style: TextStyle(
+                                            color: palette.textSecondary,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 11),
+                                    Expanded(
+                                      child: Text(
+                                        question.options[optionIndex],
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: palette.textPrimary,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                    if (reveal && correct)
+                                      const Icon(
+                                        Icons.check_circle_rounded,
+                                        color: Color(0xFF55B629),
+                                      ),
+                                    if (reveal && picked && !correct)
+                                      const Icon(
+                                        Icons.cancel_rounded,
+                                        color: Color(0xFFE04F4F),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    if (_answered)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          color: selectedIsCorrect
+                              ? const Color(0xFFE7F9D8)
+                              : const Color(0xFFFFEFE4),
+                          border: Border.all(
+                            color: selectedIsCorrect
+                                ? const Color(0xFF6BC64A)
+                                : const Color(0xFFFFBA8B),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              selectedIsCorrect
+                                  ? 'Correct! ${question.options[question.correctIndex]}'
+                                  : 'Correct answer: ${question.options[question.correctIndex]}',
+                              style: TextStyle(
+                                color: palette.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _explanationText(question),
+                              style: TextStyle(
+                                color: palette.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _answered
+                            ? _nextQuestion
+                            : (_selectedOption == null ? null : _checkAnswer),
+                        icon: Icon(
+                          _answered
+                              ? (_index == widget.questions.length - 1
+                                    ? Icons.done_rounded
+                                    : Icons.navigate_next_rounded)
+                              : Icons.check_rounded,
+                        ),
+                        label: Text(
+                          _answered
+                              ? (_index == widget.questions.length - 1
+                                    ? 'Finish Quiz'
+                                    : 'Continue')
+                              : 'Check',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

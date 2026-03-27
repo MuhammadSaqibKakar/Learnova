@@ -9,78 +9,112 @@ class LearnovaSplashScreen extends StatefulWidget {
 
 class _LearnovaSplashScreenState extends State<LearnovaSplashScreen>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
+  late final AnimationController _loopController = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 1600),
+    duration: const Duration(milliseconds: 1700),
   )..repeat(reverse: true);
 
-  late final Animation<double> _scale = Tween<double>(
-    begin: 0.92,
-    end: 1.06,
-  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOutBack));
+  Timer? _phaseTimer;
+  int _phase = 0;
 
-  late final Animation<double> _float = Tween<double>(
-    begin: -7,
-    end: 7,
-  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  @override
+  void initState() {
+    super.initState();
+    _phaseTimer = Timer(const Duration(milliseconds: 1450), () {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _phase = 1;
+      });
+    });
+  }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _phaseTimer?.cancel();
+    _loopController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final LearnovaPalette palette = _palette(context);
+    const Color green = Color(0xFF58CC02);
+
     return Scaffold(
-      body: Stack(
+      body: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: <Color>[Color(0xFF6ADF14), green],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 520),
+              switchInCurve: Curves.easeOutBack,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(scale: animation, child: child),
+                );
+              },
+              child: _phase == 0
+                  ? _SplashLogoPhase(
+                      key: const ValueKey<String>('logo'),
+                      animation: _loopController,
+                    )
+                  : _SplashWordmarkPhase(
+                      key: const ValueKey<String>('wordmark'),
+                      animation: _loopController,
+                    ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SplashLogoPhase extends StatelessWidget {
+  const _SplashLogoPhase({required this.animation, super.key});
+
+  final Animation<double> animation;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (BuildContext context, Widget? child) {
+        final double scale = 0.92 + (animation.value * 0.12);
+        final double floatY = (animation.value - 0.5) * 14;
+        return Transform.translate(
+          offset: Offset(0, floatY),
+          child: Transform.scale(scale: scale, child: child),
+        );
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const LearnovaAnimatedBackground(),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  AnimatedBuilder(
-                    animation: _controller,
-                    builder: (BuildContext context, Widget? child) {
-                      return Transform.translate(
-                        offset: Offset(0, _float.value),
-                        child: Transform.scale(
-                          scale: _scale.value,
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: const LearnovaLogo(size: 128),
-                  ),
-                  const SizedBox(height: 26),
-                  const SizedBox(
-                    width: double.infinity,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: _AnimatedShimmerText(
-                        text: 'Learnova',
-                        fontSize: 52,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Learning Adventures for Kids',
-                    style: GoogleFonts.nunito(
-                      fontSize: 18,
-                      color: palette.textSecondary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 14),
-                  const _AnimatedLoadingDots(),
-                ],
-              ),
+          Container(
+            width: 180,
+            height: 180,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.18),
+            ),
+            child: const Center(child: LearnovaLogo(size: 134)),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Loading...',
+            style: GoogleFonts.nunito(
+              fontSize: 22,
+              color: Colors.white.withValues(alpha: 0.94),
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -89,106 +123,47 @@ class _LearnovaSplashScreenState extends State<LearnovaSplashScreen>
   }
 }
 
-class _AnimatedShimmerText extends StatefulWidget {
-  const _AnimatedShimmerText({required this.text, required this.fontSize});
+class _SplashWordmarkPhase extends StatelessWidget {
+  const _SplashWordmarkPhase({required this.animation, super.key});
 
-  final String text;
-  final double fontSize;
-
-  @override
-  State<_AnimatedShimmerText> createState() => _AnimatedShimmerTextState();
-}
-
-class _AnimatedShimmerTextState extends State<_AnimatedShimmerText>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1800),
-  )..repeat();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  final Animation<double> animation;
 
   @override
   Widget build(BuildContext context) {
-    final LearnovaPalette palette = _palette(context);
     return AnimatedBuilder(
-      animation: _controller,
+      animation: animation,
       builder: (BuildContext context, Widget? child) {
-        final double center = _controller.value;
-        final double start = (center - 0.28).clamp(0.0, 1.0);
-        final double end = (center + 0.28).clamp(0.0, 1.0);
-
-        return ShaderMask(
-          blendMode: BlendMode.srcATop,
-          shaderCallback: (Rect bounds) {
-            return LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: <Color>[
-                palette.textPrimary,
-                palette.heroAccent,
-                palette.textPrimary,
-              ],
-              stops: <double>[start, center, end],
-            ).createShader(bounds);
-          },
-          child: child,
-        );
+        final double opacity = 0.7 + (animation.value * 0.3);
+        return Opacity(opacity: opacity, child: child);
       },
-      child: Text(
-        widget.text,
-        style: GoogleFonts.fredoka(
-          fontSize: widget.fontSize,
-          fontWeight: FontWeight.w600,
-          color: palette.textPrimary,
-          letterSpacing: 1.1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              'Learnova',
+              style: GoogleFonts.fredoka(
+                fontSize: 62,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1.2,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Joyful Learning for Kids',
+              style: GoogleFonts.nunito(
+                fontSize: 21,
+                color: Colors.white.withValues(alpha: 0.94),
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
-    );
-  }
-}
-
-class _AnimatedLoadingDots extends StatefulWidget {
-  const _AnimatedLoadingDots();
-
-  @override
-  State<_AnimatedLoadingDots> createState() => _AnimatedLoadingDotsState();
-}
-
-class _AnimatedLoadingDotsState extends State<_AnimatedLoadingDots>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 950),
-  )..repeat();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final LearnovaPalette palette = _palette(context);
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (BuildContext context, Widget? child) {
-        final int dotCount = ((_controller.value * 3).floor() % 3) + 1;
-        final String dots = '.' * dotCount;
-        return Text(
-          'Loading$dots',
-          style: TextStyle(
-            fontSize: 15,
-            color: palette.textSecondary,
-            fontWeight: FontWeight.w700,
-          ),
-        );
-      },
     );
   }
 }

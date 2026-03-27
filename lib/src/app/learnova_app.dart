@@ -53,7 +53,7 @@ class _LearnovaAppState extends State<LearnovaApp> {
   Future<void> _bootstrapApp() async {
     await Future.wait(<Future<void>>[
       _loadRememberMe(),
-      Future<void>.delayed(const Duration(milliseconds: 2300)),
+      Future<void>.delayed(const Duration(milliseconds: 3400)),
     ]);
 
     if (!mounted) {

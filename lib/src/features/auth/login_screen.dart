@@ -30,9 +30,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _identifierController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FocusNode _identifierFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
   bool _isPasswordHidden = true;
   bool _isLoading = false;
   bool _rememberMe = false;
+  int _dinoTrigger = 0;
+  int _dinoGuideStep = 0;
 
   @override
   void initState() {
@@ -40,6 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
     _identifierController.text = widget.initialIdentifier;
     _passwordController.text = widget.initialPassword;
     _rememberMe = widget.initialRememberMe;
+    _identifierFocusNode.addListener(_handleFieldFocus);
+    _passwordFocusNode.addListener(_handleFieldFocus);
   }
 
   @override
@@ -60,9 +66,46 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _identifierFocusNode.removeListener(_handleFieldFocus);
+    _passwordFocusNode.removeListener(_handleFieldFocus);
+    _identifierFocusNode.dispose();
+    _passwordFocusNode.dispose();
     _identifierController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _handleFieldFocus() {
+    if (!mounted) {
+      return;
+    }
+    if (_identifierFocusNode.hasFocus || _passwordFocusNode.hasFocus) {
+      setState(() {
+        _dinoTrigger += 1;
+        if (_identifierFocusNode.hasFocus) {
+          _dinoGuideStep = 1;
+        } else if (_passwordFocusNode.hasFocus) {
+          _dinoGuideStep = 2;
+        } else {
+          _dinoGuideStep = 0;
+        }
+      });
+    }
+  }
+
+  String get _dinoMessage {
+    if (_isLoading) {
+      return 'Checking login... Dino is helping!';
+    }
+    if (_identifierController.text.trim().isNotEmpty &&
+        _passwordController.text.trim().isNotEmpty) {
+      return 'Great! Tap Login to start your learning adventure.';
+    }
+    return switch (_dinoGuideStep) {
+      1 => 'Step 1: Enter email or your kid username.',
+      2 => 'Step 2: Enter password and tap Login.',
+      _ => 'Hi! I am Dino. I will guide you step by step.',
+    };
   }
 
   Future<void> _submit() async {
@@ -101,6 +144,9 @@ class _LoginScreenState extends State<LoginScreen> {
       pageSubtitle: 'Login to continue learning with Learnova.',
       onOpenThemePicker: widget.onOpenThemePicker,
       showThemeButton: true,
+      showDino: true,
+      dinoMessage: _dinoMessage,
+      dinoTrigger: _dinoTrigger,
       formChild: Form(
         key: _formKey,
         child: Column(
@@ -117,6 +163,10 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 14),
             TextFormField(
               controller: _identifierController,
+              focusNode: _identifierFocusNode,
+              onChanged: (_) {
+                setState(() {});
+              },
               textInputAction: TextInputAction.next,
               decoration: const InputDecoration(
                 labelText: 'Email or Username',
@@ -132,6 +182,10 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _passwordController,
+              focusNode: _passwordFocusNode,
+              onChanged: (_) {
+                setState(() {});
+              },
               obscureText: _isPasswordHidden,
               textInputAction: TextInputAction.done,
               onFieldSubmitted: (_) {
