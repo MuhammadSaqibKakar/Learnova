@@ -2769,6 +2769,15 @@ class _LectureQuizResult {
 
 enum _VoicePace { normal, slow }
 
+enum _NarrationSection { title, body, example, coach }
+
+class _NarrationChunk {
+  const _NarrationChunk({required this.section, required this.text});
+
+  final _NarrationSection section;
+  final String text;
+}
+
 class _SubjectLectureScreen extends StatefulWidget {
   const _SubjectLectureScreen({
     required this.subjectName,
@@ -2797,6 +2806,9 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   int _voiceSessionId = 0;
   Map<String, String>? _preferredVoice;
   String _spokenWord = '';
+  int _spokenStart = -1;
+  int _spokenEnd = -1;
+  _NarrationSection _activeSection = _NarrationSection.title;
 
   Future<void> _applyVoiceProfile() async {
     final bool normal = _voicePace == _VoicePace.normal;
@@ -2913,6 +2925,8 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       }
       setState(() {
         _spokenWord = cleanedWord;
+        _spokenStart = startOffset;
+        _spokenEnd = endOffset;
       });
     });
     _tts.setCancelHandler(() {
@@ -2922,6 +2936,8 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       setState(() {
         _speaking = false;
         _spokenWord = '';
+        _spokenStart = -1;
+        _spokenEnd = -1;
       });
     });
     _tts.setErrorHandler((dynamic message) {
@@ -2931,6 +2947,8 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       setState(() {
         _speaking = false;
         _spokenWord = '';
+        _spokenStart = -1;
+        _spokenEnd = -1;
       });
     });
 
@@ -2942,16 +2960,24 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     } catch (_) {}
   }
 
-  List<String> _slideNarrationParts(_LectureSlide slide) {
-    final List<String> parts = <String>[
-      slide.title,
-      slide.body,
-      'Try this example. ${slide.example}.',
-      _coachLine(_slideIndex),
+  List<_NarrationChunk> _slideNarrationParts(
+    _LectureSlide slide,
+    int slideNumber,
+  ) {
+    final List<_NarrationChunk> parts = <_NarrationChunk>[
+      _NarrationChunk(section: _NarrationSection.title, text: slide.title),
+      _NarrationChunk(section: _NarrationSection.body, text: slide.body),
+      _NarrationChunk(
+        section: _NarrationSection.example,
+        text: 'Try: ${slide.example}',
+      ),
+      _NarrationChunk(
+        section: _NarrationSection.coach,
+        text: _coachLine(slideNumber),
+      ),
     ];
     return parts
-        .map((String text) => text.trim())
-        .where((String text) => text.isNotEmpty)
+        .where((_NarrationChunk part) => part.text.trim().isNotEmpty)
         .toList();
   }
 
@@ -2969,6 +2995,8 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       setState(() {
         _speaking = false;
         _spokenWord = '';
+        _spokenStart = -1;
+        _spokenEnd = -1;
       });
     }
   }
@@ -2984,9 +3012,13 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       setState(() {
         _speaking = true;
         _spokenWord = '';
+        _spokenStart = -1;
+        _spokenEnd = -1;
       });
-      final List<String> parts = _slideNarrationParts(
+      final int currentSlideIndex = _slideIndex;
+      final List<_NarrationChunk> parts = _slideNarrationParts(
         widget.module.slides[_slideIndex],
+        currentSlideIndex,
       );
       for (int i = 0; i < parts.length; i++) {
         if (!mounted || activeSession != _voiceSessionId) {
@@ -2994,8 +3026,11 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
         }
         setState(() {
           _spokenWord = '';
+          _spokenStart = -1;
+          _spokenEnd = -1;
+          _activeSection = parts[i].section;
         });
-        await _tts.speak(parts[i]);
+        await _tts.speak(parts[i].text);
         if (i < parts.length - 1) {
           await Future<void>.delayed(
             _voicePace == _VoicePace.normal
@@ -3010,6 +3045,8 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       setState(() {
         _speaking = false;
         _spokenWord = '';
+        _spokenStart = -1;
+        _spokenEnd = -1;
       });
     } catch (_) {
       if (!mounted) {
@@ -3018,6 +3055,8 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       setState(() {
         _speaking = false;
         _spokenWord = '';
+        _spokenStart = -1;
+        _spokenEnd = -1;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Voice is not available on this device.')),
@@ -3261,46 +3300,57 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   }
 
   List<TextSpan> _highlightedSpans({
+    required _NarrationSection section,
     required String text,
     required TextStyle baseStyle,
   }) {
-    if (!_speaking || _spokenWord.trim().length < 2) {
+    if (!_speaking || _activeSection != section) {
       return <TextSpan>[TextSpan(text: text, style: baseStyle)];
     }
-    final String currentWord = _spokenWord.trim();
-    final RegExp boundaryPattern = RegExp(
-      '\\b${RegExp.escape(currentWord)}\\b',
-      caseSensitive: false,
+    final TextStyle highlightStyle = baseStyle.copyWith(
+      color: const Color(0xFF2B5E1E),
+      fontWeight: FontWeight.w900,
+      backgroundColor: const Color(0xFFFFFF7D),
     );
-    final List<Match> matches = boundaryPattern.allMatches(text).toList();
-    if (matches.isEmpty) {
+
+    if (_spokenStart >= 0 &&
+        _spokenEnd > _spokenStart &&
+        _spokenEnd <= text.length) {
+      return <TextSpan>[
+        if (_spokenStart > 0)
+          TextSpan(text: text.substring(0, _spokenStart), style: baseStyle),
+        TextSpan(
+          text: text.substring(_spokenStart, _spokenEnd),
+          style: highlightStyle,
+        ),
+        if (_spokenEnd < text.length)
+          TextSpan(text: text.substring(_spokenEnd), style: baseStyle),
+      ];
+    }
+
+    if (_spokenWord.trim().length < 2) {
       return <TextSpan>[TextSpan(text: text, style: baseStyle)];
     }
 
-    int cursor = 0;
-    final List<TextSpan> spans = <TextSpan>[];
-    for (final Match match in matches) {
-      if (match.start > cursor) {
-        spans.add(
-          TextSpan(text: text.substring(cursor, match.start), style: baseStyle),
-        );
-      }
-      spans.add(
-        TextSpan(
-          text: text.substring(match.start, match.end),
-          style: baseStyle.copyWith(
-            color: const Color(0xFF2B5E1E),
-            fontWeight: FontWeight.w900,
-            backgroundColor: const Color(0xFFFFFF7D),
-          ),
-        ),
-      );
-      cursor = match.end;
+    final RegExp boundaryPattern = RegExp(
+      '\\b${RegExp.escape(_spokenWord.trim())}\\b',
+      caseSensitive: false,
+    );
+    final Match? match = boundaryPattern.firstMatch(text);
+    if (match == null) {
+      return <TextSpan>[TextSpan(text: text, style: baseStyle)];
     }
-    if (cursor < text.length) {
-      spans.add(TextSpan(text: text.substring(cursor), style: baseStyle));
-    }
-    return spans;
+
+    return <TextSpan>[
+      if (match.start > 0)
+        TextSpan(text: text.substring(0, match.start), style: baseStyle),
+      TextSpan(
+        text: text.substring(match.start, match.end),
+        style: highlightStyle,
+      ),
+      if (match.end < text.length)
+        TextSpan(text: text.substring(match.end), style: baseStyle),
+    ];
   }
 
   Widget _buildSlideCard(
@@ -3327,14 +3377,36 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
-                Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
-                  child: DinoInstructorAvatar(
-                    accentColor: slide.accentColor,
-                    moodIndex: slideNumber,
-                    speaking: _speaking,
-                    size: 138,
+                SizedBox(
+                  width: 154,
+                  height: 162,
+                  child: Stack(
+                    children: <Widget>[
+                      Positioned.fill(
+                        child: Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
+                          child: DinoInstructorAvatar(
+                            accentColor: slide.accentColor,
+                            moodIndex: slideNumber,
+                            speaking: _speaking,
+                            size: 138,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        top: 65,
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -3356,6 +3428,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                   RichText(
                     text: TextSpan(
                       children: _highlightedSpans(
+                        section: _NarrationSection.body,
                         text: slide.body,
                         baseStyle: TextStyle(
                           color: const Color(0xFF4A6A30),
@@ -3370,6 +3443,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                   RichText(
                     text: TextSpan(
                       children: _highlightedSpans(
+                        section: _NarrationSection.example,
                         text: 'Try: ${slide.example}',
                         baseStyle: TextStyle(
                           color: const Color(0xFF3E7B23),
