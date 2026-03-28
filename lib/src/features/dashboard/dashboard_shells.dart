@@ -2794,23 +2794,90 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   bool _openingQuiz = false;
   String _lastQuizSignature = '';
   _VoicePace _voicePace = _VoicePace.normal;
+  int _voiceSessionId = 0;
+  Map<String, String>? _preferredVoice;
 
   Future<void> _applyVoiceProfile() async {
     final bool normal = _voicePace == _VoicePace.normal;
+    if (_preferredVoice != null) {
+      await _tts.setVoice(_preferredVoice!);
+    }
     await _tts.setPitch(normal ? 1.0 : 0.94);
-    await _tts.setSpeechRate(normal ? 0.43 : 0.29);
+    await _tts.setSpeechRate(normal ? 0.41 : 0.27);
     await _tts.setVolume(1.0);
   }
 
-  Future<void> _configureTts() async {
-    _tts.setCompletionHandler(() {
-      if (!mounted) {
+  String _normalizeLocale(String value) {
+    return value.replaceAll('_', '-').toLowerCase();
+  }
+
+  int _voiceScore(String name, String locale, String gender, String quality) {
+    int score = 0;
+    if (locale.startsWith('en-us')) {
+      score += 70;
+    } else if (locale.startsWith('en-gb')) {
+      score += 62;
+    } else if (locale.startsWith('en')) {
+      score += 54;
+    } else {
+      return -1000;
+    }
+
+    final String combined = '$name $gender $quality ${locale.toLowerCase()}'
+        .toLowerCase();
+    if (combined.contains('neural') ||
+        combined.contains('natural') ||
+        combined.contains('enhanced') ||
+        combined.contains('wavenet') ||
+        combined.contains('premium')) {
+      score += 24;
+    }
+    if (combined.contains('female') ||
+        combined.contains('samantha') ||
+        combined.contains('jenny') ||
+        combined.contains('aria') ||
+        combined.contains('alloy')) {
+      score += 8;
+    }
+    if (combined.contains('robot') || combined.contains('espeak')) {
+      score -= 8;
+    }
+    return score;
+  }
+
+  Future<void> _pickBestVoice() async {
+    try {
+      final dynamic rawVoices = await _tts.getVoices;
+      if (rawVoices is! List<dynamic>) {
         return;
       }
-      setState(() {
-        _speaking = false;
-      });
-    });
+      Map<String, String>? best;
+      int bestScore = -1000;
+      for (final dynamic item in rawVoices) {
+        if (item is! Map) {
+          continue;
+        }
+        final String name = '${item['name'] ?? ''}'.trim();
+        final String localeRaw = '${item['locale'] ?? item['language'] ?? ''}'
+            .trim();
+        if (name.isEmpty || localeRaw.isEmpty) {
+          continue;
+        }
+        final String locale = _normalizeLocale(localeRaw);
+        final String gender = '${item['gender'] ?? ''}'.trim();
+        final String quality = '${item['quality'] ?? ''}'.trim();
+        final int score = _voiceScore(name, locale, gender, quality);
+        if (score > bestScore) {
+          bestScore = score;
+          best = <String, String>{'name': name, 'locale': localeRaw};
+        }
+      }
+      _preferredVoice = best;
+    } catch (_) {}
+  }
+
+  Future<void> _configureTts() async {
+    _tts.setCompletionHandler(() {});
     _tts.setCancelHandler(() {
       if (!mounted) {
         return;
@@ -2830,17 +2897,29 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
 
     try {
       await _tts.setLanguage('en-US');
+      await _pickBestVoice();
       await _applyVoiceProfile();
       await _tts.awaitSpeakCompletion(true);
     } catch (_) {}
   }
 
-  String _slideNarration() {
-    final _LectureSlide slide = widget.module.slides[_slideIndex];
-    return '${slide.title}. ${slide.body}. Example: ${slide.example}.';
+  List<String> _slideNarrationParts(_LectureSlide slide) {
+    final List<String> parts = <String>[
+      slide.title,
+      slide.body,
+      'Try this example. ${slide.example}.',
+      _coachLine(_slideIndex),
+    ];
+    return parts
+        .map((String text) => text.trim())
+        .where((String text) => text.isNotEmpty)
+        .toList();
   }
 
-  Future<void> _stopVoice() async {
+  Future<void> _stopVoice({bool resetSession = true}) async {
+    if (resetSession) {
+      _voiceSessionId += 1;
+    }
     try {
       await _tts.stop();
     } catch (_) {}
@@ -2861,10 +2940,32 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       if (!mounted) {
         return;
       }
+      final int activeSession = ++_voiceSessionId;
       setState(() {
         _speaking = true;
       });
-      await _tts.speak(_slideNarration());
+      final List<String> parts = _slideNarrationParts(
+        widget.module.slides[_slideIndex],
+      );
+      for (int i = 0; i < parts.length; i++) {
+        if (!mounted || activeSession != _voiceSessionId) {
+          return;
+        }
+        await _tts.speak(parts[i]);
+        if (i < parts.length - 1) {
+          await Future<void>.delayed(
+            _voicePace == _VoicePace.normal
+                ? const Duration(milliseconds: 320)
+                : const Duration(milliseconds: 560),
+          );
+        }
+      }
+      if (!mounted || activeSession != _voiceSessionId) {
+        return;
+      }
+      setState(() {
+        _speaking = false;
+      });
     } catch (_) {
       if (!mounted) {
         return;
@@ -3010,100 +3111,173 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     await _startQuiz();
   }
 
+  Widget _voiceBubbleButton({
+    required IconData icon,
+    required bool active,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: active ? const Color(0xFFDCF8C8) : Colors.transparent,
+            ),
+            child: Icon(
+              icon,
+              color: active ? const Color(0xFF1493E5) : const Color(0xFF2BA3F7),
+              size: 34,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVoiceBubble() {
+    final bool normalActive = _voicePace == _VoicePace.normal;
+    final bool slowActive = _voicePace == _VoicePace.slow;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: <Widget>[
+        Positioned(
+          left: -8,
+          top: 34,
+          child: Transform.rotate(
+            angle: pi / 4,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: const Color(0xFFDADDE1)),
+              ),
+            ),
+          ),
+        ),
+        Container(
+          height: 90,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: const Color(0xFFDADDE1), width: 2),
+          ),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: _voiceBubbleButton(
+                  icon: Icons.volume_up_rounded,
+                  active: normalActive,
+                  onTap: () {
+                    if (_speaking && normalActive) {
+                      _stopVoice();
+                      return;
+                    }
+                    _playWithPace(_VoicePace.normal);
+                  },
+                ),
+              ),
+              Container(width: 2, color: const Color(0xFFDADDE1)),
+              Expanded(
+                child: _voiceBubbleButton(
+                  icon: Icons.slow_motion_video_rounded,
+                  active: slowActive,
+                  onTap: () {
+                    if (_speaking && slowActive) {
+                      _stopVoice();
+                      return;
+                    }
+                    _playWithPace(_VoicePace.slow);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSlideCard(
     _LectureSlide slide,
     LearnovaPalette palette, {
     required int slideNumber,
   }) {
+    final double questionFont = max(
+      22,
+      min(31, MediaQuery.of(context).size.width * 0.06),
+    );
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        color: Colors.white.withValues(alpha: 0.95),
-        border: Border.all(color: palette.borderSoft.withValues(alpha: 0.9)),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 14,
-            offset: const Offset(0, 7),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(18),
+        color: Colors.white,
       ),
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(
-              slide.title,
-              style: GoogleFonts.fredoka(
-                fontSize: 34,
-                color: palette.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _TeachingMascotCoach(
-              subjectName: widget.subjectName,
-              slideNumber: slideNumber,
-              accentColor: slide.accentColor,
-              speaking: _speaking,
-              voicePace: _voicePace,
-              onPlayNormal: () {
-                _playWithPace(_VoicePace.normal);
-              },
-              onPlaySlow: () {
-                _playWithPace(_VoicePace.slow);
-              },
-              coachLine: _coachLine(slideNumber),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                DinoInstructorAvatar(
+                  accentColor: slide.accentColor,
+                  moodIndex: slideNumber,
+                  speaking: _speaking,
+                  size: 138,
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: _buildVoiceBubble()),
+              ],
             ),
             const SizedBox(height: 16),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                color: const Color(0xFFEFF9E8),
-                border: Border.all(color: const Color(0xFFBDEAA1)),
+                borderRadius: BorderRadius.circular(20),
+                color: const Color(0xFFD8F7BF),
+                border: Border.all(color: const Color(0xFF8DDD57), width: 2),
               ),
-              child: Text(
-                slide.body,
-                style: TextStyle(
-                  color: palette.textSecondary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  height: 1.35,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: Colors.white,
-                border: Border.all(color: const Color(0xFFCAE6F7)),
-              ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  const Icon(
-                    Icons.lightbulb_circle_rounded,
-                    size: 20,
-                    color: Color(0xFF2B9CEC),
+                  Text(
+                    slide.body,
+                    style: TextStyle(
+                      color: const Color(0xFF4A6A30),
+                      fontSize: questionFont,
+                      fontWeight: FontWeight.w700,
+                      height: 1.28,
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      slide.example,
-                      style: TextStyle(
-                        color: palette.textSecondary,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Try: ${slide.example}',
+                    style: TextStyle(
+                      color: const Color(0xFF3E7B23),
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _coachLine(slideNumber),
+              style: TextStyle(
+                color: palette.textSecondary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -3129,79 +3303,87 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   Widget build(BuildContext context) {
     final LearnovaPalette palette = _palette(context);
     final bool isLastSlide = _slideIndex == widget.module.slides.length - 1;
+    final _LectureSlide currentSlide = widget.module.slides[_slideIndex];
 
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.subjectName} Lecture 1')),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 14),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 900),
+              constraints: const BoxConstraints(maxWidth: 820),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-                    decoration: _cardDecoration(context),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                widget.module.title,
-                                style: GoogleFonts.fredoka(
-                                  fontSize: 26,
-                                  color: palette.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                color: palette.brandPrimary.withValues(
-                                  alpha: 0.16,
-                                ),
-                              ),
-                              child: Text(
-                                'Slide ${_slideIndex + 1}/${widget.module.slides.length}',
-                                style: TextStyle(
-                                  color: palette.textPrimary,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
+                  Row(
+                    children: <Widget>[
+                      IconButton(
+                        onPressed: () {
+                          _stopVoice();
+                          Navigator.of(context).maybePop();
+                        },
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Color(0xFFA3A7AE),
+                          size: 38,
                         ),
-                        const SizedBox(height: 9),
-                        ClipRRect(
+                        splashRadius: 22,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: ClipRRect(
                           borderRadius: BorderRadius.circular(999),
                           child: LinearProgressIndicator(
                             value:
                                 (_slideIndex + 1) /
                                 max(widget.module.slides.length, 1),
-                            minHeight: 10,
+                            minHeight: 14,
                             backgroundColor: const Color(0xFFE3E7EA),
                             color: const Color(0xFF58CC02),
                           ),
                         ),
-                      ],
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFE0F1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFFFB9DE)),
+                        ),
+                        child: Text(
+                          '${_slideIndex + 1}/${widget.module.slides.length}',
+                          style: const TextStyle(
+                            color: Color(0xFFE0509A),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    currentSlide.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.fredoka(
+                      fontSize: 43,
+                      color: palette.textPrimary,
+                      fontWeight: FontWeight.w600,
+                      height: 1.03,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Expanded(
                     child: PageView.builder(
                       controller: _pageController,
                       itemCount: widget.module.slides.length,
                       onPageChanged: (int value) {
-                        _tts.stop();
+                        _stopVoice();
                         setState(() {
                           _slideIndex = value;
                           _speaking = false;
@@ -3216,7 +3398,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
                     decoration: BoxDecoration(
@@ -3323,233 +3505,6 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _TeachingMascotCoach extends StatelessWidget {
-  const _TeachingMascotCoach({
-    required this.subjectName,
-    required this.slideNumber,
-    required this.accentColor,
-    required this.speaking,
-    required this.voicePace,
-    required this.onPlayNormal,
-    required this.onPlaySlow,
-    required this.coachLine,
-  });
-
-  final String subjectName;
-  final int slideNumber;
-  final Color accentColor;
-  final bool speaking;
-  final _VoicePace voicePace;
-  final VoidCallback onPlayNormal;
-  final VoidCallback onPlaySlow;
-  final String coachLine;
-
-  IconData _coachIcon() {
-    final String subject = subjectName.toLowerCase();
-    if (subject.contains('english')) {
-      return Icons.menu_book_rounded;
-    }
-    if (subject.contains('math')) {
-      return Icons.calculate_rounded;
-    }
-    return Icons.public_rounded;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final LearnovaPalette palette = _palette(context);
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final bool compact = constraints.maxWidth < 380;
-        final Widget mascot = _AnimatedCatTeacher(
-          accentColor: accentColor,
-          moodIndex: slideNumber,
-          icon: _coachIcon(),
-          speaking: speaking,
-          size: compact ? 60 : 66,
-        );
-
-        return Container(
-          key: ValueKey<int>(slideNumber),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: const Color(0xFFE9F6FF),
-            border: Border.all(color: const Color(0xFFB9E2FF)),
-          ),
-          child: compact
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        mascot,
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Dino Instructor',
-                            style: GoogleFonts.fredoka(
-                              color: palette.textPrimary,
-                              fontSize: 21,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      coachLine,
-                      style: TextStyle(
-                        color: palette.textSecondary,
-                        fontWeight: FontWeight.w700,
-                        height: 1.25,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: <Widget>[
-                        _VoiceCueButton(
-                          icon: Icons.volume_up_rounded,
-                          active: voicePace == _VoicePace.normal,
-                          onTap: onPlayNormal,
-                        ),
-                        _VoiceCueButton(
-                          icon: Icons.slow_motion_video_rounded,
-                          active: voicePace == _VoicePace.slow,
-                          onTap: onPlaySlow,
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              : Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    mascot,
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            'Dino Instructor',
-                            style: GoogleFonts.fredoka(
-                              color: palette.textPrimary,
-                              fontSize: 21,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            coachLine,
-                            style: TextStyle(
-                              color: palette.textSecondary,
-                              fontWeight: FontWeight.w700,
-                              height: 1.25,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: <Widget>[
-                              _VoiceCueButton(
-                                icon: Icons.volume_up_rounded,
-                                active: voicePace == _VoicePace.normal,
-                                onTap: onPlayNormal,
-                              ),
-                              _VoiceCueButton(
-                                icon: Icons.slow_motion_video_rounded,
-                                active: voicePace == _VoicePace.slow,
-                                onTap: onPlaySlow,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-        );
-      },
-    );
-  }
-}
-
-class _VoiceCueButton extends StatelessWidget {
-  const _VoiceCueButton({
-    required this.icon,
-    required this.active,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final bool active;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Ink(
-        width: 46,
-        height: 46,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          color: active ? const Color(0xFF58CC02) : Colors.white,
-          border: Border.all(
-            color: active ? const Color(0xFF4AB003) : const Color(0xFFBFE0EF),
-            width: 1.5,
-          ),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Icon(
-          icon,
-          color: active ? Colors.white : const Color(0xFF2B9CEC),
-          size: 24,
-        ),
-      ),
-    );
-  }
-}
-
-class _AnimatedCatTeacher extends StatelessWidget {
-  const _AnimatedCatTeacher({
-    required this.accentColor,
-    required this.moodIndex,
-    required this.icon,
-    this.speaking = false,
-    this.size = 70,
-  });
-
-  final Color accentColor;
-  final int moodIndex;
-  final IconData icon;
-  final bool speaking;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return DinoInstructorAvatar(
-      accentColor: accentColor,
-      moodIndex: moodIndex,
-      speaking: speaking,
-      size: size,
-      badgeIcon: icon,
     );
   }
 }
@@ -3950,10 +3905,11 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                       ),
                       child: Row(
                         children: <Widget>[
-                          _AnimatedCatTeacher(
+                          DinoInstructorAvatar(
                             accentColor: palette.brandPrimary,
                             moodIndex: _index,
-                            icon: Icons.school_rounded,
+                            badgeIcon: Icons.school_rounded,
+                            size: 64,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
