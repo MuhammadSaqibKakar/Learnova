@@ -511,17 +511,18 @@ class _DinoCharacter extends StatelessWidget {
                     ),
                   ),
                 ),
-                Positioned(
-                  left: size * 0.33,
-                  top: size * 0.37,
-                  child: Transform.rotate(
-                    angle: motion.headRotate * 0.35,
-                    child: _buildTalkingMouth(
-                      size: size * 0.11,
-                      openness: motion.mouthOpen,
+                if (motion.mouthOpen > 0.17)
+                  Positioned(
+                    left: size * 0.37,
+                    top: size * 0.42,
+                    child: Transform.rotate(
+                      angle: motion.headRotate * 0.28,
+                      child: _buildTalkingMouth(
+                        size: size * 0.095,
+                        openness: motion.mouthOpen,
+                      ),
                     ),
                   ),
-                ),
                 Positioned(
                   right: size * 0.06,
                   top: size * 0.57,
@@ -604,9 +605,9 @@ class _DinoCharacter extends StatelessWidget {
   }
 
   Widget _buildTalkingMouth({required double size, required double openness}) {
-    final double clampedOpen = max(0.05, min(openness, 0.78));
-    final double mouthHeight = size * (0.26 + clampedOpen * 0.5);
-    final double tongueOpacity = max(0.0, min((clampedOpen - 0.14) * 2.1, 1.0));
+    final double clampedOpen = max(0.0, min(openness, 0.72));
+    final double mouthHeight = size * (0.22 + clampedOpen * 0.42);
+    final double tongueOpacity = max(0.0, min((clampedOpen - 0.2) * 2.0, 1.0));
     return Container(
       width: size,
       height: mouthHeight,

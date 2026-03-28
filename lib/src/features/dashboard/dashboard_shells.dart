@@ -2174,45 +2174,45 @@ class _SubjectLearningPathScreenState
   List<_LectureSlide> _englishSlides() {
     return _buildSlides(
       titles: const <String>[
-        'Sound of A',
-        'Sound of M',
-        'Sound of S',
-        'Sound of T',
-        'Short Vowel E',
-        'Short Vowel I',
-        'Blend: at',
-        'Blend: am',
-        'Rhyming Family',
-        'Tiny Sentence Read',
+        'A Sound: Apple',
+        'M Sound: Moon',
+        'S Sound: Sun',
+        'T Sound: Top',
+        'Short e: Bed',
+        'Short i: Pin',
+        'Read -at Family',
+        'Read -am Family',
+        'Rhyme Time',
+        'Read a Tiny Line',
       ],
       bodies: const <String>[
-        'Hear the A sound and find words that start with it.',
-        'Hear the M sound and feel your lips close and open.',
-        'Hear the S sound like a soft snake hiss.',
-        'Hear the T sound with a quick tongue tap.',
-        'Use the short E sound to read simple words.',
-        'Use the short I sound in tiny words.',
-        'Join sounds to read the -at family.',
-        'Join sounds to read the -am family.',
-        'Rhymes share the same ending sound.',
-        'Read one short sentence with smooth voice.',
+        'Listen to A at the start of apple and ant.',
+        'Listen to M at the start of moon and milk.',
+        'Listen to S at the start of sun and sock.',
+        'Listen to T at the start of top and tap.',
+        'Use short e to read small words like bed and pen.',
+        'Use short i to read small words like pin and sit.',
+        'Join letters to read words in the at family.',
+        'Join letters to read words in the am family.',
+        'Rhyming words sound the same at the ending.',
+        'Read one short line from left to right.',
       ],
       examples: const <String>[
-        'A sound in apple',
-        'M sound in moon',
-        'S sound in sun',
-        'T sound in top',
+        'apple, ant',
+        'moon, milk',
+        'sun, sock',
+        'top, tap',
         'bed, pen, net',
         'pin, sit, lid',
-        'c + a + t = cat',
-        'm + a + m = mam',
         'cat, bat, hat',
+        'jam, ram, ham',
+        'sun-fun, cat-hat',
         'I can tap.',
       ],
       phaseHints: const <String>[
-        'Listen to Dino and hear every beginning sound.',
-        'Say each sound clearly and copy Dino.',
-        'Blend sounds and read the whole word.',
+        'First listen and point to the matching letter.',
+        'Now say the sound with Dino two times.',
+        'Now read the word and use it in a tiny sentence.',
       ],
       icons: const <IconData>[
         Icons.auto_stories_rounded,
@@ -2852,14 +2852,14 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
         combined.contains('baritone') ||
         combined.contains('daniel') ||
         combined.contains('alex')) {
-      score += 12;
+      score += 80;
     }
     if (combined.contains('female') ||
         combined.contains('samantha') ||
         combined.contains('jenny') ||
         combined.contains('aria') ||
         combined.contains('alloy')) {
-      score -= 8;
+      score -= 120;
     }
     if (combined.contains('robot') || combined.contains('espeak')) {
       score -= 8;
@@ -3086,10 +3086,10 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     final String subject = widget.subjectName.toLowerCase();
     if (subject.contains('english')) {
       const List<String> lines = <String>[
-        'Say each sound slowly with me.',
-        'Great reading. Keep your voice clear.',
-        'Nice try. Point and read again.',
-        'Awesome. Let us repeat one more time.',
+        'Point to the first letter and say it with Dino.',
+        'Great voice. Say the word one more time.',
+        'Awesome reading. Tap play and listen again.',
+        'Perfect effort. Keep going, reading star.',
       ];
       return lines[slideNumber % lines.length];
     }
@@ -3396,10 +3396,10 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                       ),
                       Positioned(
                         left: 0,
-                        top: 65,
+                        top: 58,
                         child: Container(
-                          width: 30,
-                          height: 30,
+                          width: 40,
+                          height: 40,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white,
