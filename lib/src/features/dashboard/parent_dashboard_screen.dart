@@ -88,8 +88,10 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
         return 'English';
       case 'math':
         return 'Math';
+      case 'urdu':
+        return 'Urdu';
       case 'gk':
-        return 'GK';
+        return 'Urdu';
       default:
         return value.trim().isEmpty ? 'Subject' : value.trim();
     }
@@ -126,9 +128,10 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
         : scoreValue;
     final bool passed =
         parts[3] == '1' || parts[3].trim().toLowerCase() == 'true';
+    final int stage = parts.length >= 5 ? (int.tryParse(parts[4]) ?? 1) : 1;
     return _KidQuizAttempt(
       subject: _subjectLabel(parts[1]),
-      stage: 1,
+      stage: stage < 1 ? 1 : stage,
       score: score,
       passed: passed,
       timestamp: DateTime.tryParse(parts[0])?.toLocal(),

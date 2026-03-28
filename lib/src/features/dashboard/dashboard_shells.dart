@@ -1010,10 +1010,10 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
         color: const Color(0xFFFFA338),
       ),
       _buildSubjectTile(
-        title: 'Gk',
-        subtitle: 'General knowledge adventures',
-        icon: Icons.public_rounded,
-        color: const Color(0xFF7A6FFF),
+        title: 'Urdu',
+        subtitle: 'Huroof, alfaaz, jumlay',
+        icon: Icons.translate_rounded,
+        color: const Color(0xFF7B6BFF),
       ),
     ];
 
@@ -1605,6 +1605,9 @@ class _SubjectLearningPathScreenState
     if (name.contains('math')) {
       return Icons.calculate_rounded;
     }
+    if (name.contains('urdu') || name.contains('gk')) {
+      return Icons.translate_rounded;
+    }
     return Icons.lightbulb_rounded;
   }
 
@@ -1615,6 +1618,9 @@ class _SubjectLearningPathScreenState
     }
     if (name.contains('math')) {
       return _SubjectKind.math;
+    }
+    if (name.contains('urdu') || name.contains('gk')) {
+      return _SubjectKind.gk;
     }
     return _SubjectKind.gk;
   }
@@ -1627,7 +1633,7 @@ class _SubjectLearningPathScreenState
     return switch (kind) {
       _SubjectKind.english => 'english',
       _SubjectKind.math => 'math',
-      _SubjectKind.gk => 'gk',
+      _SubjectKind.gk => 'urdu',
     };
   }
 
@@ -1655,7 +1661,7 @@ class _SubjectLearningPathScreenState
     final Set<int> completed = completedRaw
         .map(int.tryParse)
         .whereType<int>()
-        .where((int stage) => stage >= 1)
+        .where((int stage) => stage >= 1 && stage <= 10)
         .toSet();
     final int stars = prefs.getInt(_starsKey()) ?? 0;
 
@@ -1685,6 +1691,146 @@ class _SubjectLearningPathScreenState
   }
 
   List<_QuizQuestion> _quizBank(_SubjectKind kind) {
+    if (kind == _SubjectKind.gk) {
+      return const <_QuizQuestion>[
+        _QuizQuestion(
+          prompt: 'Urdu mein Alif se kaunsa lafz shuru hota hai?',
+          options: <String>['Anaar', 'Billi', 'Kitaab', 'Rassi'],
+          correctIndex: 0,
+          explanation: 'Alif se Anaar shuru hota hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Bay se kaunsa lafz hai?',
+          options: <String>['Pani', 'Billi', 'Topi', 'Doodh'],
+          correctIndex: 1,
+          explanation: 'Billi ka shuru Bay se hota hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Pay se kaunsa lafz shuru hota hai?',
+          options: <String>['Pani', 'Seb', 'Mez', 'Jug'],
+          correctIndex: 0,
+          explanation: 'Pani ka pehla harf Pay hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Seen se kaunsa lafz banta hai?',
+          options: <String>['Sitara', 'Anaar', 'Qalam', 'Ghar'],
+          correctIndex: 0,
+          explanation: 'Sitara Seen se shuru hota hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Teen harfi lafz kaun sa hai?',
+          options: <String>['ab', 'ana', 'ghar', 'is'],
+          correctIndex: 2,
+          explanation: 'Ghar teen harf ka lafz hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Urdu ginti mein 3 kya hota hai?',
+          options: <String>['Aik', 'Do', 'Teen', 'Chaar'],
+          correctIndex: 2,
+          explanation: '3 ko Urdu mein Teen kehte hain.',
+        ),
+        _QuizQuestion(
+          prompt: 'Jumla ka sahi aaghaz kaun sa hai?',
+          options: <String>[
+            'Main school jata hoon.',
+            'school main jata.',
+            'jata main school.',
+            'main school.',
+          ],
+          correctIndex: 0,
+          explanation: 'Pura aur seedha jumla pehla hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Adab ka lafz kaun sa hai?',
+          options: <String>['Shukriya', 'Jaldi', 'Khel', 'Daud'],
+          correctIndex: 0,
+          explanation: 'Shukriya adab aur tehzeeb ka lafz hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Urdu mein "school" ke liye sahi lafz kaunsa hai?',
+          options: <String>['Madrasa', 'Jungle', 'Bazaar', 'Darya'],
+          correctIndex: 0,
+          explanation: 'Madrasa school ke liye istemal hota hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Aakhri harf pehchano: "kitaab"',
+          options: <String>['k', 'b', 't', 'a'],
+          correctIndex: 1,
+          explanation: 'Kitaab ka aakhri harf B hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Urdu mein rang "green" ko kya kehte hain?',
+          options: <String>['Surkh', 'Sabz', 'Neela', 'Sufaid'],
+          correctIndex: 1,
+          explanation: 'Green ko Urdu mein Sabz kehte hain.',
+        ),
+        _QuizQuestion(
+          prompt: 'Sahi do harfi lafz chuno',
+          options: <String>['ab', 'ana', 'pani', 'darwaza'],
+          correctIndex: 0,
+          explanation: 'ab do harfi lafz hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Urdu mein 5 kya hota hai?',
+          options: <String>['Do', 'Paanch', 'Chay', 'Saat'],
+          correctIndex: 1,
+          explanation: '5 ko Paanch kehte hain.',
+        ),
+        _QuizQuestion(
+          prompt: 'Kaunsa lafz Ray se shuru hota hai?',
+          options: <String>['Rassi', 'Seb', 'Topi', 'Meem'],
+          correctIndex: 0,
+          explanation: 'Rassi Ray se shuru hota hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Kaunsa lafz Meem se shuru hota hai?',
+          options: <String>['Machli', 'Jug', 'Anaar', 'Billi'],
+          correctIndex: 0,
+          explanation: 'Machli ka pehla harf Meem hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Sawal ka sahi jawab chuno: "Aap ka naam kya hai?"',
+          options: <String>[
+            'Mera naam Ali hai.',
+            'Main kal gaya tha.',
+            'Pani thanda hai.',
+            'Aaj mausam acha hai.',
+          ],
+          correctIndex: 0,
+          explanation: 'Sawal naam ka hai, is liye pehla jawab sahi hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Urdu mein pehla number kaunsa hai?',
+          options: <String>['Aik', 'Do', 'Teen', 'Chaar'],
+          correctIndex: 0,
+          explanation: 'Pehla number Aik hota hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Kaunsa lafz school ki cheez hai?',
+          options: <String>['Qalam', 'Bus', 'Pankha', 'Darya'],
+          correctIndex: 0,
+          explanation: 'Qalam school mein istemal hota hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Sahi jumla kaunsa hai?',
+          options: <String>[
+            'Main pani peeta hoon.',
+            'pani main peeta.',
+            'peeta hoon main pani.',
+            'Main hoon peeta.',
+          ],
+          correctIndex: 0,
+          explanation: 'Pehla jumla grammatically sahi hai.',
+        ),
+        _QuizQuestion(
+          prompt: 'Kaunsa lafz "please" ka Urdu istemal hai?',
+          options: <String>['Meharbani', 'Daud', 'Khel', 'Sona'],
+          correctIndex: 0,
+          explanation: 'Meharbani/please adab ka lafz hai.',
+        ),
+      ];
+    }
+
     switch (kind) {
       case _SubjectKind.english:
         return const <_QuizQuestion>[
@@ -2304,60 +2450,190 @@ class _SubjectLearningPathScreenState
   List<_LectureSlide> _gkSlides() {
     return _buildSlides(
       titles: const <String>[
-        'My Body Parts',
-        'Healthy Habits',
-        'Family and Helpers',
-        'Animals and Homes',
-        'Plants and Nature',
-        'Weather and Seasons',
-        'Safety Rules',
-        'Transport Around Us',
-        'Community Places',
-        'Care for Earth',
+        'Harf Alif',
+        'Harf Bay',
+        'Harf Pay',
+        'Harf Tay',
+        'Harf Say',
+        'Harf Jeem',
+        'Harf Daal',
+        'Harf Ray',
+        'Harf Seen',
+        'Harf Meem',
       ],
       bodies: const <String>[
-        'Learn major body parts and their use.',
-        'Daily habits keep our body clean and strong.',
-        'Family members and helpers support our lives.',
-        'Animals live in different homes and places.',
-        'Plants need sunlight, air, and water.',
-        'Weather changes and seasons have different feelings.',
-        'Simple rules keep us safe at home and on road.',
-        'Different transport helps us move around.',
-        'Learn places around us like school and hospital.',
-        'Protect nature by saving water and keeping places clean.',
+        'Alif ki pehchan karo aur awaaz saaf bolo.',
+        'Bay ko lafzon ke shuru mein pehchano.',
+        'Pay ki awaaz suno aur dohrayo.',
+        'Tay ka harf parh kar bolne ki practice karo.',
+        'Say ki awaaz ko dusre huroof se alag pehchano.',
+        'Jeem se banne wale asaan alfaaz parho.',
+        'Daal ka istemal asaan alfaaz mein karo.',
+        'Ray ko sahi talafuz ke saath bolo.',
+        'Seen ke lafz dhoondo aur parho.',
+        'Meem se shuru hone wale alfaaz yaad karo.',
       ],
       examples: const <String>[
-        'eyes see, ears hear',
-        'wash hands before meals',
-        'teacher, doctor, firefighter',
-        'fish in water, bird in nest',
-        'water the plant daily',
-        'summer is hot, winter is cold',
-        'look right and left before crossing',
-        'bus, train, bike, car',
-        'school, park, hospital',
-        'turn off tap after use',
+        'alif se anaar',
+        'bay se billi',
+        'pay se pani',
+        'tay se topi',
+        'say se seb',
+        'jeem se jug',
+        'daal se darwaza',
+        'ray se rassi',
+        'seen se sitara',
+        'meem se machli',
       ],
       phaseHints: const <String>[
-        'Dino introduces the topic with one picture idea.',
-        'Practice by matching the idea with a simple example.',
-        'Use it in a daily life situation.',
+        'Dino ke saath harf ki awaaz suno.',
+        'Harf ko dekh kar zor se bolo.',
+        'Harf ko aik lafz mein istemal karo.',
       ],
       icons: const <IconData>[
-        Icons.public_rounded,
-        Icons.pets_rounded,
-        Icons.flutter_dash_rounded,
-        Icons.eco_rounded,
-        Icons.cloud_rounded,
-        Icons.health_and_safety_rounded,
-        Icons.groups_rounded,
-        Icons.favorite_rounded,
-        Icons.directions_bus_rounded,
-        Icons.travel_explore_rounded,
+        Icons.translate_rounded,
+        Icons.spellcheck_rounded,
+        Icons.hearing_rounded,
+        Icons.menu_book_rounded,
+        Icons.record_voice_over_rounded,
+        Icons.auto_stories_rounded,
+        Icons.notes_rounded,
+        Icons.read_more_rounded,
+        Icons.text_fields_rounded,
+        Icons.check_circle_rounded,
       ],
       colors: const <Color>[
+        Color(0xFF7A6FFF),
+        Color(0xFF58CC02),
         Color(0xFF4BB9FF),
+        Color(0xFFFFC64A),
+        Color(0xFFFF7F9D),
+      ],
+    );
+  }
+
+  List<_LectureSlide> _englishSlidesTwo() {
+    return _buildSlides(
+      titles: const <String>[
+        'Vowel Sounds',
+        'Consonant Blends',
+        'Digraph Sounds',
+        'Sight Words',
+        'Describing Words',
+        'Pronouns',
+        'Prepositions',
+        'Joining Words',
+        'Reading Fluency',
+        'Retell a Story',
+      ],
+      bodies: const <String>[
+        'Practice short and long vowel sounds in simple words.',
+        'Blend two consonants and hear each sound clearly.',
+        'Learn two-letter sounds like sh, ch, and th.',
+        'Read high-frequency words quickly and correctly.',
+        'Adjectives describe how something looks, feels, or sounds.',
+        'Pronouns replace nouns in easy sentences.',
+        'Use in, on, under, near, and behind in sentences.',
+        'Joining words like and, but, because connect ideas.',
+        'Read one line smoothly with expression.',
+        'Retell beginning, middle, and end in your own words.',
+      ],
+      examples: const <String>[
+        'a in cat, e in bed, i in pin',
+        'bl in blue, st in star',
+        'ship, chair, thin',
+        'the, is, are, was',
+        'a big red ball',
+        'Sara is kind. She helps.',
+        'Book is on table.',
+        'I ran and I smiled.',
+        'The sun is warm today.',
+        'First, then, finally',
+      ],
+      phaseHints: const <String>[
+        'Listen and repeat each word after Dino.',
+        'Read slowly first, then read with confidence.',
+        'Use one new word in your own sentence.',
+      ],
+      icons: const <IconData>[
+        Icons.hearing_rounded,
+        Icons.graphic_eq_rounded,
+        Icons.multitrack_audio_rounded,
+        Icons.flash_on_rounded,
+        Icons.color_lens_rounded,
+        Icons.person_rounded,
+        Icons.place_rounded,
+        Icons.link_rounded,
+        Icons.menu_book_rounded,
+        Icons.auto_stories_rounded,
+      ],
+      colors: const <Color>[
+        Color(0xFF45B7FF),
+        Color(0xFF58CC02),
+        Color(0xFFFFC74C),
+        Color(0xFF8A6BFF),
+        Color(0xFFFF7FA9),
+      ],
+    );
+  }
+
+  List<_LectureSlide> _englishSlidesThree() {
+    return _buildSlides(
+      titles: const <String>[
+        'Sentence Types',
+        'Present Tense',
+        'Past Tense',
+        'Future Tense',
+        'Question and Answer',
+        'Main Idea',
+        'Synonyms',
+        'Antonyms',
+        'Sequence Words',
+        'Creative Writing',
+      ],
+      bodies: const <String>[
+        'Sentences can tell, ask, or show excitement.',
+        'Present tense tells what is happening now.',
+        'Past tense tells what already happened.',
+        'Future tense tells what will happen later.',
+        'Ask and answer clearly in full short sentences.',
+        'Find the main idea in a short paragraph.',
+        'Synonyms are words with similar meaning.',
+        'Antonyms are words with opposite meaning.',
+        'Use first, next, then, last in order.',
+        'Write two to three lines from your imagination.',
+      ],
+      examples: const <String>[
+        'I read. / Do you read?',
+        'I play now.',
+        'I played yesterday.',
+        'I will play tomorrow.',
+        'Q: Where are you? A: I am at home.',
+        'Main idea: We should drink water daily.',
+        'happy = joyful',
+        'hot = cold',
+        'First brush, then eat.',
+        'My best day at school.',
+      ],
+      phaseHints: const <String>[
+        'Understand the rule with one clear example.',
+        'Practice by speaking and reading aloud.',
+        'Apply the rule in your own writing.',
+      ],
+      icons: const <IconData>[
+        Icons.subject_rounded,
+        Icons.schedule_rounded,
+        Icons.history_rounded,
+        Icons.update_rounded,
+        Icons.question_answer_rounded,
+        Icons.find_in_page_rounded,
+        Icons.swap_horiz_rounded,
+        Icons.compare_arrows_rounded,
+        Icons.format_list_numbered_rounded,
+        Icons.draw_rounded,
+      ],
+      colors: const <Color>[
+        Color(0xFF3FAFFF),
         Color(0xFF58CC02),
         Color(0xFFFFB84B),
         Color(0xFF7A6FFF),
@@ -2366,29 +2642,319 @@ class _SubjectLearningPathScreenState
     );
   }
 
-  _LectureModule _lectureModule(_SubjectKind kind) {
+  List<_LectureSlide> _mathSlidesTwo() {
+    return _buildSlides(
+      titles: const <String>[
+        'Place Value',
+        'Skip Counting',
+        'Add within 20',
+        'Subtract within 20',
+        'Make 10 Strategy',
+        'Even and Odd',
+        'Length and Height',
+        'Weight and Capacity',
+        'Picture Graphs',
+        'Mixed Practice',
+      ],
+      bodies: const <String>[
+        'Ones and tens help us read two-digit numbers.',
+        'Count in 2s, 5s, and 10s with rhythm.',
+        'Add two numbers and cross-check your answer.',
+        'Subtract by counting back carefully.',
+        'Make ten first to solve faster.',
+        'Even numbers pair up, odd numbers leave one.',
+        'Compare objects by longer and shorter.',
+        'Compare heavy-light and full-empty in daily life.',
+        'Read simple picture charts and answer.',
+        'Use two math skills in one short problem.',
+      ],
+      examples: const <String>[
+        '14 = 1 ten and 4 ones',
+        '2, 4, 6, 8',
+        '12 + 5 = 17',
+        '15 - 7 = 8',
+        '8 + 6 = (8 + 2) + 4',
+        '6 is even, 7 is odd',
+        'Pencil is longer than eraser',
+        'Bucket is heavier than cup',
+        'Most kids chose red',
+        '18 - 9 + 4',
+      ],
+      phaseHints: const <String>[
+        'Learn the trick first with Dino.',
+        'Practice with one more similar question.',
+        'Use it in a daily-life mini challenge.',
+      ],
+      icons: const <IconData>[
+        Icons.looks_one_rounded,
+        Icons.format_list_numbered_rtl_rounded,
+        Icons.add_rounded,
+        Icons.remove_rounded,
+        Icons.exposure_plus_1_rounded,
+        Icons.filter_1_rounded,
+        Icons.straighten_rounded,
+        Icons.scale_rounded,
+        Icons.insert_chart_outlined_rounded,
+        Icons.task_alt_rounded,
+      ],
+      colors: const <Color>[
+        Color(0xFFFFA338),
+        Color(0xFF5BCC4B),
+        Color(0xFF2CB0FF),
+        Color(0xFF9B76FF),
+        Color(0xFFFF86A8),
+      ],
+    );
+  }
+
+  List<_LectureSlide> _mathSlidesThree() {
+    return _buildSlides(
+      titles: const <String>[
+        'Multiply as Groups',
+        'Divide by Sharing',
+        'Half and Quarter',
+        'Telling Time',
+        'Money Word Sums',
+        '2D and 3D Shapes',
+        'Perimeter Intro',
+        'Data and Table',
+        'Reasoning Challenge',
+        'Math Review Game',
+      ],
+      bodies: const <String>[
+        'Multiplication means equal groups added again.',
+        'Division means sharing equally into groups.',
+        'Fractions show equal parts of one whole.',
+        'Read hour and half-hour on clock.',
+        'Solve money-based stories with add or subtract.',
+        'Sort shapes by faces, edges, and corners.',
+        'Perimeter is around the shape border.',
+        'Read data from simple rows and columns.',
+        'Use clues to find the correct answer.',
+        'Mix all Level 1 skills in one playful review.',
+      ],
+      examples: const <String>[
+        '3 groups of 2 = 6',
+        '8 sweets shared by 2 = 4 each',
+        'Half of 8 is 4',
+        '6:30 means half past six',
+        'Rs 10 + Rs 5 = Rs 15',
+        'Cube has 6 faces',
+        'Perimeter of 2+2+2+2',
+        'Table shows 5 apples and 3 bananas',
+        'Find number that is >5 and <8',
+        'Solve and check your work',
+      ],
+      phaseHints: const <String>[
+        'Understand the idea with objects and pictures.',
+        'Practice one question slowly with Dino.',
+        'Apply it in a short challenge problem.',
+      ],
+      icons: const <IconData>[
+        Icons.grid_view_rounded,
+        Icons.call_split_rounded,
+        Icons.pie_chart_rounded,
+        Icons.access_time_rounded,
+        Icons.payments_rounded,
+        Icons.category_rounded,
+        Icons.crop_square_rounded,
+        Icons.table_chart_rounded,
+        Icons.psychology_rounded,
+        Icons.sports_esports_rounded,
+      ],
+      colors: const <Color>[
+        Color(0xFFFFA338),
+        Color(0xFF58CC02),
+        Color(0xFF45B8FF),
+        Color(0xFF7F6BFF),
+        Color(0xFFFF7C9D),
+      ],
+    );
+  }
+
+  List<_LectureSlide> _urduSlidesTwo() {
+    return _buildSlides(
+      titles: const <String>[
+        'Do Harfi Alfaaz',
+        'Teen Harfi Alfaaz',
+        'Shuru ka Harf',
+        'Aakhri ka Harf',
+        'Huroof Milao',
+        'Tasveer se Lafz',
+        'Rangon ke Naam',
+        'Adad 1 se 10',
+        'Asaan Jumlay',
+        'Parho aur Suno',
+      ],
+      bodies: const <String>[
+        'Do harfi alfaaz dekh kar parhna seekho.',
+        'Teen harfi alfaaz ko tod kar parho.',
+        'Lafz ka pehla harf pehchano.',
+        'Lafz ka aakhri harf pehchano.',
+        'Do huroof mila kar naya lafz banao.',
+        'Tasveer dekh kar sahi lafz chuno.',
+        'Urdu mein bunyadi rangon ke naam yaad karo.',
+        'Urdu ginti 1 se 10 tak bolo.',
+        'Chhote jumlay parho aur samjho.',
+        'Awaaz sun kar lafz repeat karo.',
+      ],
+      examples: const <String>[
+        'ab, am, is',
+        'ana, pani, kalam',
+        'seb ka pehla harf s',
+        'kitab ka aakhri harf b',
+        'ba + l = bal',
+        'seb ki tasveer -> seb',
+        'surkh, sabz, neela',
+        'aik, do, teen',
+        'Ali school jata hai.',
+        'suno aur bolo',
+      ],
+      phaseHints: const <String>[
+        'Pehle lafz ko dheere se parho.',
+        'Ab isi lafz ko phir se bol kar practice karo.',
+        'Is lafz ko jumlay mein istemal karo.',
+      ],
+      icons: const <IconData>[
+        Icons.looks_two_rounded,
+        Icons.looks_3_rounded,
+        Icons.first_page_rounded,
+        Icons.last_page_rounded,
+        Icons.merge_rounded,
+        Icons.image_search_rounded,
+        Icons.palette_rounded,
+        Icons.pin_rounded,
+        Icons.short_text_rounded,
+        Icons.volume_up_rounded,
+      ],
+      colors: const <Color>[
+        Color(0xFF7D6DFF),
+        Color(0xFF58CC02),
+        Color(0xFF47B7FF),
+        Color(0xFFFFBA4D),
+        Color(0xFFFF86A8),
+      ],
+    );
+  }
+
+  List<_LectureSlide> _urduSlidesThree() {
+    return _buildSlides(
+      titles: const <String>[
+        'Mera Naam',
+        'Mera Ghar',
+        'Mera School',
+        'Mera Khandan',
+        'Rozmarra Alfaaz',
+        'Sawal aur Jawab',
+        'Adab ke Alfaaz',
+        'Jumla Banana',
+        'Chhoti Kahani',
+        'Dobara Parhna',
+      ],
+      bodies: const <String>[
+        'Apna naam theek andaaz mein bolna aur likhna seekho.',
+        'Ghar se mutaliq alfaaz pehchano.',
+        'School ki cheezon ke naam Urdu mein bolo.',
+        'Khandan ke afrad ke naam pehchano.',
+        'Roz istemal hone wale alfaaz yaad karo.',
+        'Sawal ka asaan jawab dena seekho.',
+        'Please, shukriya, maaf kijiye jaise alfaaz istemal karo.',
+        'Alfaaz ko mila kar sahi jumla banao.',
+        'Do teen jumlon ki kahani parho.',
+        'Jo parh liya us ko dobara saaf parho.',
+      ],
+      examples: const <String>[
+        'Mera naam Ahmed hai.',
+        'ghar, kamra, darwaza',
+        'kitab, takhti, qalam',
+        'amma, abba, bhai, behen',
+        'pani, roti, doodh',
+        'Aap ka naam kya hai?',
+        'shukriya, please',
+        'Main school jata hoon.',
+        'Ali ne ped lagaya.',
+        'zor se parho',
+      ],
+      phaseHints: const <String>[
+        'Dino ke saath jumla suno aur samjho.',
+        'Jumla khud parho aur repeat karo.',
+        'Apna chhota jumla bol kar dikhao.',
+      ],
+      icons: const <IconData>[
+        Icons.person_rounded,
+        Icons.home_rounded,
+        Icons.school_rounded,
+        Icons.groups_rounded,
+        Icons.list_alt_rounded,
+        Icons.quiz_rounded,
+        Icons.volunteer_activism_rounded,
+        Icons.notes_rounded,
+        Icons.auto_stories_rounded,
+        Icons.replay_rounded,
+      ],
+      colors: const <Color>[
+        Color(0xFF7A6FFF),
+        Color(0xFF58CC02),
+        Color(0xFF4BB9FF),
+        Color(0xFFFFC54A),
+        Color(0xFFFF7F9D),
+      ],
+    );
+  }
+
+  List<_LectureModule> _lectureModules(_SubjectKind kind) {
     switch (kind) {
       case _SubjectKind.english:
-        return _LectureModule(
-          title: 'English Lecture 1',
-          slides: _englishSlides(),
-        );
+        return <_LectureModule>[
+          _LectureModule(title: 'English Lecture 1', slides: _englishSlides()),
+          _LectureModule(
+            title: 'English Lecture 2',
+            slides: _englishSlidesTwo(),
+          ),
+          _LectureModule(
+            title: 'English Lecture 3',
+            slides: _englishSlidesThree(),
+          ),
+        ];
       case _SubjectKind.math:
-        return _LectureModule(title: 'Math Lecture 1', slides: _mathSlides());
+        return <_LectureModule>[
+          _LectureModule(title: 'Math Lecture 1', slides: _mathSlides()),
+          _LectureModule(title: 'Math Lecture 2', slides: _mathSlidesTwo()),
+          _LectureModule(title: 'Math Lecture 3', slides: _mathSlidesThree()),
+        ];
       case _SubjectKind.gk:
-        return _LectureModule(title: 'GK Lecture 1', slides: _gkSlides());
+        return <_LectureModule>[
+          _LectureModule(title: 'Urdu Lecture 1', slides: _gkSlides()),
+          _LectureModule(title: 'Urdu Lecture 2', slides: _urduSlidesTwo()),
+          _LectureModule(title: 'Urdu Lecture 3', slides: _urduSlidesThree()),
+        ];
     }
   }
 
-  Future<void> _openStageOneLecture() async {
+  Future<void> _openStageLecture(int stage) async {
     final _SubjectKind kind = _subjectKind();
+    final List<_LectureModule> modules = _lectureModules(kind);
+    if (stage < 1 || stage > modules.length) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Lecture for Stage $stage is coming soon. Right now Stages 1-${modules.length} are ready.',
+          ),
+        ),
+      );
+      return;
+    }
+
     final _LectureQuizResult? result = await Navigator.of(context)
         .push<_LectureQuizResult>(
           MaterialPageRoute<_LectureQuizResult>(
             builder: (BuildContext context) {
               return _SubjectLectureScreen(
-                subjectName: widget.subjectName,
-                module: _lectureModule(kind),
+                subjectName: '${widget.subjectName} Lecture $stage',
+                module: modules[stage - 1],
                 quizBank: _quizBank(kind),
               );
             },
@@ -2406,7 +2972,10 @@ class _SubjectLearningPathScreenState
         : result.score > result.totalQuestions
         ? result.totalQuestions
         : result.score;
-    final String stageStarsKey = _subjectKey(subjectKind, 'stage_1_stars');
+    final String stageStarsKey = _subjectKey(
+      subjectKind,
+      'stage_${stage}_stars',
+    );
     final int previousBest = prefs.getInt(stageStarsKey) ?? 0;
     final int stageBest = max(previousBest, boundedScore);
     await prefs.setInt(stageStarsKey, stageBest);
@@ -2438,7 +3007,7 @@ class _SubjectLearningPathScreenState
     );
     final DateTime attemptTime = DateTime.now().toUtc();
     attempts.add(
-      '${attemptTime.toIso8601String()}|${_subjectSlug(subjectKind)}|$boundedScore|${result.passed ? 1 : 0}',
+      '${attemptTime.toIso8601String()}|${_subjectSlug(subjectKind)}|$boundedScore|${result.passed ? 1 : 0}|$stage',
     );
     if (attempts.length > 160) {
       attempts.removeRange(0, attempts.length - 160);
@@ -2469,7 +3038,7 @@ class _SubjectLearningPathScreenState
       jsonEncode(<String, dynamic>{
         'timestamp': attemptTime.toIso8601String(),
         'subject': _subjectSlug(subjectKind),
-        'stage': 1,
+        'stage': stage,
         'score': boundedScore,
         'total': result.totalQuestions,
         'passed': result.passed,
@@ -2484,8 +3053,8 @@ class _SubjectLearningPathScreenState
     int updatedUnlocked = _unlockedStage;
     Set<int> updatedCompleted = _completedStages;
     if (result.passed) {
-      updatedCompleted = <int>{..._completedStages, 1};
-      updatedUnlocked = max(_unlockedStage, 2);
+      updatedCompleted = <int>{..._completedStages, stage};
+      updatedUnlocked = max(_unlockedStage, min(stage + 1, 10));
       await _saveProgress(
         kind: subjectKind,
         unlocked: updatedUnlocked,
@@ -2503,14 +3072,17 @@ class _SubjectLearningPathScreenState
     });
 
     final String message = result.passed
-        ? 'Passed with $boundedScore/10. Next lecture unlocked. Total stars: $recalculatedStars. Stage best: $stageBest.'
-        : 'Score $boundedScore/10. Need 6/10 to unlock next lecture. Total stars: $recalculatedStars. Stage best: $stageBest.';
+        ? (stage < modules.length
+              ? 'Passed Stage $stage with $boundedScore/10. Stage ${stage + 1} unlocked. Total stars: $recalculatedStars. Stage best: $stageBest.'
+              : 'Awesome! You completed all ${modules.length} Level 1 lectures in ${widget.subjectName}. Total stars: $recalculatedStars.')
+        : 'Score $boundedScore/10 on Stage $stage. Need 6/10 to unlock next lecture. Total stars: $recalculatedStars. Stage best: $stageBest.';
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _onTapStage(int stage) {
+    final int availableStages = _lectureModules(_subjectKind()).length;
     if (stage > _unlockedStage) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -2533,15 +3105,15 @@ class _SubjectLearningPathScreenState
       return;
     }
 
-    if (stage == 1) {
-      _openStageOneLecture();
+    if (stage <= availableStages) {
+      _openStageLecture(stage);
       return;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Stage $stage is unlocked. Lecture content for this stage will be added next.',
+          'Stage $stage is unlocked. For Level 1, Stages 1 to $availableStages are ready now.',
         ),
       ),
     );
@@ -2680,7 +3252,7 @@ class _SubjectLearningPathScreenState
                                     _PathInfoChip(
                                       icon: Icons.workspace_premium_rounded,
                                       text: _isLevelOne
-                                          ? 'Level 1 lecture + quiz ready'
+                                          ? 'Level 1 lectures 1-3 + quizzes ready'
                                           : 'Level 1 module currently active',
                                     ),
                                   ],
@@ -2778,6 +3350,13 @@ class _NarrationChunk {
   final String text;
 }
 
+class _VoiceChoice {
+  const _VoiceChoice({required this.voice, required this.score});
+
+  final Map<String, String> voice;
+  final int score;
+}
+
 class _SubjectLectureScreen extends StatefulWidget {
   const _SubjectLectureScreen({
     required this.subjectName,
@@ -2805,6 +3384,9 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   _VoicePace _voicePace = _VoicePace.normal;
   int _voiceSessionId = 0;
   Map<String, String>? _preferredVoice;
+  List<Map<String, String>> _boyVoices = <Map<String, String>>[];
+  List<Map<String, String>> _girlVoices = <Map<String, String>>[];
+  List<Map<String, String>> _neutralVoices = <Map<String, String>>[];
   String _spokenWord = '';
   int _spokenStart = -1;
   int _spokenEnd = -1;
@@ -2812,11 +3394,12 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
 
   Future<void> _applyVoiceProfile() async {
     final bool normal = _voicePace == _VoicePace.normal;
-    if (_preferredVoice != null) {
-      await _tts.setVoice(_preferredVoice!);
+    final Map<String, String>? selectedVoice = _pickVoiceForPlayback();
+    if (selectedVoice != null) {
+      await _tts.setVoice(selectedVoice);
     }
-    await _tts.setPitch(normal ? 0.72 : 0.64);
-    await _tts.setSpeechRate(normal ? 0.34 : 0.23);
+    await _tts.setPitch(normal ? 1.03 : 1.0);
+    await _tts.setSpeechRate(normal ? 0.41 : 0.3);
     await _tts.setVolume(1.0);
   }
 
@@ -2824,7 +3407,33 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     return value.replaceAll('_', '-').toLowerCase();
   }
 
-  int _voiceScore(String name, String locale, String gender, String quality) {
+  bool _looksMaleVoice(String combined) {
+    return combined.contains('male') ||
+        combined.contains('boy') ||
+        combined.contains('man') ||
+        combined.contains('daniel') ||
+        combined.contains('alex') ||
+        combined.contains('fred') ||
+        combined.contains('tom') ||
+        combined.contains('david') ||
+        combined.contains('ryan');
+  }
+
+  bool _looksFemaleVoice(String combined) {
+    return combined.contains('female') ||
+        combined.contains('girl') ||
+        combined.contains('woman') ||
+        combined.contains('samantha') ||
+        combined.contains('jenny') ||
+        combined.contains('aria') ||
+        combined.contains('ava') ||
+        combined.contains('karen') ||
+        combined.contains('lisa') ||
+        combined.contains('zira') ||
+        combined.contains('salli');
+  }
+
+  int _voiceQualityScore(String locale, String combined) {
     int score = 0;
     if (locale.startsWith('en-us')) {
       score += 70;
@@ -2836,8 +3445,6 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       return -1000;
     }
 
-    final String combined = '$name $gender $quality ${locale.toLowerCase()}'
-        .toLowerCase();
     if (combined.contains('neural') ||
         combined.contains('natural') ||
         combined.contains('enhanced') ||
@@ -2845,24 +3452,11 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
         combined.contains('premium')) {
       score += 24;
     }
-    if (combined.contains('male') ||
-        combined.contains('man') ||
-        combined.contains('boy') ||
-        combined.contains('deep') ||
-        combined.contains('baritone') ||
-        combined.contains('daniel') ||
-        combined.contains('alex')) {
-      score += 80;
-    }
-    if (combined.contains('female') ||
-        combined.contains('samantha') ||
-        combined.contains('jenny') ||
-        combined.contains('aria') ||
-        combined.contains('alloy')) {
-      score -= 120;
+    if (combined.contains('child') || combined.contains('kid')) {
+      score += 20;
     }
     if (combined.contains('robot') || combined.contains('espeak')) {
-      score -= 8;
+      score -= 20;
     }
     return score;
   }
@@ -2873,8 +3467,10 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       if (rawVoices is! List<dynamic>) {
         return;
       }
-      Map<String, String>? best;
-      int bestScore = -1000;
+      final List<_VoiceChoice> boyChoices = <_VoiceChoice>[];
+      final List<_VoiceChoice> girlChoices = <_VoiceChoice>[];
+      final List<_VoiceChoice> neutralChoices = <_VoiceChoice>[];
+
       for (final dynamic item in rawVoices) {
         if (item is! Map) {
           continue;
@@ -2888,14 +3484,72 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
         final String locale = _normalizeLocale(localeRaw);
         final String gender = '${item['gender'] ?? ''}'.trim();
         final String quality = '${item['quality'] ?? ''}'.trim();
-        final int score = _voiceScore(name, locale, gender, quality);
-        if (score > bestScore) {
-          bestScore = score;
-          best = <String, String>{'name': name, 'locale': localeRaw};
+        final String combined = '$name $gender $quality $locale'.toLowerCase();
+        final int score = _voiceQualityScore(locale, combined);
+        if (score <= -1000) {
+          continue;
+        }
+        final _VoiceChoice choice = _VoiceChoice(
+          voice: <String, String>{'name': name, 'locale': localeRaw},
+          score: score,
+        );
+        if (_looksFemaleVoice(combined)) {
+          girlChoices.add(choice);
+        } else if (_looksMaleVoice(combined)) {
+          boyChoices.add(choice);
+        } else {
+          neutralChoices.add(choice);
         }
       }
-      _preferredVoice = best;
+
+      void sortChoices(List<_VoiceChoice> list) {
+        list.sort(
+          (_VoiceChoice a, _VoiceChoice b) => b.score.compareTo(a.score),
+        );
+      }
+
+      sortChoices(boyChoices);
+      sortChoices(girlChoices);
+      sortChoices(neutralChoices);
+
+      _boyVoices = boyChoices
+          .map((_VoiceChoice choice) => choice.voice)
+          .toList(growable: false);
+      _girlVoices = girlChoices
+          .map((_VoiceChoice choice) => choice.voice)
+          .toList(growable: false);
+      _neutralVoices = neutralChoices
+          .map((_VoiceChoice choice) => choice.voice)
+          .toList(growable: false);
+
+      final List<_VoiceChoice> allChoices = <_VoiceChoice>[
+        ...boyChoices,
+        ...girlChoices,
+        ...neutralChoices,
+      ]..sort((_VoiceChoice a, _VoiceChoice b) => b.score.compareTo(a.score));
+      _preferredVoice = allChoices.isEmpty ? null : allChoices.first.voice;
     } catch (_) {}
+  }
+
+  Map<String, String>? _pickVoiceForPlayback() {
+    final bool preferGirl = _random.nextBool();
+    final List<Map<String, String>> primary = preferGirl
+        ? _girlVoices
+        : _boyVoices;
+    final List<Map<String, String>> secondary = preferGirl
+        ? _boyVoices
+        : _girlVoices;
+
+    if (primary.isNotEmpty) {
+      return primary[_random.nextInt(primary.length)];
+    }
+    if (secondary.isNotEmpty) {
+      return secondary[_random.nextInt(secondary.length)];
+    }
+    if (_neutralVoices.isNotEmpty) {
+      return _neutralVoices[_random.nextInt(_neutralVoices.length)];
+    }
+    return _preferredVoice;
   }
 
   Future<void> _configureTts() async {
@@ -3102,6 +3756,15 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
         'Add step by step with Dino.',
         'Great! Check the numbers again.',
         'Perfect. You are solving like a star.',
+      ];
+      return lines[slideNumber % lines.length];
+    }
+    if (subject.contains('urdu')) {
+      const List<String> lines = <String>[
+        'Awaaz suno, lafz bolo, phir dobara repeat karo.',
+        'Shabash! Harf ko dekh kar zor se parho.',
+        'Bahut acha! Ab isi lafz ko jumlay mein bolo.',
+        'Excellent! Dino ke saath practice jari rakho.',
       ];
       return lines[slideNumber % lines.length];
     }
@@ -3394,19 +4057,6 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                             moodIndex: slideNumber,
                             speaking: _speaking,
                             size: 138,
-                            enableSpeakingMouth: true,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        top: 58,
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
                           ),
                         ),
                       ),

@@ -351,7 +351,6 @@ class _DinoMascotAssistantState extends State<DinoMascotAssistant>
                 _DinoCharacter(
                   size: widget.size,
                   motion: motion,
-                  baseColor: widget.baseColor,
                   bellyColor: widget.bellyColor,
                   badgeIcon: widget.badgeIcon,
                 ),
@@ -371,7 +370,6 @@ class DinoInstructorAvatar extends StatefulWidget {
     this.speaking = false,
     this.size = 72,
     this.badgeIcon,
-    this.enableSpeakingMouth = false,
     super.key,
   });
 
@@ -380,7 +378,6 @@ class DinoInstructorAvatar extends StatefulWidget {
   final bool speaking;
   final double size;
   final IconData? badgeIcon;
-  final bool enableSpeakingMouth;
 
   @override
   State<DinoInstructorAvatar> createState() => _DinoInstructorAvatarState();
@@ -434,11 +431,9 @@ class _DinoInstructorAvatarState extends State<DinoInstructorAvatar>
         return _DinoCharacter(
           size: widget.size,
           motion: motion,
-          baseColor: const Color(0xFF3FCB2A),
           bellyColor: const Color(0xFFF9EAB6),
           badgeIcon: widget.badgeIcon,
           badgeColor: widget.accentColor,
-          enableSpeakingMouth: widget.enableSpeakingMouth,
         );
       },
     );
@@ -449,29 +444,22 @@ class _DinoCharacter extends StatelessWidget {
   const _DinoCharacter({
     required this.size,
     required this.motion,
-    required this.baseColor,
     required this.bellyColor,
     this.badgeIcon,
     this.badgeColor = const Color(0xFF58CC02),
-    this.enableSpeakingMouth = false,
   });
 
   final double size;
   final _DinoMotion motion;
-  final Color baseColor;
   final Color bellyColor;
   final IconData? badgeIcon;
   final Color badgeColor;
-  final bool enableSpeakingMouth;
 
   @override
   Widget build(BuildContext context) {
     final double width = size * 1.16;
     final double height = size * 1.24;
-    final double talkPulse = 1 + (motion.mouthOpen * 0.03);
     final double nodScale = 1 + (motion.headRotate.abs() * 0.06);
-    final double handSwing =
-        (motion.rightArmRotate - motion.leftArmRotate) * 0.55;
 
     return Transform.translate(
       offset: Offset(motion.xShift, motion.yShift),
@@ -507,56 +495,13 @@ class _DinoCharacter extends StatelessWidget {
                     ),
                     child: Transform.scale(
                       alignment: Alignment.center,
-                      scale: talkPulse * nodScale,
+                      scale: nodScale,
                       child: Image.asset(
                         'assets/mascot/dino_mascot.png',
                         fit: BoxFit.contain,
                         filterQuality: FilterQuality.high,
                       ),
                     ),
-                  ),
-                ),
-                if (enableSpeakingMouth && motion.mouthOpen > 0.17)
-                  Positioned(
-                    left: size * 0.37,
-                    top: size * 0.42,
-                    child: Transform.rotate(
-                      angle: motion.headRotate * 0.28,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: <Widget>[
-                          Positioned(
-                            left: -size * 0.006,
-                            top: -size * 0.01,
-                            child: Container(
-                              width: size * 0.12,
-                              height: size * 0.078,
-                              decoration: BoxDecoration(
-                                color: Color.alphaBlend(
-                                  Colors.white.withValues(alpha: 0.06),
-                                  baseColor,
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                  size * 0.05,
-                                ),
-                              ),
-                            ),
-                          ),
-                          _buildTalkingMouth(
-                            size: size * 0.095,
-                            openness: motion.mouthOpen,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                Positioned(
-                  right: size * 0.06,
-                  top: size * 0.57,
-                  child: Transform.rotate(
-                    angle: handSwing,
-                    alignment: Alignment.bottomLeft,
-                    child: _buildWaveHand(size: size * 0.16),
                   ),
                 ),
                 if (badgeIcon != null)
@@ -586,84 +531,6 @@ class _DinoCharacter extends StatelessWidget {
                     ),
                   ),
               ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWaveHand({required double size}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: baseColor,
-        border: Border.all(
-          color: const Color(0xFF2F7B2A).withValues(alpha: 0.35),
-          width: 0.8,
-        ),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List<Widget>.generate(3, (int i) {
-            return Container(
-              width: size * 0.14,
-              height: size * 0.11,
-              margin: EdgeInsets.only(left: i == 0 ? 0 : size * 0.04),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF2DE),
-                borderRadius: BorderRadius.circular(size * 0.05),
-              ),
-            );
-          }),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTalkingMouth({required double size, required double openness}) {
-    final double clampedOpen = max(0.0, min(openness, 0.72));
-    final double mouthHeight = size * (0.22 + clampedOpen * 0.42);
-    final double tongueOpacity = max(0.0, min((clampedOpen - 0.2) * 2.0, 1.0));
-    return Container(
-      width: size,
-      height: mouthHeight,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(size * 0.42),
-        color: const Color(0xFF6F2D1C).withValues(alpha: 0.9),
-        border: Border.all(
-          color: const Color(0xFFE9D5C0).withValues(alpha: 0.75),
-          width: 0.9,
-        ),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
-            blurRadius: 2.6,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: Opacity(
-          opacity: tongueOpacity,
-          child: Container(
-            width: size * 0.62,
-            height: mouthHeight * 0.36,
-            margin: EdgeInsets.only(bottom: mouthHeight * 0.09),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(size * 0.3),
-              color: const Color(0xFFE46A7B),
             ),
           ),
         ),
