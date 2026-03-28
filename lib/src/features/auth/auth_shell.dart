@@ -227,8 +227,12 @@ class _LoginDinoOverlayState extends State<_LoginDinoOverlay>
                         actionPlaylist: const <DinoAnimationAction>[
                           DinoAnimationAction.welcomeWave,
                           DinoAnimationAction.waveHi,
+                          DinoAnimationAction.clap,
                           DinoAnimationAction.nod,
+                          DinoAnimationAction.sway,
                           DinoAnimationAction.tailWag,
+                          DinoAnimationAction.proudPose,
+                          DinoAnimationAction.rocket,
                           DinoAnimationAction.waveBye,
                         ],
                       ),

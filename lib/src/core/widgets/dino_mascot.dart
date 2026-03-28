@@ -12,6 +12,11 @@ enum DinoAnimationAction {
   dance,
   twirl,
   tailWag,
+  clap,
+  sway,
+  spinHop,
+  proudPose,
+  rocket,
 }
 
 class DinoPageOverlay extends StatefulWidget {
@@ -34,8 +39,13 @@ class DinoPageOverlay extends StatefulWidget {
       DinoAnimationAction.nod,
       DinoAnimationAction.shake,
       DinoAnimationAction.dance,
+      DinoAnimationAction.clap,
+      DinoAnimationAction.sway,
       DinoAnimationAction.twirl,
+      DinoAnimationAction.spinHop,
+      DinoAnimationAction.proudPose,
       DinoAnimationAction.tailWag,
+      DinoAnimationAction.rocket,
       DinoAnimationAction.waveBye,
     ],
     super.key,
@@ -135,8 +145,13 @@ class DinoMascotAssistant extends StatefulWidget {
       DinoAnimationAction.nod,
       DinoAnimationAction.shake,
       DinoAnimationAction.dance,
+      DinoAnimationAction.clap,
+      DinoAnimationAction.sway,
       DinoAnimationAction.twirl,
+      DinoAnimationAction.spinHop,
+      DinoAnimationAction.proudPose,
       DinoAnimationAction.tailWag,
+      DinoAnimationAction.rocket,
       DinoAnimationAction.waveBye,
     ],
     super.key,
@@ -178,8 +193,13 @@ class _DinoMascotAssistantState extends State<DinoMascotAssistant>
         DinoAnimationAction.nod,
         DinoAnimationAction.shake,
         DinoAnimationAction.dance,
+        DinoAnimationAction.clap,
+        DinoAnimationAction.sway,
         DinoAnimationAction.twirl,
+        DinoAnimationAction.spinHop,
+        DinoAnimationAction.proudPose,
         DinoAnimationAction.tailWag,
+        DinoAnimationAction.rocket,
         DinoAnimationAction.waveBye,
       ];
     }
@@ -376,11 +396,16 @@ class _DinoInstructorAvatarState extends State<DinoInstructorAvatar>
     DinoAnimationAction.waveHi,
     DinoAnimationAction.tailWag,
     DinoAnimationAction.dance,
+    DinoAnimationAction.clap,
     DinoAnimationAction.jump,
     DinoAnimationAction.shake,
     DinoAnimationAction.bounce,
+    DinoAnimationAction.sway,
     DinoAnimationAction.twirl,
+    DinoAnimationAction.spinHop,
     DinoAnimationAction.waveBye,
+    DinoAnimationAction.proudPose,
+    DinoAnimationAction.rocket,
     DinoAnimationAction.spinAxis,
   ];
 
@@ -611,6 +636,7 @@ _DinoMotion _computeDinoMotion({
   double leftArmRotate = 0.04 + loop * 0.015;
   double rightArmRotate = -0.04 - loop * 0.015;
   double tailRotate = loop * 0.14;
+  double mouthBoost = 0;
 
   switch (action) {
     case DinoAnimationAction.welcomeWave:
@@ -655,12 +681,34 @@ _DinoMotion _computeDinoMotion({
     case DinoAnimationAction.tailWag:
       tailRotate += sin(p * pi * 8) * 0.7;
       bodyRotate += sin(p * pi * 4) * 0.04;
+    case DinoAnimationAction.clap:
+      leftArmRotate = 0.05 + sin(p * pi * 4) * 0.12;
+      rightArmRotate = -0.05 - sin(p * pi * 4) * 0.12;
+      bodyScale += sin(p * pi).abs() * 0.03;
+    case DinoAnimationAction.sway:
+      bodyRotate += sin(p * pi * 2) * 0.11;
+      xShift += sin(p * pi * 2) * 4.4;
+      tailRotate += sin(p * pi * 6) * 0.16;
+    case DinoAnimationAction.spinHop:
+      bodyRotate += sin(p * pi * 2) * 0.24;
+      yShift -= sin(p * pi).abs() * 13;
+      xShift += sin(p * pi * 2) * 3.5;
+    case DinoAnimationAction.proudPose:
+      bodyScale += sin(p * pi).abs() * 0.05;
+      headRotate -= sin(p * pi).abs() * 0.06;
+      leftArmRotate = 0.02;
+      rightArmRotate = -0.02;
+    case DinoAnimationAction.rocket:
+      yShift -= sin(p * pi).abs() * 16;
+      bodyScale += sin(p * pi).abs() * 0.04;
+      tailRotate += sin(p * pi * 8) * 0.18;
+      mouthBoost += sin(p * pi * 3).abs() * 0.08;
   }
 
   final double talk = speaking ? (0.24 + sin(idleT * pi * 9).abs() * 0.42) : 0;
-  final double mouthOpen = speaking
-      ? talk
-      : max(0.08, 0.11 + sin(p * pi * 2).abs() * 0.04);
+  final double mouthOpen =
+      (speaking ? talk : max(0.08, 0.11 + sin(p * pi * 2).abs() * 0.04)) +
+      mouthBoost;
   final bool blink = sin(idleT * pi * 2 * 0.8) > 0.995;
 
   return _DinoMotion(

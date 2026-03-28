@@ -1233,8 +1233,13 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
                 DinoAnimationAction.nod,
                 DinoAnimationAction.shake,
                 DinoAnimationAction.dance,
+                DinoAnimationAction.clap,
+                DinoAnimationAction.sway,
                 DinoAnimationAction.twirl,
+                DinoAnimationAction.spinHop,
+                DinoAnimationAction.proudPose,
                 DinoAnimationAction.tailWag,
+                DinoAnimationAction.rocket,
                 DinoAnimationAction.waveBye,
               ],
               child: Column(
@@ -1260,8 +1265,13 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
               DinoAnimationAction.nod,
               DinoAnimationAction.shake,
               DinoAnimationAction.dance,
+              DinoAnimationAction.clap,
+              DinoAnimationAction.sway,
               DinoAnimationAction.twirl,
+              DinoAnimationAction.spinHop,
+              DinoAnimationAction.proudPose,
               DinoAnimationAction.tailWag,
+              DinoAnimationAction.rocket,
               DinoAnimationAction.waveBye,
             ],
             child: Row(
@@ -1679,69 +1689,169 @@ class _SubjectLearningPathScreenState
       case _SubjectKind.english:
         return const <_QuizQuestion>[
           _QuizQuestion(
-            prompt: 'Which letter starts "Apple"?',
-            options: <String>['A', 'B', 'C', 'D'],
+            prompt: 'Which letter makes /a/ in "apple"?',
+            options: <String>['A', 'M', 'S', 'T'],
             correctIndex: 0,
-            explanation: 'Apple begins with the letter A sound.',
+            explanation: 'The word apple starts with the /a/ sound.',
           ),
           _QuizQuestion(
-            prompt: 'Which one is a vowel?',
-            options: <String>['B', 'E', 'R', 'T'],
-            correctIndex: 1,
+            prompt: 'Which letter starts the word "sun"?',
+            options: <String>['S', 'N', 'U', 'L'],
+            correctIndex: 0,
+            explanation: 'Sun begins with the /s/ sound.',
           ),
           _QuizQuestion(
-            prompt: 'Pick the small letter of B.',
+            prompt: 'Pick the lowercase letter for B.',
             options: <String>['d', 'p', 'b', 'h'],
             correctIndex: 2,
+            explanation: 'Lowercase B is written as b.',
           ),
           _QuizQuestion(
             prompt: 'Which word begins with C?',
             options: <String>['Sun', 'Cat', 'Ball', 'Egg'],
             correctIndex: 1,
+            explanation: 'Cat starts with the /k/ sound of C.',
           ),
           _QuizQuestion(
-            prompt: 'How many letters are in "DOG"?',
+            prompt: 'How many sounds in "cat"?',
             options: <String>['2', '3', '4', '5'],
             correctIndex: 1,
+            explanation: 'Cat has three sounds: /c/ /a/ /t/.',
           ),
           _QuizQuestion(
-            prompt: 'Pick a rhyming word for "hat".',
+            prompt: 'Which word rhymes with "hat"?',
             options: <String>['mat', 'sun', 'top', 'bed'],
             correctIndex: 0,
+            explanation: 'Hat and mat share the same ending sound.',
           ),
           _QuizQuestion(
-            prompt: 'Which letter comes after M?',
+            prompt: 'Which vowel is in "bed"?',
+            options: <String>['a', 'e', 'i', 'o'],
+            correctIndex: 1,
+            explanation: 'Bed has the short /e/ sound.',
+          ),
+          _QuizQuestion(
+            prompt: 'Blend these sounds: /m/ /a/ /p/',
+            options: <String>['mop', 'map', 'cap', 'tap'],
+            correctIndex: 1,
+            explanation: 'When blended, /m/ /a/ /p/ becomes map.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which one is a vowel?',
+            options: <String>['B', 'E', 'R', 'T'],
+            correctIndex: 1,
+            explanation: 'E is one of the five vowels.',
+          ),
+          _QuizQuestion(
+            prompt: 'What comes after M?',
             options: <String>['L', 'N', 'P', 'K'],
             correctIndex: 1,
+            explanation: 'N comes right after M in the alphabet.',
           ),
           _QuizQuestion(
-            prompt: 'Which is a greeting word?',
-            options: <String>['Hello', 'Stone', 'Chair', 'Spoon'],
+            prompt: 'Which word starts with /t/?',
+            options: <String>['top', 'bag', 'sun', 'pen'],
             correctIndex: 0,
+            explanation: 'Top starts with the /t/ sound.',
           ),
           _QuizQuestion(
             prompt: 'Choose the correct spelling.',
             options: <String>['Bok', 'Book', 'Buk', 'Booc'],
             correctIndex: 1,
+            explanation: 'Book is the correct spelling.',
           ),
           _QuizQuestion(
-            prompt: 'Which one is a sentence starter?',
+            prompt: 'Pick the greeting word.',
+            options: <String>['Hello', 'Stone', 'Chair', 'Spoon'],
+            correctIndex: 0,
+            explanation: 'Hello is a greeting word.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which starts a sentence?',
             options: <String>['!', 'A capital letter', 'A number', 'A comma'],
             correctIndex: 1,
+            explanation: 'A sentence starts with a capital letter.',
           ),
           _QuizQuestion(
-            prompt: 'Pick the picture word for "pet".',
-            options: <String>['Dog', 'Table', 'Road', 'Cloud'],
+            prompt: 'Which word has short /i/?',
+            options: <String>['pig', 'cape', 'boat', 'cube'],
             correctIndex: 0,
+            explanation: 'Pig uses the short /i/ sound.',
           ),
           _QuizQuestion(
-            prompt: 'Which one is not a letter?',
+            prompt: 'Which pair rhymes?',
+            options: <String>['dog-log', 'cat-pen', 'sun-bed', 'top-fish'],
+            correctIndex: 0,
+            explanation: 'Dog and log share the ending /og/.',
+          ),
+          _QuizQuestion(
+            prompt: 'Pick the word with 3 letters.',
+            options: <String>['sun', 'frog', 'train', 'school'],
+            correctIndex: 0,
+            explanation: 'Sun has exactly three letters.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which is not a letter?',
             options: <String>['G', 'H', '7', 'J'],
             correctIndex: 2,
+            explanation: '7 is a number, not a letter.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which word starts with the same sound as "ball"?',
+            options: <String>['bat', 'cat', 'sun', 'dog'],
+            correctIndex: 0,
+            explanation: 'Ball and bat both start with /b/.',
+          ),
+          _QuizQuestion(
+            prompt: 'Pick the word family for "cat".',
+            options: <String>['-at', '-en', '-ig', '-op'],
+            correctIndex: 0,
+            explanation: 'Cat belongs to the -at family.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which word has the /s/ sound at the start?',
+            options: <String>['sit', 'lip', 'top', 'man'],
+            correctIndex: 0,
+            explanation: 'Sit starts with /s/.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which sentence starts correctly?',
+            options: <String>[
+              'i read a book.',
+              'I read a book.',
+              'i Read a book.',
+              'I read A book.',
+            ],
+            correctIndex: 1,
+            explanation: 'Sentence starts with capital I.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which word starts with /m/?',
+            options: <String>['moon', 'tree', 'sun', 'kite'],
+            correctIndex: 0,
+            explanation: 'Moon begins with /m/.',
+          ),
+          _QuizQuestion(
+            prompt: 'How many words in "I can read"?',
+            options: <String>['2', '3', '4', '5'],
+            correctIndex: 1,
+            explanation: 'I | can | read = three words.',
           ),
         ];
       case _SubjectKind.math:
         return const <_QuizQuestion>[
+          _QuizQuestion(
+            prompt: 'Which number word starts with /f/?',
+            options: <String>['one', 'two', 'five', 'ten'],
+            correctIndex: 2,
+            explanation: 'Five starts with the /f/ sound.',
+          ),
+          _QuizQuestion(
+            prompt: 'How many sounds in the word "one"?',
+            options: <String>['2', '3', '4', '5'],
+            correctIndex: 1,
+            explanation: 'One has three sounds: /w/ /u/ /n/.',
+          ),
           _QuizQuestion(
             prompt: 'What is 2 + 1?',
             options: <String>['1', '2', '3', '4'],
@@ -1752,60 +1862,131 @@ class _SubjectLearningPathScreenState
             prompt: 'What is 5 - 2?',
             options: <String>['2', '3', '4', '5'],
             correctIndex: 1,
+            explanation: 'Take away two from five, three remain.',
           ),
           _QuizQuestion(
             prompt: 'Which number is bigger?',
             options: <String>['4', '9', '3', '2'],
             correctIndex: 1,
+            explanation: 'Nine is bigger than 4, 3, and 2.',
           ),
           _QuizQuestion(
             prompt: 'What comes after 7?',
             options: <String>['6', '8', '9', '5'],
             correctIndex: 1,
+            explanation: 'Eight comes after seven.',
           ),
           _QuizQuestion(
             prompt: 'How many sides does a triangle have?',
             options: <String>['2', '3', '4', '5'],
             correctIndex: 1,
+            explanation: 'A triangle has 3 sides.',
           ),
           _QuizQuestion(
             prompt: 'What is 10 - 1?',
             options: <String>['7', '8', '9', '10'],
             correctIndex: 2,
+            explanation: 'Ten take one equals nine.',
           ),
           _QuizQuestion(
             prompt: 'Count: 1, 2, 3, __',
             options: <String>['4', '5', '6', '2'],
             correctIndex: 0,
+            explanation: 'Four is next in counting order.',
           ),
           _QuizQuestion(
             prompt: 'What is 3 + 3?',
             options: <String>['5', '6', '7', '8'],
             correctIndex: 1,
+            explanation: 'Three plus three makes six.',
           ),
           _QuizQuestion(
             prompt: 'Which shape is round?',
             options: <String>['Square', 'Triangle', 'Circle', 'Rectangle'],
             correctIndex: 2,
+            explanation: 'A circle is round and has no corners.',
           ),
           _QuizQuestion(
             prompt: 'What is 4 + 2?',
             options: <String>['4', '5', '6', '7'],
             correctIndex: 2,
+            explanation: 'Four plus two is six.',
           ),
           _QuizQuestion(
             prompt: 'What is 8 - 3?',
             options: <String>['4', '5', '6', '7'],
             correctIndex: 1,
+            explanation: 'Eight minus three is five.',
           ),
           _QuizQuestion(
             prompt: 'How many fingers on one hand?',
             options: <String>['4', '5', '6', '7'],
             correctIndex: 1,
+            explanation: 'One hand has five fingers.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which symbol means add?',
+            options: <String>['-', '+', '>', '='],
+            correctIndex: 1,
+            explanation: 'The plus sign (+) means add.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which symbol means take away?',
+            options: <String>['x', '+', '-', '='],
+            correctIndex: 2,
+            explanation: 'The minus sign (-) means subtract.',
+          ),
+          _QuizQuestion(
+            prompt: 'Choose the number word for 6.',
+            options: <String>['six', 'seven', 'eight', 'nine'],
+            correctIndex: 0,
+            explanation: '6 is read as six.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which has more?',
+            options: <String>['2 apples', '5 apples', '1 apple', '3 apples'],
+            correctIndex: 1,
+            explanation: '5 apples is the biggest group.',
+          ),
+          _QuizQuestion(
+            prompt: 'What comes before 5?',
+            options: <String>['3', '4', '6', '7'],
+            correctIndex: 1,
+            explanation: 'Four comes before five.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which number starts with /t/?',
+            options: <String>['two', 'one', 'five', 'six'],
+            correctIndex: 0,
+            explanation: 'Two starts with the /t/ sound.',
+          ),
+          _QuizQuestion(
+            prompt: 'What is 1 + 1?',
+            options: <String>['1', '2', '3', '4'],
+            correctIndex: 1,
+            explanation: 'One plus one equals two.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which shape has 4 equal sides?',
+            options: <String>['Circle', 'Triangle', 'Square', 'Oval'],
+            correctIndex: 2,
+            explanation: 'A square has four equal sides.',
+          ),
+          _QuizQuestion(
+            prompt: 'How many sounds in "ten"?',
+            options: <String>['1', '2', '3', '4'],
+            correctIndex: 2,
+            explanation: 'Ten has /t/ /e/ /n/ which are three sounds.',
           ),
         ];
       case _SubjectKind.gk:
         return const <_QuizQuestion>[
+          _QuizQuestion(
+            prompt: 'Which word starts with /b/?',
+            options: <String>['Bird', 'Cat', 'Sun', 'Fish'],
+            correctIndex: 0,
+            explanation: 'Bird starts with the /b/ sound.',
+          ),
           _QuizQuestion(
             prompt: 'Which animal says "meow"?',
             options: <String>['Dog', 'Cat', 'Cow', 'Duck'],
@@ -1816,56 +1997,138 @@ class _SubjectLearningPathScreenState
             prompt: 'What color is the sun often drawn as?',
             options: <String>['Blue', 'Green', 'Yellow', 'Black'],
             correctIndex: 2,
+            explanation: 'The sun is commonly drawn yellow.',
           ),
           _QuizQuestion(
             prompt: 'Which one can fly?',
             options: <String>['Bird', 'Fish', 'Cow', 'Goat'],
             correctIndex: 0,
+            explanation: 'Birds can fly in the sky.',
           ),
           _QuizQuestion(
             prompt: 'Where do fish live?',
             options: <String>['Sky', 'Water', 'Tree', 'Road'],
             correctIndex: 1,
+            explanation: 'Fish live in water.',
           ),
           _QuizQuestion(
             prompt: 'How many days are in a week?',
             options: <String>['5', '6', '7', '8'],
             correctIndex: 2,
+            explanation: 'A week has 7 days.',
           ),
           _QuizQuestion(
             prompt: 'Which season is very cold?',
             options: <String>['Summer', 'Winter', 'Spring', 'Rainy'],
             correctIndex: 1,
+            explanation: 'Winter is the cold season.',
           ),
           _QuizQuestion(
             prompt: 'What do we use to see things?',
             options: <String>['Ears', 'Nose', 'Eyes', 'Hands'],
             correctIndex: 2,
+            explanation: 'We see with our eyes.',
           ),
           _QuizQuestion(
             prompt: 'Which planet do we live on?',
             options: <String>['Mars', 'Venus', 'Earth', 'Jupiter'],
             correctIndex: 2,
+            explanation: 'Humans live on Earth.',
           ),
           _QuizQuestion(
             prompt: 'Which one is a fruit?',
             options: <String>['Carrot', 'Apple', 'Potato', 'Onion'],
             correctIndex: 1,
+            explanation: 'Apple is a fruit.',
           ),
           _QuizQuestion(
             prompt: 'Who helps us learn in school?',
             options: <String>['Pilot', 'Teacher', 'Chef', 'Driver'],
             correctIndex: 1,
+            explanation: 'A teacher helps us learn.',
           ),
           _QuizQuestion(
             prompt: 'Which is a transport?',
             options: <String>['Bus', 'Tree', 'Book', 'Pencil'],
             correctIndex: 0,
+            explanation: 'A bus is used for transport.',
           ),
           _QuizQuestion(
             prompt: 'What do bees make?',
             options: <String>['Honey', 'Milk', 'Juice', 'Bread'],
             correctIndex: 0,
+            explanation: 'Bees make honey.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which word starts with /s/?',
+            options: <String>['Sun', 'Moon', 'Rain', 'Tree'],
+            correctIndex: 0,
+            explanation: 'Sun starts with /s/.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which one has wings?',
+            options: <String>['Bird', 'Cow', 'Cat', 'Fish'],
+            correctIndex: 0,
+            explanation: 'Birds have wings.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which place is for learning?',
+            options: <String>['School', 'Garage', 'Market', 'Station'],
+            correctIndex: 0,
+            explanation: 'Children learn in school.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which helper puts out fire?',
+            options: <String>['Teacher', 'Doctor', 'Firefighter', 'Chef'],
+            correctIndex: 2,
+            explanation: 'A firefighter puts out fires.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which time is dark?',
+            options: <String>['Night', 'Morning', 'Noon', 'Evening tea'],
+            correctIndex: 0,
+            explanation: 'Night is the dark part of the day.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which body part helps us hear?',
+            options: <String>['Eyes', 'Ears', 'Hands', 'Feet'],
+            correctIndex: 1,
+            explanation: 'We hear with our ears.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which word starts with /t/?',
+            options: <String>['Tree', 'Apple', 'Orange', 'Egg'],
+            correctIndex: 0,
+            explanation: 'Tree starts with the /t/ sound.',
+          ),
+          _QuizQuestion(
+            prompt: 'What do plants need to grow?',
+            options: <String>[
+              'Water and sunlight',
+              'Only toys',
+              'Only shoes',
+              'Only paint',
+            ],
+            correctIndex: 0,
+            explanation: 'Plants need water and sunlight.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which animal gives us milk?',
+            options: <String>['Cow', 'Fish', 'Bird', 'Cat'],
+            correctIndex: 0,
+            explanation: 'Cows are known for giving milk.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which one belongs in the sky?',
+            options: <String>['Cloud', 'Bus', 'Desk', 'Shoe'],
+            correctIndex: 0,
+            explanation: 'Clouds are in the sky.',
+          ),
+          _QuizQuestion(
+            prompt: 'Which word starts with /m/?',
+            options: <String>['Moon', 'Tree', 'Sun', 'Bird'],
+            correctIndex: 0,
+            explanation: 'Moon starts with /m/.',
           ),
         ];
     }
@@ -1877,20 +2140,27 @@ class _SubjectLearningPathScreenState
     required List<String> examples,
     required List<IconData> icons,
     required List<Color> colors,
+    List<String> phaseHints = const <String>[
+      'Listen to Dino and hear each sound clearly.',
+      'Say the sound with Dino and tap the beats.',
+      'Blend the sounds and use them in a tiny sentence.',
+    ],
   }) {
-    const List<String> phases = <String>['Basics', 'Practice', 'Challenge'];
+    const List<String> phases = <String>['Hear It', 'Say It', 'Blend It'];
+    final List<String> hints = phaseHints.length == 3
+        ? phaseHints
+        : const <String>[
+            'Listen to Dino and hear each sound clearly.',
+            'Say the sound with Dino and tap the beats.',
+            'Blend the sounds and use them in a tiny sentence.',
+          ];
     final List<_LectureSlide> slides = <_LectureSlide>[];
     for (int round = 0; round < 3; round++) {
       for (int i = 0; i < titles.length; i++) {
-        final String roundHint = switch (round) {
-          0 => 'Take a tiny step and repeat after Dino.',
-          1 => 'Great! Let us practice this in an easy way.',
-          _ => 'Awesome progress. You are ready for the challenge step.',
-        };
         slides.add(
           _LectureSlide(
             title: '${titles[i]} - ${phases[round]}',
-            body: '${bodies[i]} $roundHint',
+            body: '${bodies[i]} ${hints[round]}',
             example: examples[i],
             icon: icons[(i + round) % icons.length],
             accentColor: colors[(i + round) % colors.length],
@@ -1904,40 +2174,45 @@ class _SubjectLearningPathScreenState
   List<_LectureSlide> _englishSlides() {
     return _buildSlides(
       titles: const <String>[
-        'Letter Sounds',
-        'Vowel Friends',
-        'Blend Letters',
-        'Read Small Words',
-        'Capital Start',
-        'Rhyming Words',
-        'Word Families',
-        'Sentence Sense',
-        'Listening Skills',
-        'Daily Reading',
+        'Sound of A',
+        'Sound of M',
+        'Sound of S',
+        'Sound of T',
+        'Short Vowel E',
+        'Short Vowel I',
+        'Blend: at',
+        'Blend: am',
+        'Rhyming Family',
+        'Tiny Sentence Read',
       ],
       bodies: const <String>[
-        'Say each letter sound clearly and match it with a word.',
-        'A, E, I, O, U help words sound complete.',
-        'Blend two and three sounds to read short words.',
-        'Read simple CVC words from left to right.',
-        'Use capital letters at the start of names and sentences.',
-        'Rhyming words share ending sounds.',
-        'Word families help us read many words quickly.',
-        'A sentence should begin correctly and make full sense.',
-        'Listen carefully before choosing a word.',
-        'Practice reading every day to become faster.',
+        'Hear /a/ and find words that start with that sound.',
+        'Hear /m/ and feel your lips close and open.',
+        'Hear /s/ like a soft snake sound.',
+        'Hear /t/ with a quick tongue tap.',
+        'Use short /e/ to read simple words.',
+        'Use short /i/ in tiny words.',
+        'Join sounds to read the -at family.',
+        'Join sounds to read the -am family.',
+        'Rhymes share the same ending sound.',
+        'Read one short sentence with smooth voice.',
       ],
       examples: const <String>[
-        'A says /a/ in apple',
-        'bed, pin, hot, sun',
+        '/a/ in apple',
+        '/m/ in moon',
+        '/s/ in sun',
+        '/t/ in top',
+        'bed, pen, net',
+        'pin, sit, lid',
         'c + a + t = cat',
-        'cat, dog, red, box',
-        'Ali reads books.',
-        'cat, hat, bat',
-        '-at: cat, bat, mat',
-        'I play with a ball.',
-        'Listen and point to word',
-        'Read 5 words before sleep',
+        'm + a + m = mam',
+        'cat, bat, hat',
+        'I can tap.',
+      ],
+      phaseHints: const <String>[
+        'Listen to Dino and hear every beginning sound.',
+        'Say each sound clearly and copy Dino.',
+        'Blend sounds and read the whole word.',
       ],
       icons: const <IconData>[
         Icons.auto_stories_rounded,
@@ -1964,40 +2239,45 @@ class _SubjectLearningPathScreenState
   List<_LectureSlide> _mathSlides() {
     return _buildSlides(
       titles: const <String>[
-        'Counting Objects',
-        'Compare Numbers',
-        'Addition Intro',
-        'Subtraction Intro',
-        'Number Order',
-        'Shape Time',
-        'More Or Less',
-        'Math In Life',
-        'Check Answers',
-        'Speed Practice',
+        'Number Sound: One',
+        'Number Sound: Two',
+        'Number Sound: Three',
+        'Count and Tap',
+        'Plus Means Add',
+        'Minus Means Take Away',
+        'Shape Word: Circle',
+        'Shape Word: Square',
+        'More and Less Words',
+        'Math Talk Sentence',
       ],
       bodies: const <String>[
-        'Count objects one by one and touch each object once.',
-        'Find which number is bigger and which is smaller.',
-        'Addition joins groups together.',
-        'Subtraction takes objects away.',
-        'Put numbers in correct ascending order.',
-        'Identify circle, square, triangle and rectangle.',
-        'Use groups to see more and less.',
-        'Use math while shopping, sharing, and playing.',
-        'Verify your answer with fingers or drawings.',
-        'Practice short questions to improve speed.',
+        'Hear and say the word one with clear first sound.',
+        'Hear and say the word two with a clean /t/ start.',
+        'Hear and say the word three slowly.',
+        'Touch each dot once while counting aloud.',
+        'Say plus when two groups join together.',
+        'Say minus when a group gets smaller.',
+        'Learn the sound and shape word circle.',
+        'Learn the sound and shape word square.',
+        'Use words more and less while comparing groups.',
+        'Speak a short math sentence using numbers.',
       ],
       examples: const <String>[
-        '1, 2, 3, 4 toys',
-        '9 is bigger than 4',
-        '2 + 3 = 5',
-        '7 - 2 = 5',
-        '1, 2, 3, 4, 5',
-        'Triangle has 3 sides',
-        '8 marbles is more than 5',
-        '2 apples + 1 apple = 3',
-        'Draw dots to confirm answer',
-        '5 quick sums in 1 minute',
+        'one apple',
+        'two toys',
+        'three dots',
+        '1, 2, 3, 4',
+        '2 + 1 = 3',
+        '4 - 1 = 3',
+        'round circle',
+        'four-side square',
+        '5 is more than 2',
+        'I have 3 stars.',
+      ],
+      phaseHints: const <String>[
+        'Listen to Dino say the number and math word.',
+        'Repeat the math word and tap or clap with it.',
+        'Blend number words with symbols in a tiny sum.',
       ],
       icons: const <IconData>[
         Icons.pin_rounded,
@@ -2024,40 +2304,45 @@ class _SubjectLearningPathScreenState
   List<_LectureSlide> _gkSlides() {
     return _buildSlides(
       titles: const <String>[
-        'Our Planet Earth',
-        'Animals Around',
-        'Birds And Sky',
-        'Plants And Trees',
-        'Water And Weather',
-        'Safe Habits',
-        'People Who Help',
-        'Healthy Choices',
-        'Transport World',
-        'Curious Questions',
+        'Animal Sound: Cat',
+        'Animal Sound: Dog',
+        'Bird Sound: Bird',
+        'Nature Word: Tree',
+        'Nature Word: Sun',
+        'Weather Word: Rain',
+        'Helper Word: Teacher',
+        'Body Word: Eyes',
+        'Transport Word: Bus',
+        'Safety Word: Stop',
       ],
       bodies: const <String>[
-        'Earth is our home where people, animals, and plants live.',
-        'Animals live in different places and eat different foods.',
-        'Birds use wings and live in nests.',
-        'Plants need water, air, and sunlight.',
-        'Weather changes between sunny, rainy, and cloudy days.',
-        'Follow simple rules to stay safe at home and school.',
-        'Many people help us in daily life.',
-        'Healthy food and habits keep our body strong.',
-        'Transport helps us move from one place to another.',
-        'Ask questions to learn new things every day.',
+        'Hear the /k/ start sound in cat and match the animal.',
+        'Hear the /d/ start sound in dog and say it clearly.',
+        'Hear the /b/ start sound in bird with Dino.',
+        'Hear /t/ in tree and spot nature words.',
+        'Hear /s/ in sun and say it with smile.',
+        'Hear /r/ in rain and connect it with weather.',
+        'Hear /t/ in teacher and remember who helps us.',
+        'Hear the long /i/ in eyes and point gently.',
+        'Hear /b/ in bus and match travel words.',
+        'Hear /s/ in stop and practice safe words.',
       ],
       examples: const <String>[
-        'Earth has land and water',
-        'Fish in water, lion on land',
-        'Bird flies in sky',
-        'Water the plant daily',
-        'Carry umbrella when raining',
-        'Wash hands before eating',
-        'Teacher, doctor, firefighter',
-        'Eat fruits and drink water',
-        'Bus, car, bike, train',
-        'Why do stars shine at night?',
+        'cat says meow',
+        'dog says woof',
+        'bird in sky',
+        'green tree',
+        'yellow sun',
+        'rain and umbrella',
+        'teacher in school',
+        'two eyes',
+        'red bus',
+        'stop and look',
+      ],
+      phaseHints: const <String>[
+        'Listen to Dino and hear the first sound in each GK word.',
+        'Say the word slowly and point to the right picture.',
+        'Blend sound and meaning in one short sentence.',
       ],
       icons: const <IconData>[
         Icons.public_rounded,
@@ -2116,7 +2401,15 @@ class _SubjectLearningPathScreenState
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final _SubjectKind subjectKind = _subjectKind();
-    await prefs.setInt(_subjectKey(subjectKind, 'stage_1_stars'), result.score);
+    final int boundedScore = result.score < 0
+        ? 0
+        : result.score > result.totalQuestions
+        ? result.totalQuestions
+        : result.score;
+    final String stageStarsKey = _subjectKey(subjectKind, 'stage_1_stars');
+    final int previousBest = prefs.getInt(stageStarsKey) ?? 0;
+    final int stageBest = max(previousBest, boundedScore);
+    await prefs.setInt(stageStarsKey, stageBest);
 
     int recalculatedStars = 0;
     final String subjectPrefix = '$_kidProgressPrefix.${widget.kidId}.subject.';
@@ -2124,7 +2417,12 @@ class _SubjectLearningPathScreenState
       if (!key.startsWith(subjectPrefix) || !key.endsWith('_stars')) {
         continue;
       }
-      recalculatedStars += prefs.getInt(key) ?? 0;
+      final int stageValue = prefs.getInt(key) ?? 0;
+      recalculatedStars += stageValue < 0
+          ? 0
+          : stageValue > 10
+          ? 10
+          : stageValue;
     }
     await prefs.setInt(_starsKey(), recalculatedStars);
 
@@ -2132,7 +2430,7 @@ class _SubjectLearningPathScreenState
     await prefs.setInt(_reportKey('tests_taken'), testsTaken);
     final int highestMark = max(
       prefs.getInt(_reportKey('highest_mark')) ?? 0,
-      result.score,
+      boundedScore,
     );
     await prefs.setInt(_reportKey('highest_mark'), highestMark);
     final List<String> attempts = List<String>.from(
@@ -2140,7 +2438,7 @@ class _SubjectLearningPathScreenState
     );
     final DateTime attemptTime = DateTime.now().toUtc();
     attempts.add(
-      '${attemptTime.toIso8601String()}|${_subjectSlug(subjectKind)}|${result.score}|${result.passed ? 1 : 0}',
+      '${attemptTime.toIso8601String()}|${_subjectSlug(subjectKind)}|$boundedScore|${result.passed ? 1 : 0}',
     );
     if (attempts.length > 160) {
       attempts.removeRange(0, attempts.length - 160);
@@ -2172,7 +2470,7 @@ class _SubjectLearningPathScreenState
         'timestamp': attemptTime.toIso8601String(),
         'subject': _subjectSlug(subjectKind),
         'stage': 1,
-        'score': result.score,
+        'score': boundedScore,
         'total': result.totalQuestions,
         'passed': result.passed,
         'mistakes': mistakeMaps,
@@ -2205,8 +2503,8 @@ class _SubjectLearningPathScreenState
     });
 
     final String message = result.passed
-        ? 'Passed with ${result.score}/10. Next lecture unlocked. Stars updated to $recalculatedStars.'
-        : 'Score ${result.score}/10. Need 6/10 to unlock next lecture. Stars updated to $recalculatedStars.';
+        ? 'Passed with $boundedScore/10. Next lecture unlocked. Total stars: $recalculatedStars. Stage best: $stageBest.'
+        : 'Score $boundedScore/10. Need 6/10 to unlock next lecture. Total stars: $recalculatedStars. Stage best: $stageBest.';
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
@@ -2276,7 +2574,12 @@ class _SubjectLearningPathScreenState
           DinoAnimationAction.shake,
           DinoAnimationAction.spinAxis,
           DinoAnimationAction.dance,
+          DinoAnimationAction.clap,
+          DinoAnimationAction.sway,
           DinoAnimationAction.twirl,
+          DinoAnimationAction.spinHop,
+          DinoAnimationAction.proudPose,
+          DinoAnimationAction.rocket,
           DinoAnimationAction.waveBye,
         ],
         child: Stack(
@@ -3363,11 +3666,16 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
             DinoAnimationAction.waveHi,
             DinoAnimationAction.bounce,
             DinoAnimationAction.nod,
+            DinoAnimationAction.clap,
+            DinoAnimationAction.sway,
             DinoAnimationAction.twirl,
             DinoAnimationAction.tailWag,
             DinoAnimationAction.waveBye,
+            DinoAnimationAction.spinHop,
             DinoAnimationAction.jump,
             DinoAnimationAction.shake,
+            DinoAnimationAction.proudPose,
+            DinoAnimationAction.rocket,
             DinoAnimationAction.spinAxis,
             DinoAnimationAction.dance,
           ],
@@ -3417,6 +3725,15 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                           style: TextStyle(
                             color: palette.textSecondary,
                             fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Total stars keep your best score for each stage.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: palette.textSecondary.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -3555,8 +3872,13 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
           DinoAnimationAction.jump,
           DinoAnimationAction.shake,
           DinoAnimationAction.bounce,
+          DinoAnimationAction.clap,
+          DinoAnimationAction.sway,
           DinoAnimationAction.twirl,
+          DinoAnimationAction.spinHop,
           DinoAnimationAction.waveBye,
+          DinoAnimationAction.proudPose,
+          DinoAnimationAction.rocket,
           DinoAnimationAction.spinAxis,
         ],
         child: SafeArea(
