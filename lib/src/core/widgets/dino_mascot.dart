@@ -512,6 +512,17 @@ class _DinoCharacter extends StatelessWidget {
                   ),
                 ),
                 Positioned(
+                  left: size * 0.56,
+                  top: size * 0.54,
+                  child: Transform.rotate(
+                    angle: motion.headRotate * 0.35,
+                    child: _buildTalkingMouth(
+                      size: size * 0.14,
+                      openness: motion.mouthOpen,
+                    ),
+                  ),
+                ),
+                Positioned(
                   right: size * 0.06,
                   top: size * 0.57,
                   child: Transform.rotate(
@@ -587,6 +598,46 @@ class _DinoCharacter extends StatelessWidget {
               ),
             );
           }),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTalkingMouth({required double size, required double openness}) {
+    final double clampedOpen = max(0.08, min(openness, 0.88));
+    final double mouthHeight = size * (0.30 + clampedOpen * 0.62);
+    final double tongueOpacity = max(0.0, min((clampedOpen - 0.16) * 1.9, 1.0));
+    return Container(
+      width: size,
+      height: mouthHeight,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(size * 0.42),
+        color: const Color(0xFF6F2D1C).withValues(alpha: 0.9),
+        border: Border.all(
+          color: const Color(0xFFE9D5C0).withValues(alpha: 0.75),
+          width: 0.9,
+        ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 2.6,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Opacity(
+          opacity: tongueOpacity,
+          child: Container(
+            width: size * 0.62,
+            height: mouthHeight * 0.36,
+            margin: EdgeInsets.only(bottom: mouthHeight * 0.09),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(size * 0.3),
+              color: const Color(0xFFE46A7B),
+            ),
+          ),
         ),
       ),
     );

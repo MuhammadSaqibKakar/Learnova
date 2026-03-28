@@ -1689,16 +1689,16 @@ class _SubjectLearningPathScreenState
       case _SubjectKind.english:
         return const <_QuizQuestion>[
           _QuizQuestion(
-            prompt: 'Which letter makes /a/ in "apple"?',
+            prompt: 'Which letter makes the A sound in "apple"?',
             options: <String>['A', 'M', 'S', 'T'],
             correctIndex: 0,
-            explanation: 'The word apple starts with the /a/ sound.',
+            explanation: 'The word apple starts with the A sound.',
           ),
           _QuizQuestion(
             prompt: 'Which letter starts the word "sun"?',
             options: <String>['S', 'N', 'U', 'L'],
             correctIndex: 0,
-            explanation: 'Sun begins with the /s/ sound.',
+            explanation: 'Sun begins with the S sound.',
           ),
           _QuizQuestion(
             prompt: 'Pick the lowercase letter for B.',
@@ -1710,13 +1710,13 @@ class _SubjectLearningPathScreenState
             prompt: 'Which word begins with C?',
             options: <String>['Sun', 'Cat', 'Ball', 'Egg'],
             correctIndex: 1,
-            explanation: 'Cat starts with the /k/ sound of C.',
+            explanation: 'Cat starts with the C sound.',
           ),
           _QuizQuestion(
             prompt: 'How many sounds in "cat"?',
             options: <String>['2', '3', '4', '5'],
             correctIndex: 1,
-            explanation: 'Cat has three sounds: /c/ /a/ /t/.',
+            explanation: 'Cat has three sounds: C, A, and T.',
           ),
           _QuizQuestion(
             prompt: 'Which word rhymes with "hat"?',
@@ -1728,13 +1728,13 @@ class _SubjectLearningPathScreenState
             prompt: 'Which vowel is in "bed"?',
             options: <String>['a', 'e', 'i', 'o'],
             correctIndex: 1,
-            explanation: 'Bed has the short /e/ sound.',
+            explanation: 'Bed has the short E sound.',
           ),
           _QuizQuestion(
-            prompt: 'Blend these sounds: /m/ /a/ /p/',
+            prompt: 'Blend these sounds: M, A, P',
             options: <String>['mop', 'map', 'cap', 'tap'],
             correctIndex: 1,
-            explanation: 'When blended, /m/ /a/ /p/ becomes map.',
+            explanation: 'When blended, M A P becomes map.',
           ),
           _QuizQuestion(
             prompt: 'Which one is a vowel?',
@@ -1749,10 +1749,10 @@ class _SubjectLearningPathScreenState
             explanation: 'N comes right after M in the alphabet.',
           ),
           _QuizQuestion(
-            prompt: 'Which word starts with /t/?',
+            prompt: 'Which word starts with the T sound?',
             options: <String>['top', 'bag', 'sun', 'pen'],
             correctIndex: 0,
-            explanation: 'Top starts with the /t/ sound.',
+            explanation: 'Top starts with the T sound.',
           ),
           _QuizQuestion(
             prompt: 'Choose the correct spelling.',
@@ -1773,16 +1773,16 @@ class _SubjectLearningPathScreenState
             explanation: 'A sentence starts with a capital letter.',
           ),
           _QuizQuestion(
-            prompt: 'Which word has short /i/?',
+            prompt: 'Which word has short I sound?',
             options: <String>['pig', 'cape', 'boat', 'cube'],
             correctIndex: 0,
-            explanation: 'Pig uses the short /i/ sound.',
+            explanation: 'Pig uses the short I sound.',
           ),
           _QuizQuestion(
             prompt: 'Which pair rhymes?',
             options: <String>['dog-log', 'cat-pen', 'sun-bed', 'top-fish'],
             correctIndex: 0,
-            explanation: 'Dog and log share the ending /og/.',
+            explanation: 'Dog and log share the ending "og" sound.',
           ),
           _QuizQuestion(
             prompt: 'Pick the word with 3 letters.',
@@ -1800,7 +1800,7 @@ class _SubjectLearningPathScreenState
             prompt: 'Which word starts with the same sound as "ball"?',
             options: <String>['bat', 'cat', 'sun', 'dog'],
             correctIndex: 0,
-            explanation: 'Ball and bat both start with /b/.',
+            explanation: 'Ball and bat both start with B.',
           ),
           _QuizQuestion(
             prompt: 'Pick the word family for "cat".',
@@ -1809,10 +1809,10 @@ class _SubjectLearningPathScreenState
             explanation: 'Cat belongs to the -at family.',
           ),
           _QuizQuestion(
-            prompt: 'Which word has the /s/ sound at the start?',
+            prompt: 'Which word has the S sound at the start?',
             options: <String>['sit', 'lip', 'top', 'man'],
             correctIndex: 0,
-            explanation: 'Sit starts with /s/.',
+            explanation: 'Sit starts with S.',
           ),
           _QuizQuestion(
             prompt: 'Which sentence starts correctly?',
@@ -1826,10 +1826,10 @@ class _SubjectLearningPathScreenState
             explanation: 'Sentence starts with capital I.',
           ),
           _QuizQuestion(
-            prompt: 'Which word starts with /m/?',
+            prompt: 'Which word starts with M sound?',
             options: <String>['moon', 'tree', 'sun', 'kite'],
             correctIndex: 0,
-            explanation: 'Moon begins with /m/.',
+            explanation: 'Moon begins with M.',
           ),
           _QuizQuestion(
             prompt: 'How many words in "I can read"?',
@@ -1841,16 +1841,16 @@ class _SubjectLearningPathScreenState
       case _SubjectKind.math:
         return const <_QuizQuestion>[
           _QuizQuestion(
-            prompt: 'Which number word starts with /f/?',
+            prompt: 'Which number word starts with F sound?',
             options: <String>['one', 'two', 'five', 'ten'],
             correctIndex: 2,
-            explanation: 'Five starts with the /f/ sound.',
+            explanation: 'Five starts with the F sound.',
           ),
           _QuizQuestion(
             prompt: 'How many sounds in the word "one"?',
             options: <String>['2', '3', '4', '5'],
             correctIndex: 1,
-            explanation: 'One has three sounds: /w/ /u/ /n/.',
+            explanation: 'One has three sounds: W, U, and N.',
           ),
           _QuizQuestion(
             prompt: 'What is 2 + 1?',
@@ -1955,10 +1955,10 @@ class _SubjectLearningPathScreenState
             explanation: 'Four comes before five.',
           ),
           _QuizQuestion(
-            prompt: 'Which number starts with /t/?',
+            prompt: 'Which number starts with T sound?',
             options: <String>['two', 'one', 'five', 'six'],
             correctIndex: 0,
-            explanation: 'Two starts with the /t/ sound.',
+            explanation: 'Two starts with the T sound.',
           ),
           _QuizQuestion(
             prompt: 'What is 1 + 1?',
@@ -1976,16 +1976,16 @@ class _SubjectLearningPathScreenState
             prompt: 'How many sounds in "ten"?',
             options: <String>['1', '2', '3', '4'],
             correctIndex: 2,
-            explanation: 'Ten has /t/ /e/ /n/ which are three sounds.',
+            explanation: 'Ten has T, E, and N which are three sounds.',
           ),
         ];
       case _SubjectKind.gk:
         return const <_QuizQuestion>[
           _QuizQuestion(
-            prompt: 'Which word starts with /b/?',
+            prompt: 'Which word starts with B sound?',
             options: <String>['Bird', 'Cat', 'Sun', 'Fish'],
             correctIndex: 0,
-            explanation: 'Bird starts with the /b/ sound.',
+            explanation: 'Bird starts with the B sound.',
           ),
           _QuizQuestion(
             prompt: 'Which animal says "meow"?',
@@ -2060,10 +2060,10 @@ class _SubjectLearningPathScreenState
             explanation: 'Bees make honey.',
           ),
           _QuizQuestion(
-            prompt: 'Which word starts with /s/?',
+            prompt: 'Which word starts with S sound?',
             options: <String>['Sun', 'Moon', 'Rain', 'Tree'],
             correctIndex: 0,
-            explanation: 'Sun starts with /s/.',
+            explanation: 'Sun starts with S.',
           ),
           _QuizQuestion(
             prompt: 'Which one has wings?',
@@ -2096,10 +2096,10 @@ class _SubjectLearningPathScreenState
             explanation: 'We hear with our ears.',
           ),
           _QuizQuestion(
-            prompt: 'Which word starts with /t/?',
+            prompt: 'Which word starts with T sound?',
             options: <String>['Tree', 'Apple', 'Orange', 'Egg'],
             correctIndex: 0,
-            explanation: 'Tree starts with the /t/ sound.',
+            explanation: 'Tree starts with the T sound.',
           ),
           _QuizQuestion(
             prompt: 'What do plants need to grow?',
@@ -2125,10 +2125,10 @@ class _SubjectLearningPathScreenState
             explanation: 'Clouds are in the sky.',
           ),
           _QuizQuestion(
-            prompt: 'Which word starts with /m/?',
+            prompt: 'Which word starts with M sound?',
             options: <String>['Moon', 'Tree', 'Sun', 'Bird'],
             correctIndex: 0,
-            explanation: 'Moon starts with /m/.',
+            explanation: 'Moon starts with M.',
           ),
         ];
     }
@@ -2186,22 +2186,22 @@ class _SubjectLearningPathScreenState
         'Tiny Sentence Read',
       ],
       bodies: const <String>[
-        'Hear /a/ and find words that start with that sound.',
-        'Hear /m/ and feel your lips close and open.',
-        'Hear /s/ like a soft snake sound.',
-        'Hear /t/ with a quick tongue tap.',
-        'Use short /e/ to read simple words.',
-        'Use short /i/ in tiny words.',
+        'Hear the A sound and find words that start with it.',
+        'Hear the M sound and feel your lips close and open.',
+        'Hear the S sound like a soft snake hiss.',
+        'Hear the T sound with a quick tongue tap.',
+        'Use the short E sound to read simple words.',
+        'Use the short I sound in tiny words.',
         'Join sounds to read the -at family.',
         'Join sounds to read the -am family.',
         'Rhymes share the same ending sound.',
         'Read one short sentence with smooth voice.',
       ],
       examples: const <String>[
-        '/a/ in apple',
-        '/m/ in moon',
-        '/s/ in sun',
-        '/t/ in top',
+        'A sound in apple',
+        'M sound in moon',
+        'S sound in sun',
+        'T sound in top',
         'bed, pen, net',
         'pin, sit, lid',
         'c + a + t = cat',
@@ -2252,7 +2252,7 @@ class _SubjectLearningPathScreenState
       ],
       bodies: const <String>[
         'Hear and say the word one with clear first sound.',
-        'Hear and say the word two with a clean /t/ start.',
+        'Hear and say the word two with a clean T start.',
         'Hear and say the word three slowly.',
         'Touch each dot once while counting aloud.',
         'Say plus when two groups join together.',
@@ -2316,16 +2316,16 @@ class _SubjectLearningPathScreenState
         'Safety Word: Stop',
       ],
       bodies: const <String>[
-        'Hear the /k/ start sound in cat and match the animal.',
-        'Hear the /d/ start sound in dog and say it clearly.',
-        'Hear the /b/ start sound in bird with Dino.',
-        'Hear /t/ in tree and spot nature words.',
-        'Hear /s/ in sun and say it with smile.',
-        'Hear /r/ in rain and connect it with weather.',
-        'Hear /t/ in teacher and remember who helps us.',
-        'Hear the long /i/ in eyes and point gently.',
-        'Hear /b/ in bus and match travel words.',
-        'Hear /s/ in stop and practice safe words.',
+        'Hear the K start sound in cat and match the animal.',
+        'Hear the D start sound in dog and say it clearly.',
+        'Hear the B start sound in bird with Dino.',
+        'Hear the T sound in tree and spot nature words.',
+        'Hear the S sound in sun and say it with smile.',
+        'Hear the R sound in rain and connect it with weather.',
+        'Hear the T sound in teacher and remember who helps us.',
+        'Hear the long I sound in eyes and point gently.',
+        'Hear the B sound in bus and match travel words.',
+        'Hear the S sound in stop and practice safe words.',
       ],
       examples: const <String>[
         'cat says meow',
@@ -2796,14 +2796,15 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   _VoicePace _voicePace = _VoicePace.normal;
   int _voiceSessionId = 0;
   Map<String, String>? _preferredVoice;
+  String _spokenWord = '';
 
   Future<void> _applyVoiceProfile() async {
     final bool normal = _voicePace == _VoicePace.normal;
     if (_preferredVoice != null) {
       await _tts.setVoice(_preferredVoice!);
     }
-    await _tts.setPitch(normal ? 1.0 : 0.94);
-    await _tts.setSpeechRate(normal ? 0.41 : 0.27);
+    await _tts.setPitch(normal ? 0.84 : 0.76);
+    await _tts.setSpeechRate(normal ? 0.38 : 0.25);
     await _tts.setVolume(1.0);
   }
 
@@ -2832,12 +2833,21 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
         combined.contains('premium')) {
       score += 24;
     }
+    if (combined.contains('male') ||
+        combined.contains('man') ||
+        combined.contains('boy') ||
+        combined.contains('deep') ||
+        combined.contains('baritone') ||
+        combined.contains('daniel') ||
+        combined.contains('alex')) {
+      score += 12;
+    }
     if (combined.contains('female') ||
         combined.contains('samantha') ||
         combined.contains('jenny') ||
         combined.contains('aria') ||
         combined.contains('alloy')) {
-      score += 8;
+      score -= 8;
     }
     if (combined.contains('robot') || combined.contains('espeak')) {
       score -= 8;
@@ -2877,13 +2887,41 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   }
 
   Future<void> _configureTts() async {
+    _tts.setStartHandler(() {
+      if (!mounted) {
+        return;
+      }
+      if (!_speaking) {
+        setState(() {
+          _speaking = true;
+        });
+      }
+    });
     _tts.setCompletionHandler(() {});
+    _tts.setProgressHandler((
+      String text,
+      int startOffset,
+      int endOffset,
+      String word,
+    ) {
+      if (!mounted || !_speaking) {
+        return;
+      }
+      final String cleanedWord = word.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
+      if (cleanedWord.isEmpty) {
+        return;
+      }
+      setState(() {
+        _spokenWord = cleanedWord;
+      });
+    });
     _tts.setCancelHandler(() {
       if (!mounted) {
         return;
       }
       setState(() {
         _speaking = false;
+        _spokenWord = '';
       });
     });
     _tts.setErrorHandler((dynamic message) {
@@ -2892,6 +2930,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       }
       setState(() {
         _speaking = false;
+        _spokenWord = '';
       });
     });
 
@@ -2929,6 +2968,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     if (_speaking) {
       setState(() {
         _speaking = false;
+        _spokenWord = '';
       });
     }
   }
@@ -2943,6 +2983,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       final int activeSession = ++_voiceSessionId;
       setState(() {
         _speaking = true;
+        _spokenWord = '';
       });
       final List<String> parts = _slideNarrationParts(
         widget.module.slides[_slideIndex],
@@ -2951,6 +2992,9 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
         if (!mounted || activeSession != _voiceSessionId) {
           return;
         }
+        setState(() {
+          _spokenWord = '';
+        });
         await _tts.speak(parts[i]);
         if (i < parts.length - 1) {
           await Future<void>.delayed(
@@ -2965,6 +3009,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       }
       setState(() {
         _speaking = false;
+        _spokenWord = '';
       });
     } catch (_) {
       if (!mounted) {
@@ -2972,6 +3017,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       }
       setState(() {
         _speaking = false;
+        _spokenWord = '';
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Voice is not available on this device.')),
@@ -3112,7 +3158,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   }
 
   Widget _voiceBubbleButton({
-    required IconData icon,
+    required Widget child,
     required bool active,
     required VoidCallback onTap,
   }) {
@@ -3129,11 +3175,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
               shape: BoxShape.circle,
               color: active ? const Color(0xFFDCF8C8) : Colors.transparent,
             ),
-            child: Icon(
-              icon,
-              color: active ? const Color(0xFF1493E5) : const Color(0xFF2BA3F7),
-              size: 34,
-            ),
+            child: Center(child: child),
           ),
         ),
       ),
@@ -3172,7 +3214,13 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
             children: <Widget>[
               Expanded(
                 child: _voiceBubbleButton(
-                  icon: Icons.volume_up_rounded,
+                  child: Icon(
+                    Icons.volume_up_rounded,
+                    color: normalActive
+                        ? const Color(0xFF1493E5)
+                        : const Color(0xFF2BA3F7),
+                    size: 34,
+                  ),
                   active: normalActive,
                   onTap: () {
                     if (_speaking && normalActive) {
@@ -3186,7 +3234,15 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
               Container(width: 2, color: const Color(0xFFDADDE1)),
               Expanded(
                 child: _voiceBubbleButton(
-                  icon: Icons.slow_motion_video_rounded,
+                  child: Text(
+                    '\u{1F422}',
+                    style: TextStyle(
+                      fontSize: 30,
+                      color: slowActive
+                          ? const Color(0xFF1493E5)
+                          : const Color(0xFF2BA3F7),
+                    ),
+                  ),
                   active: slowActive,
                   onTap: () {
                     if (_speaking && slowActive) {
@@ -3202,6 +3258,49 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
         ),
       ],
     );
+  }
+
+  List<TextSpan> _highlightedSpans({
+    required String text,
+    required TextStyle baseStyle,
+  }) {
+    if (!_speaking || _spokenWord.trim().length < 2) {
+      return <TextSpan>[TextSpan(text: text, style: baseStyle)];
+    }
+    final String currentWord = _spokenWord.trim();
+    final RegExp boundaryPattern = RegExp(
+      '\\b${RegExp.escape(currentWord)}\\b',
+      caseSensitive: false,
+    );
+    final List<Match> matches = boundaryPattern.allMatches(text).toList();
+    if (matches.isEmpty) {
+      return <TextSpan>[TextSpan(text: text, style: baseStyle)];
+    }
+
+    int cursor = 0;
+    final List<TextSpan> spans = <TextSpan>[];
+    for (final Match match in matches) {
+      if (match.start > cursor) {
+        spans.add(
+          TextSpan(text: text.substring(cursor, match.start), style: baseStyle),
+        );
+      }
+      spans.add(
+        TextSpan(
+          text: text.substring(match.start, match.end),
+          style: baseStyle.copyWith(
+            color: const Color(0xFF2B5E1E),
+            fontWeight: FontWeight.w900,
+            backgroundColor: const Color(0xFFFFFF7D),
+          ),
+        ),
+      );
+      cursor = match.end;
+    }
+    if (cursor < text.length) {
+      spans.add(TextSpan(text: text.substring(cursor), style: baseStyle));
+    }
+    return spans;
   }
 
   Widget _buildSlideCard(
@@ -3228,11 +3327,15 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
-                DinoInstructorAvatar(
-                  accentColor: slide.accentColor,
-                  moodIndex: slideNumber,
-                  speaking: _speaking,
-                  size: 138,
+                Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
+                  child: DinoInstructorAvatar(
+                    accentColor: slide.accentColor,
+                    moodIndex: slideNumber,
+                    speaking: _speaking,
+                    size: 138,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(child: _buildVoiceBubble()),
@@ -3250,22 +3353,30 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
-                    slide.body,
-                    style: TextStyle(
-                      color: const Color(0xFF4A6A30),
-                      fontSize: questionFont,
-                      fontWeight: FontWeight.w700,
-                      height: 1.28,
+                  RichText(
+                    text: TextSpan(
+                      children: _highlightedSpans(
+                        text: slide.body,
+                        baseStyle: TextStyle(
+                          color: const Color(0xFF4A6A30),
+                          fontSize: questionFont,
+                          fontWeight: FontWeight.w700,
+                          height: 1.28,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Text(
-                    'Try: ${slide.example}',
-                    style: TextStyle(
-                      color: const Color(0xFF3E7B23),
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
+                  RichText(
+                    text: TextSpan(
+                      children: _highlightedSpans(
+                        text: 'Try: ${slide.example}',
+                        baseStyle: TextStyle(
+                          color: const Color(0xFF3E7B23),
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
                 ],
