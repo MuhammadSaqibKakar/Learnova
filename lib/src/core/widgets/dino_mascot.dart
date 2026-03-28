@@ -371,6 +371,7 @@ class DinoInstructorAvatar extends StatefulWidget {
     this.speaking = false,
     this.size = 72,
     this.badgeIcon,
+    this.enableSpeakingMouth = false,
     super.key,
   });
 
@@ -379,6 +380,7 @@ class DinoInstructorAvatar extends StatefulWidget {
   final bool speaking;
   final double size;
   final IconData? badgeIcon;
+  final bool enableSpeakingMouth;
 
   @override
   State<DinoInstructorAvatar> createState() => _DinoInstructorAvatarState();
@@ -436,6 +438,7 @@ class _DinoInstructorAvatarState extends State<DinoInstructorAvatar>
           bellyColor: const Color(0xFFF9EAB6),
           badgeIcon: widget.badgeIcon,
           badgeColor: widget.accentColor,
+          enableSpeakingMouth: widget.enableSpeakingMouth,
         );
       },
     );
@@ -450,6 +453,7 @@ class _DinoCharacter extends StatelessWidget {
     required this.bellyColor,
     this.badgeIcon,
     this.badgeColor = const Color(0xFF58CC02),
+    this.enableSpeakingMouth = false,
   });
 
   final double size;
@@ -458,6 +462,7 @@ class _DinoCharacter extends StatelessWidget {
   final Color bellyColor;
   final IconData? badgeIcon;
   final Color badgeColor;
+  final bool enableSpeakingMouth;
 
   @override
   Widget build(BuildContext context) {
@@ -511,15 +516,37 @@ class _DinoCharacter extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (motion.mouthOpen > 0.17)
+                if (enableSpeakingMouth && motion.mouthOpen > 0.17)
                   Positioned(
                     left: size * 0.37,
                     top: size * 0.42,
                     child: Transform.rotate(
                       angle: motion.headRotate * 0.28,
-                      child: _buildTalkingMouth(
-                        size: size * 0.095,
-                        openness: motion.mouthOpen,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: <Widget>[
+                          Positioned(
+                            left: -size * 0.006,
+                            top: -size * 0.01,
+                            child: Container(
+                              width: size * 0.12,
+                              height: size * 0.078,
+                              decoration: BoxDecoration(
+                                color: Color.alphaBlend(
+                                  Colors.white.withValues(alpha: 0.06),
+                                  baseColor,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  size * 0.05,
+                                ),
+                              ),
+                            ),
+                          ),
+                          _buildTalkingMouth(
+                            size: size * 0.095,
+                            openness: motion.mouthOpen,
+                          ),
+                        ],
                       ),
                     ),
                   ),

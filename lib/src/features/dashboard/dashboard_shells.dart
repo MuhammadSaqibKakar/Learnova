@@ -2141,18 +2141,18 @@ class _SubjectLearningPathScreenState
     required List<IconData> icons,
     required List<Color> colors,
     List<String> phaseHints = const <String>[
-      'Listen to Dino and hear each sound clearly.',
-      'Say the sound with Dino and tap the beats.',
-      'Blend the sounds and use them in a tiny sentence.',
+      'Dino explains the idea with one simple example.',
+      'Now practice this idea step by step with Dino.',
+      'Great. Use this idea in a tiny activity.',
     ],
   }) {
-    const List<String> phases = <String>['Hear It', 'Say It', 'Blend It'];
+    const List<String> phases = <String>['Learn It', 'Practice It', 'Use It'];
     final List<String> hints = phaseHints.length == 3
         ? phaseHints
         : const <String>[
-            'Listen to Dino and hear each sound clearly.',
-            'Say the sound with Dino and tap the beats.',
-            'Blend the sounds and use them in a tiny sentence.',
+            'Dino explains the idea with one simple example.',
+            'Now practice this idea step by step with Dino.',
+            'Great. Use this idea in a tiny activity.',
           ];
     final List<_LectureSlide> slides = <_LectureSlide>[];
     for (int round = 0; round < 3; round++) {
@@ -2174,45 +2174,45 @@ class _SubjectLearningPathScreenState
   List<_LectureSlide> _englishSlides() {
     return _buildSlides(
       titles: const <String>[
-        'A Sound: Apple',
-        'M Sound: Moon',
-        'S Sound: Sun',
-        'T Sound: Top',
-        'Short e: Bed',
-        'Short i: Pin',
-        'Read -at Family',
-        'Read -am Family',
-        'Rhyme Time',
-        'Read a Tiny Line',
+        'Capital Letters',
+        'Common Nouns',
+        'Action Verbs',
+        'Colors Around Us',
+        'Opposite Words',
+        'Sentence Building',
+        'Question Words',
+        'Punctuation Marks',
+        'Short Paragraph Reading',
+        'Story Thinking',
       ],
       bodies: const <String>[
-        'Listen to A at the start of apple and ant.',
-        'Listen to M at the start of moon and milk.',
-        'Listen to S at the start of sun and sock.',
-        'Listen to T at the start of top and tap.',
-        'Use short e to read small words like bed and pen.',
-        'Use short i to read small words like pin and sit.',
-        'Join letters to read words in the at family.',
-        'Join letters to read words in the am family.',
-        'Rhyming words sound the same at the ending.',
-        'Read one short line from left to right.',
+        'Use a capital letter at the start of names and sentences.',
+        'Nouns are naming words for people, places, animals, and things.',
+        'Verbs are action words like run, jump, read, and write.',
+        'Read and say common color words you see every day.',
+        'Opposite words help us compare two different ideas.',
+        'Place words in the correct order to make a clear sentence.',
+        'Use who, what, where, and when to ask good questions.',
+        'Use full stop, question mark, and exclamation mark correctly.',
+        'Read a short paragraph and find key words.',
+        'Think about beginning, middle, and ending in a story.',
       ],
       examples: const <String>[
-        'apple, ant',
-        'moon, milk',
-        'sun, sock',
-        'top, tap',
-        'bed, pen, net',
-        'pin, sit, lid',
-        'cat, bat, hat',
-        'jam, ram, ham',
-        'sun-fun, cat-hat',
-        'I can tap.',
+        'Ali plays.',
+        'girl, school, cat, book',
+        'run, jump, read',
+        'red apple, blue sky, green leaf',
+        'big-small, up-down, fast-slow',
+        'The cat sleeps.',
+        'Where is your bag?',
+        'I am happy! Are you ready?',
+        'Sara has a red ball.',
+        'Start -> problem -> happy ending',
       ],
       phaseHints: const <String>[
-        'First listen and point to the matching letter.',
-        'Now say the sound with Dino two times.',
-        'Now read the word and use it in a tiny sentence.',
+        'Listen carefully and watch how Dino teaches this idea.',
+        'Practice with Dino by reading and saying one example.',
+        'Use this idea in your own small sentence.',
       ],
       icons: const <IconData>[
         Icons.auto_stories_rounded,
@@ -2239,45 +2239,45 @@ class _SubjectLearningPathScreenState
   List<_LectureSlide> _mathSlides() {
     return _buildSlides(
       titles: const <String>[
-        'Number Sound: One',
-        'Number Sound: Two',
-        'Number Sound: Three',
-        'Count and Tap',
-        'Plus Means Add',
-        'Minus Means Take Away',
-        'Shape Word: Circle',
-        'Shape Word: Square',
-        'More and Less Words',
-        'Math Talk Sentence',
+        'Counting to 20',
+        'Number Order',
+        'Addition Basics',
+        'Subtraction Basics',
+        'Comparing Numbers',
+        'Shapes and Sides',
+        'Patterns',
+        'Time Basics',
+        'Money Basics',
+        'Word Problems',
       ],
       bodies: const <String>[
-        'Hear and say the word one with clear first sound.',
-        'Hear and say the word two with a clean T start.',
-        'Hear and say the word three slowly.',
-        'Touch each dot once while counting aloud.',
-        'Say plus when two groups join together.',
-        'Say minus when a group gets smaller.',
-        'Learn the sound and shape word circle.',
-        'Learn the sound and shape word square.',
-        'Use words more and less while comparing groups.',
-        'Speak a short math sentence using numbers.',
+        'Count objects one by one up to twenty.',
+        'Arrange numbers from small to big and big to small.',
+        'Addition means putting groups together.',
+        'Subtraction means taking some away.',
+        'Use greater than, less than, and equal ideas.',
+        'Learn circle, triangle, square, and rectangle with sides.',
+        'Find what comes next in a repeating pattern.',
+        'Read hour times on a simple clock.',
+        'Know basic coins and small amounts.',
+        'Read simple story sums and solve step by step.',
       ],
       examples: const <String>[
-        'one apple',
-        'two toys',
-        'three dots',
-        '1, 2, 3, 4',
+        '1 to 20',
+        '3, 4, 5, 6',
         '2 + 1 = 3',
         '4 - 1 = 3',
-        'round circle',
-        'four-side square',
-        '5 is more than 2',
-        'I have 3 stars.',
+        '9 is greater than 6',
+        'Triangle has 3 sides',
+        'red, blue, red, blue',
+        '7:00 means seven o clock',
+        '2 coins of 5 = 10',
+        'I had 3 apples and got 2 more.',
       ],
       phaseHints: const <String>[
-        'Listen to Dino say the number and math word.',
-        'Repeat the math word and tap or clap with it.',
-        'Blend number words with symbols in a tiny sum.',
+        'Watch Dino solve one simple example.',
+        'Practice the same idea with a new example.',
+        'Use the idea in a tiny real-life math task.',
       ],
       icons: const <IconData>[
         Icons.pin_rounded,
@@ -2304,45 +2304,45 @@ class _SubjectLearningPathScreenState
   List<_LectureSlide> _gkSlides() {
     return _buildSlides(
       titles: const <String>[
-        'Animal Sound: Cat',
-        'Animal Sound: Dog',
-        'Bird Sound: Bird',
-        'Nature Word: Tree',
-        'Nature Word: Sun',
-        'Weather Word: Rain',
-        'Helper Word: Teacher',
-        'Body Word: Eyes',
-        'Transport Word: Bus',
-        'Safety Word: Stop',
+        'My Body Parts',
+        'Healthy Habits',
+        'Family and Helpers',
+        'Animals and Homes',
+        'Plants and Nature',
+        'Weather and Seasons',
+        'Safety Rules',
+        'Transport Around Us',
+        'Community Places',
+        'Care for Earth',
       ],
       bodies: const <String>[
-        'Hear the K start sound in cat and match the animal.',
-        'Hear the D start sound in dog and say it clearly.',
-        'Hear the B start sound in bird with Dino.',
-        'Hear the T sound in tree and spot nature words.',
-        'Hear the S sound in sun and say it with smile.',
-        'Hear the R sound in rain and connect it with weather.',
-        'Hear the T sound in teacher and remember who helps us.',
-        'Hear the long I sound in eyes and point gently.',
-        'Hear the B sound in bus and match travel words.',
-        'Hear the S sound in stop and practice safe words.',
+        'Learn major body parts and their use.',
+        'Daily habits keep our body clean and strong.',
+        'Family members and helpers support our lives.',
+        'Animals live in different homes and places.',
+        'Plants need sunlight, air, and water.',
+        'Weather changes and seasons have different feelings.',
+        'Simple rules keep us safe at home and on road.',
+        'Different transport helps us move around.',
+        'Learn places around us like school and hospital.',
+        'Protect nature by saving water and keeping places clean.',
       ],
       examples: const <String>[
-        'cat says meow',
-        'dog says woof',
-        'bird in sky',
-        'green tree',
-        'yellow sun',
-        'rain and umbrella',
-        'teacher in school',
-        'two eyes',
-        'red bus',
-        'stop and look',
+        'eyes see, ears hear',
+        'wash hands before meals',
+        'teacher, doctor, firefighter',
+        'fish in water, bird in nest',
+        'water the plant daily',
+        'summer is hot, winter is cold',
+        'look right and left before crossing',
+        'bus, train, bike, car',
+        'school, park, hospital',
+        'turn off tap after use',
       ],
       phaseHints: const <String>[
-        'Listen to Dino and hear the first sound in each GK word.',
-        'Say the word slowly and point to the right picture.',
-        'Blend sound and meaning in one short sentence.',
+        'Dino introduces the topic with one picture idea.',
+        'Practice by matching the idea with a simple example.',
+        'Use it in a daily life situation.',
       ],
       icons: const <IconData>[
         Icons.public_rounded,
@@ -2815,8 +2815,8 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     if (_preferredVoice != null) {
       await _tts.setVoice(_preferredVoice!);
     }
-    await _tts.setPitch(normal ? 0.84 : 0.76);
-    await _tts.setSpeechRate(normal ? 0.38 : 0.25);
+    await _tts.setPitch(normal ? 0.72 : 0.64);
+    await _tts.setSpeechRate(normal ? 0.34 : 0.23);
     await _tts.setVolume(1.0);
   }
 
@@ -2991,7 +2991,10 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     if (!mounted) {
       return;
     }
-    if (_speaking) {
+    if (_speaking ||
+        _spokenWord.isNotEmpty ||
+        _spokenStart >= 0 ||
+        _spokenEnd >= 0) {
       setState(() {
         _speaking = false;
         _spokenWord = '';
@@ -3391,6 +3394,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
                             moodIndex: slideNumber,
                             speaking: _speaking,
                             size: 138,
+                            enableSpeakingMouth: true,
                           ),
                         ),
                       ),
