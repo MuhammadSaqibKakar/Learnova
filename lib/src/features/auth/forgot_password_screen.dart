@@ -58,9 +58,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _codeVerified = false;
     });
 
+    const bool isReleaseMode = bool.fromEnvironment('dart.vm.product');
     _showMessage(
       context,
-      'Reset code sent. Demo code: $code',
+      isReleaseMode ? 'Reset code sent.' : 'Reset code sent. Demo code: $code',
       color: Theme.of(context).colorScheme.primary,
     );
   }

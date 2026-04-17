@@ -2,13 +2,16 @@ part of 'package:learnova/main.dart';
 
 enum UserRole { admin, parent, kid }
 
+/// Auth resolution result that routes a user to the right dashboard.
 class LoginIdentity {
-  const LoginIdentity({required this.role, this.child});
+  const LoginIdentity({required this.role, this.child, this.parentEmail});
 
   final UserRole role;
   final ChildAccount? child;
+  final String? parentEmail;
 }
 
+/// Demo/local child account model used by parent/admin management screens.
 class ChildAccount {
   const ChildAccount({
     required this.id,
@@ -16,6 +19,7 @@ class ChildAccount {
     required this.username,
     required this.password,
     required this.level,
+    this.createdAtEpoch = 0,
   });
 
   final String id;
@@ -23,11 +27,77 @@ class ChildAccount {
   final String username;
   final String password;
   final String level;
+  final int createdAtEpoch;
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'id': id,
+      'nickname': nickname,
+      'username': username,
+      'password': password,
+      'level': level,
+      'createdAtEpoch': createdAtEpoch,
+    };
+  }
+
+  factory ChildAccount.fromMap(Map<String, dynamic> map) {
+    return ChildAccount(
+      id: '${map['id'] ?? ''}'.trim(),
+      nickname: '${map['nickname'] ?? ''}'.trim(),
+      username: '${map['username'] ?? ''}'.trim(),
+      password: '${map['password'] ?? ''}'.trim(),
+      level: '${map['level'] ?? ''}'.trim().isEmpty
+          ? _levelLabelFromNumber(1)
+          : '${map['level'] ?? ''}'.trim(),
+      createdAtEpoch: map['createdAtEpoch'] is int
+          ? map['createdAtEpoch'] as int
+          : int.tryParse('${map['createdAtEpoch']}') ?? 0,
+    );
+  }
+}
+
+/// Demo/local parent account model used by admin management screens.
+class ParentAccount {
+  const ParentAccount({
+    required this.id,
+    required this.email,
+    required this.password,
+    required this.createdAtEpoch,
+  });
+
+  final String id;
+  final String email;
+  final String password;
+  final int createdAtEpoch;
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'id': id,
+      'email': email,
+      'password': password,
+      'createdAtEpoch': createdAtEpoch,
+    };
+  }
+
+  factory ParentAccount.fromMap(Map<String, dynamic> map) {
+    return ParentAccount(
+      id: '${map['id'] ?? ''}'.trim(),
+      email: '${map['email'] ?? ''}'.trim(),
+      password: '${map['password'] ?? ''}'.trim(),
+      createdAtEpoch: map['createdAtEpoch'] is int
+          ? map['createdAtEpoch'] as int
+          : int.tryParse('${map['createdAtEpoch']}') ?? 0,
+    );
+  }
 }
 
 typedef NavigationHandler = void Function(BuildContext context);
 typedef LoginHandler =
-    String? Function(BuildContext context, String identifier, String password);
+    Future<String?> Function(
+      BuildContext context,
+      String identifier,
+      String password,
+    );
 typedef ResetPasswordHandler =
     String? Function(String email, String newPassword);
 typedef RememberMeHandler =
@@ -293,38 +363,38 @@ const LearnovaPalette _greenSparkPalette = LearnovaPalette(
 
 const LearnovaPalette _lightPalette = LearnovaPalette(
   name: 'Light Theme',
-  brandPrimary: Color(0xFF2E9E35),
-  brandAccent: Color(0xFFFFCA62),
-  heroAccent: Color(0xFF2E9E35),
-  textPrimary: Color(0xFF1E3A1F),
-  textSecondary: Color(0xFF4E6B4F),
-  surfaceSoft: Color(0xFFF5FBF3),
-  borderSoft: Color(0xFFDCECD8),
-  borderStrong: Color(0xFFC6DEC0),
+  brandPrimary: Color(0xFF1F7AE0),
+  brandAccent: Color(0xFFFFA94D),
+  heroAccent: Color(0xFF0EA5E9),
+  textPrimary: Color(0xFF16324F),
+  textSecondary: Color(0xFF53708C),
+  surfaceSoft: Color(0xFFF5F9FF),
+  borderSoft: Color(0xFFD8E6F8),
+  borderStrong: Color(0xFFC1D7F2),
   error: Color(0xFFE05A66),
-  success: Color(0xFF2E9E46),
-  menuBackground: Color(0xFF2A7E37),
-  menuTile: Color(0x14FFFFFF),
-  menuSubtext: Color(0xFFE4F3DE),
-  menuDivider: Color(0x4478B970),
-  noticeBackground: Color(0xFFFFF4DF),
-  noticeBorder: Color(0xFFFFD895),
-  noticeText: Color(0xFF7B5B1C),
-  headerGradientStart: Color(0xFFE8F7E3),
-  headerGradientEnd: Color(0xFFF7FDF4),
-  backgroundGradientStart: Color(0xFFEFF8E9),
-  backgroundGradientMid: Color(0xFFF8FDF5),
-  backgroundGradientEnd: Color(0xFFF2FAED),
-  bubbleA: Color(0x33A5E286),
-  bubbleB: Color(0x33B6E6B0),
-  bubbleC: Color(0x33FFE59A),
-  bubbleD: Color(0x3394D8C6),
-  logoGradientStart: Color(0xFF248C3F),
-  logoGradientMid: Color(0xFF43B04A),
-  logoGradientEnd: Color(0xFF74C844),
-  logoStar: Color(0xFFFFD862),
-  logoShadow: Color(0x33508E59),
-  cardShadow: Color(0x163E9151),
+  success: Color(0xFF2F9E73),
+  menuBackground: Color(0xFF1958A7),
+  menuTile: Color(0x20FFFFFF),
+  menuSubtext: Color(0xFFE5F1FF),
+  menuDivider: Color(0x4F8AB7F0),
+  noticeBackground: Color(0xFFFFF2DF),
+  noticeBorder: Color(0xFFFFCF8D),
+  noticeText: Color(0xFF7B5417),
+  headerGradientStart: Color(0xFFEAF4FF),
+  headerGradientEnd: Color(0xFFFDFEFF),
+  backgroundGradientStart: Color(0xFFF0F7FF),
+  backgroundGradientMid: Color(0xFFF9FBFF),
+  backgroundGradientEnd: Color(0xFFEAF3FF),
+  bubbleA: Color(0x338CC8FF),
+  bubbleB: Color(0x33B8D9FF),
+  bubbleC: Color(0x33FFD59A),
+  bubbleD: Color(0x339FE4D2),
+  logoGradientStart: Color(0xFF1F7AE0),
+  logoGradientMid: Color(0xFF26A6E8),
+  logoGradientEnd: Color(0xFFFFA94D),
+  logoStar: Color(0xFFFFD45A),
+  logoShadow: Color(0x333E78A8),
+  cardShadow: Color(0x16346CA4),
 );
 
 const LearnovaPalette _darkPalette = LearnovaPalette(

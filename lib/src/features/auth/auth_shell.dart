@@ -205,6 +205,7 @@ class _LoginDinoOverlayState extends State<_LoginDinoOverlay>
                 );
 
             return Stack(
+              clipBehavior: Clip.none,
               children: <Widget>[
                 Positioned.fill(child: widget.child),
                 Positioned(
@@ -213,28 +214,33 @@ class _LoginDinoOverlayState extends State<_LoginDinoOverlay>
                   child: SafeArea(
                     top: false,
                     left: false,
-                    child: GestureDetector(
-                      onPanUpdate: (DragUpdateDetails details) {
-                        setState(() {
-                          _dragOffset += details.delta;
-                        });
-                      },
-                      child: DinoMascotAssistant(
-                        size: animatedSize,
-                        message: raw > 0.72 ? widget.message : '',
-                        playWelcome: true,
-                        triggerToken: widget.triggerToken,
-                        actionPlaylist: const <DinoAnimationAction>[
-                          DinoAnimationAction.welcomeWave,
-                          DinoAnimationAction.waveHi,
-                          DinoAnimationAction.clap,
-                          DinoAnimationAction.nod,
-                          DinoAnimationAction.sway,
-                          DinoAnimationAction.tailWag,
-                          DinoAnimationAction.proudPose,
-                          DinoAnimationAction.rocket,
-                          DinoAnimationAction.waveBye,
-                        ],
+                    child: RepaintBoundary(
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: _ImmediateDeltaDragSurface(
+                          onDelta: (Offset delta) {
+                            setState(() {
+                              _dragOffset += delta;
+                            });
+                          },
+                          child: DinoMascotAssistant(
+                            size: animatedSize,
+                            message: raw > 0.72 ? widget.message : '',
+                            playWelcome: true,
+                            triggerToken: widget.triggerToken,
+                            actionPlaylist: const <DinoAnimationAction>[
+                              DinoAnimationAction.welcomeWave,
+                              DinoAnimationAction.waveHi,
+                              DinoAnimationAction.clap,
+                              DinoAnimationAction.nod,
+                              DinoAnimationAction.sway,
+                              DinoAnimationAction.tailWag,
+                              DinoAnimationAction.proudPose,
+                              DinoAnimationAction.rocket,
+                              DinoAnimationAction.waveBye,
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),

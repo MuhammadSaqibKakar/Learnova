@@ -58,9 +58,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _emailVerified = false;
     });
 
+    const bool isReleaseMode = bool.fromEnvironment('dart.vm.product');
     _showMessage(
       context,
-      'OTP sent to $email. Demo OTP: $code',
+      isReleaseMode
+          ? 'OTP sent to $email.'
+          : 'OTP sent to $email. Demo OTP: $code',
       color: Theme.of(context).colorScheme.primary,
     );
   }

@@ -89,9 +89,9 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
       case 'math':
         return 'Math';
       case 'urdu':
-        return 'Urdu';
+        return 'GK';
       case 'gk':
-        return 'Urdu';
+        return 'GK';
       default:
         return value.trim().isEmpty ? 'Subject' : value.trim();
     }
@@ -277,7 +277,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
     });
 
     final List<ChildAccount> snapshot = List<ChildAccount>.from(_children);
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _sharedPrefs(syncFirst: true);
     final Map<String, _KidPerformanceReport> loaded =
         <String, _KidPerformanceReport>{};
 

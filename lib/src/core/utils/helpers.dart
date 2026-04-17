@@ -35,6 +35,35 @@ bool _isValidEmail(String value) {
   return RegExp(r'^[\w\.\-]+@([\w\-]+\.)+[a-zA-Z]{2,4}$').hasMatch(value);
 }
 
+const List<String> _learnovaKidLevels = <String>[
+  'Level 1 - Starter',
+  'Level 2 - Explorer',
+  'Level 3 - Builder',
+  'Level 4 - Challenger',
+  'Level 5 - Achiever',
+  'Level 6 - Champion',
+  'Level 7 - Genius',
+];
+
+int _levelNumberFromLabel(String value) {
+  final Match? match = RegExp(
+    r'level\s*(\d+)',
+    caseSensitive: false,
+  ).firstMatch(value);
+  return int.tryParse(match?.group(1) ?? '') ?? 1;
+}
+
+String _levelLabelFromNumber(int levelNumber) {
+  if (levelNumber >= 1 && levelNumber <= _learnovaKidLevels.length) {
+    return _learnovaKidLevels[levelNumber - 1];
+  }
+  return 'Level $levelNumber';
+}
+
+String _levelStorageSlug(int levelNumber) {
+  return 'level_${levelNumber.clamp(1, 99)}';
+}
+
 String? _validateStrongPassword(String? value) {
   final String password = (value ?? '').trim();
   final RegExp pattern = RegExp(

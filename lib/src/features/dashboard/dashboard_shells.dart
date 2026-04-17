@@ -1,53 +1,22 @@
 part of 'package:learnova/main.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
-  const AdminDashboardScreen({
-    required this.adminEmail,
-    required this.onOpenThemePicker,
-    required this.onExit,
-    super.key,
-  });
-
-  final String adminEmail;
-  final ThemePickerHandler onOpenThemePicker;
-  final NavigationHandler onExit;
-
-  @override
-  Widget build(BuildContext context) {
-    return DashboardShell(
-      roleTitle: 'Admin Dashboard',
-      roleSubtitle: 'System controls and reports will be added here.',
-      onOpenThemePicker: onOpenThemePicker,
-      onExit: onExit,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: SlideFadeIn(
-            child: _DashboardInfoCard(
-              icon: Icons.admin_panel_settings,
-              title: 'Admin Space',
-              message:
-                  'Logged in as $adminEmail.\nThis dashboard is intentionally simple for now and ready for future features.',
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class KidDashboardScreen extends StatefulWidget {
   const KidDashboardScreen({
     required this.childId,
     required this.childName,
     required this.level,
     required this.onExit,
+    this.allChildren = const <ChildAccount>[],
+    this.onLevelAdvanced,
     super.key,
   });
 
   final String childId;
   final String childName;
   final String level;
+  final List<ChildAccount> allChildren;
+  final FutureOr<void> Function(String childId, String newLevel)?
+  onLevelAdvanced;
   final NavigationHandler onExit;
 
   @override
@@ -59,6 +28,7 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
 
   int _currentStreak = 0;
   int _currentStars = 0;
+  late String _currentLevel;
 
   static const List<Color> _skinTones = <Color>[
     Color(0xFFFFDFC4),
@@ -273,58 +243,10 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
         ],
       };
 
-  static const List<String> _leaderboardLevels = <String>[
-    'Level 1 - Starter',
-    'Level 2 - Explorer',
-    'Level 3 - Builder',
-    'Level 4 - Challenger',
-    'Level 5 - Achiever',
-    'Level 6 - Champion',
-    'Level 7 - Genius',
-  ];
-
   late final List<_KidAvatarOption> _avatarOptions = _buildAvatarOptions();
   late _KidAvatarOption _selectedAvatar = _avatarOptions.first;
   late _KidAvatarCategory _activeAvatarCategory;
-  late final Map<String, List<_KidLeaderboardEntry>> _leaderboardByLevel =
-      <String, List<_KidLeaderboardEntry>>{
-        'Level 1 - Starter': const <_KidLeaderboardEntry>[
-          _KidLeaderboardEntry(nickname: 'Ayaan', stars: 180, avatarIndex: 7),
-          _KidLeaderboardEntry(nickname: 'Lily', stars: 150, avatarIndex: 29),
-          _KidLeaderboardEntry(nickname: 'Noah', stars: 120, avatarIndex: 54),
-        ],
-        'Level 2 - Explorer': const <_KidLeaderboardEntry>[
-          _KidLeaderboardEntry(nickname: 'Zara', stars: 170, avatarIndex: 11),
-          _KidLeaderboardEntry(nickname: 'Adam', stars: 145, avatarIndex: 34),
-          _KidLeaderboardEntry(nickname: 'Mia', stars: 132, avatarIndex: 61),
-        ],
-        'Level 3 - Builder': const <_KidLeaderboardEntry>[
-          _KidLeaderboardEntry(nickname: 'Ray', stars: 190, avatarIndex: 5),
-          _KidLeaderboardEntry(nickname: 'Hania', stars: 162, avatarIndex: 38),
-          _KidLeaderboardEntry(nickname: 'Taha', stars: 137, avatarIndex: 72),
-        ],
-        'Level 4 - Challenger': const <_KidLeaderboardEntry>[
-          _KidLeaderboardEntry(nickname: 'Aisha', stars: 210, avatarIndex: 14),
-          _KidLeaderboardEntry(nickname: 'Bilal', stars: 176, avatarIndex: 48),
-          _KidLeaderboardEntry(nickname: 'Sara', stars: 153, avatarIndex: 83),
-        ],
-        'Level 5 - Achiever': const <_KidLeaderboardEntry>[
-          _KidLeaderboardEntry(nickname: 'Hamza', stars: 225, avatarIndex: 19),
-          _KidLeaderboardEntry(nickname: 'Esha', stars: 193, avatarIndex: 43),
-          _KidLeaderboardEntry(nickname: 'Ali', stars: 168, avatarIndex: 87),
-        ],
-        'Level 6 - Champion': const <_KidLeaderboardEntry>[
-          _KidLeaderboardEntry(nickname: 'Noor', stars: 246, avatarIndex: 21),
-          _KidLeaderboardEntry(nickname: 'Saad', stars: 214, avatarIndex: 56),
-          _KidLeaderboardEntry(nickname: 'Iqra', stars: 188, avatarIndex: 90),
-        ],
-        'Level 7 - Genius': const <_KidLeaderboardEntry>[
-          _KidLeaderboardEntry(nickname: 'Ari', stars: 270, avatarIndex: 26),
-          _KidLeaderboardEntry(nickname: 'Rida', stars: 238, avatarIndex: 64),
-          _KidLeaderboardEntry(nickname: 'Zayan', stars: 207, avatarIndex: 95),
-        ],
-      };
-  late String _selectedLeaderboardLevel;
+  List<_KidLeaderboardEntry> _leaderboardEntries = <_KidLeaderboardEntry>[];
 
   List<_KidAvatarOption> _buildAvatarOptions() {
     final List<_KidAvatarOption> options = <_KidAvatarOption>[];
@@ -386,8 +308,13 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
     _KidAvatarOption option, {
     SharedPreferences? prefs,
   }) async {
-    final SharedPreferences storage =
-        prefs ?? await SharedPreferences.getInstance();
+    final SharedPreferences storage = prefs ?? await _sharedPrefs();
+    final List<String> changedKeys = <String>[
+      _kidStorageKey('avatar_id'),
+      _kidStorageKey('avatar_emoji'),
+      _kidStorageKey('avatar_frame'),
+      _kidStorageKey('avatar_accent'),
+    ];
     await storage.setInt(_kidStorageKey('avatar_id'), option.id);
     await storage.setString(_kidStorageKey('avatar_emoji'), option.emoji);
     await storage.setInt(
@@ -398,28 +325,116 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
       _kidStorageKey('avatar_accent'),
       option.accentColor.toARGB32(),
     );
+    await _syncSharedKeysToRemote(storage, changedKeys);
   }
 
-  int _dayStamp(DateTime value) {
-    final DateTime d = DateTime(value.year, value.month, value.day);
-    return d.millisecondsSinceEpoch;
+  int _daySerial(DateTime value) {
+    final DateTime utcDate = DateTime.utc(value.year, value.month, value.day);
+    return utcDate.millisecondsSinceEpoch ~/ Duration.millisecondsPerDay;
+  }
+
+  int _normalizedStoredDay(int storedValue) {
+    if (storedValue > 1000000000) {
+      return _daySerial(DateTime.fromMillisecondsSinceEpoch(storedValue));
+    }
+    return storedValue;
+  }
+
+  List<ChildAccount> _knownChildren() {
+    final Map<String, ChildAccount> childrenById = <String, ChildAccount>{};
+    for (final ChildAccount child in widget.allChildren) {
+      childrenById[child.id] = child.id == widget.childId
+          ? ChildAccount(
+              id: child.id,
+              nickname: child.nickname,
+              username: child.username,
+              password: child.password,
+              level: _currentLevel,
+              createdAtEpoch: child.createdAtEpoch,
+            )
+          : child;
+    }
+    childrenById.putIfAbsent(
+      widget.childId,
+      () => ChildAccount(
+        id: widget.childId,
+        nickname: widget.childName,
+        username: widget.childId,
+        password: '',
+        level: _currentLevel,
+      ),
+    );
+    return childrenById.values.toList();
+  }
+
+  int _fallbackAvatarIdForChild(ChildAccount child) {
+    final int seed = child.id.codeUnits.fold<int>(0, (int sum, int code) {
+      return sum + code;
+    });
+    return seed % _avatarOptions.length;
+  }
+
+  int _starsForLevel(SharedPreferences prefs, String childId, int levelNumber) {
+    int total = 0;
+    final String prefix =
+        '$_kidProgressPrefix.$childId.level.${_levelStorageSlug(levelNumber)}.';
+    for (final String key in prefs.getKeys()) {
+      if (!key.startsWith(prefix) || !key.endsWith('_stars')) {
+        continue;
+      }
+      total += max(0, prefs.getInt(key) ?? 0);
+    }
+    return total;
+  }
+
+  List<_KidLeaderboardEntry> _buildLeaderboardEntries(SharedPreferences prefs) {
+    final int currentLevelNumber = _levelNumberFromLabel(_currentLevel);
+    final List<_KidLeaderboardEntry> entries = <_KidLeaderboardEntry>[];
+
+    for (final ChildAccount child in _knownChildren()) {
+      if (_levelNumberFromLabel(child.level) != currentLevelNumber) {
+        continue;
+      }
+      final int stars = _starsForLevel(prefs, child.id, currentLevelNumber);
+      final int avatarId =
+          prefs.getInt('$_kidProgressPrefix.${child.id}.avatar_id') ??
+          _fallbackAvatarIdForChild(child);
+      entries.add(
+        _KidLeaderboardEntry(
+          nickname: child.nickname,
+          stars: stars,
+          avatarIndex: avatarId,
+        ),
+      );
+    }
+
+    entries.sort((_KidLeaderboardEntry a, _KidLeaderboardEntry b) {
+      final int byStars = b.stars.compareTo(a.stars);
+      if (byStars != 0) {
+        return byStars;
+      }
+      return a.nickname.toLowerCase().compareTo(b.nickname.toLowerCase());
+    });
+    return entries;
   }
 
   Future<void> _syncDailyStreak() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int today = _dayStamp(DateTime.now());
+    final SharedPreferences prefs = await _sharedPrefs(syncFirst: true);
+    final int today = _daySerial(DateTime.now());
     final String lastLoginKey = _kidStorageKey('last_login_day');
     final String streakKey = _kidStorageKey('streak');
     final String starsKey = _kidStorageKey('stars');
 
-    final int? lastLoginDay = prefs.getInt(lastLoginKey);
+    final int? rawLastLoginDay = prefs.getInt(lastLoginKey);
+    final int? lastLoginDay = rawLastLoginDay == null
+        ? null
+        : _normalizedStoredDay(rawLastLoginDay);
     int streak = prefs.getInt(streakKey) ?? 0;
 
     if (lastLoginDay == null) {
       streak = 1;
     } else {
-      final int diffDays =
-          ((today - lastLoginDay) ~/ Duration.millisecondsPerDay);
+      final int diffDays = today - lastLoginDay;
       if (diffDays <= 0) {
         streak = max(streak, 1);
       } else if (diffDays == 1) {
@@ -429,8 +444,12 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
       }
     }
 
+    if (rawLastLoginDay != null && rawLastLoginDay != lastLoginDay) {
+      await prefs.setInt(lastLoginKey, lastLoginDay!);
+    }
     await prefs.setInt(lastLoginKey, today);
     await prefs.setInt(streakKey, streak);
+    await _syncSharedKeysToRemote(prefs, <String>[lastLoginKey, streakKey]);
     final int stars = prefs.getInt(starsKey) ?? 0;
     final int? savedAvatarId = prefs.getInt(_kidStorageKey('avatar_id'));
     final _KidAvatarOption savedAvatar = savedAvatarId == null
@@ -440,6 +459,9 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
     if (savedAvatarId == null) {
       await _persistAvatarSelection(savedAvatar, prefs: prefs);
     }
+    final List<_KidLeaderboardEntry> leaderboard = _buildLeaderboardEntries(
+      prefs,
+    );
 
     if (!mounted) {
       return;
@@ -449,31 +471,28 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
       _currentStars = stars;
       _selectedAvatar = savedAvatar;
       _activeAvatarCategory = savedAvatar.category;
+      _leaderboardEntries = leaderboard;
     });
   }
 
   @override
   void initState() {
     super.initState();
+    _currentLevel = widget.level;
     _activeAvatarCategory = _selectedAvatar.category;
-    _selectedLeaderboardLevel = _leaderboardLevels.contains(widget.level)
-        ? widget.level
-        : _leaderboardLevels.first;
     _syncDailyStreak();
   }
 
+  @override
+  void didUpdateWidget(covariant KidDashboardScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.level != widget.level && widget.level != _currentLevel) {
+      _currentLevel = widget.level;
+    }
+  }
+
   List<_KidLeaderboardEntry> get _activeLeaderboard {
-    final List<_KidLeaderboardEntry> source =
-        _leaderboardByLevel[_selectedLeaderboardLevel] ??
-        const <_KidLeaderboardEntry>[];
-    final List<_KidLeaderboardEntry> sorted = List<_KidLeaderboardEntry>.from(
-      source,
-    );
-    sorted.sort(
-      (_KidLeaderboardEntry a, _KidLeaderboardEntry b) =>
-          b.stars.compareTo(a.stars),
-    );
-    return sorted;
+    return List<_KidLeaderboardEntry>.from(_leaderboardEntries);
   }
 
   void _openAvatarPicker(BuildContext context) {
@@ -583,6 +602,7 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
                                             await _persistAvatarSelection(
                                               option,
                                             );
+                                            await _syncDailyStreak();
                                             if (sheetContext.mounted) {
                                               Navigator.of(sheetContext).pop();
                                             }
@@ -636,11 +656,29 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
           return _SubjectLearningPathScreen(
             subjectName: subjectName,
             kidId: widget.childId,
-            kidLevel: widget.level,
+            kidLevel: _currentLevel,
+            onLevelAdvanced: _handleLevelAdvanced,
           );
         },
       ),
     );
+    if (!mounted) {
+      return;
+    }
+    await _syncDailyStreak();
+  }
+
+  Future<void> _handleLevelAdvanced(String childId, String newLevel) async {
+    final String normalizedLevel = newLevel.trim();
+    if (childId != widget.childId || normalizedLevel.isEmpty) {
+      return;
+    }
+    if (mounted && normalizedLevel != _currentLevel) {
+      setState(() {
+        _currentLevel = normalizedLevel;
+      });
+    }
+    await widget.onLevelAdvanced?.call(childId, normalizedLevel);
     if (!mounted) {
       return;
     }
@@ -706,60 +744,73 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
           ),
         ],
       ),
-      child: Row(
-        children: <Widget>[
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: iconBgColors,
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final bool compact =
+              constraints.maxWidth.isFinite && constraints.maxWidth < 132;
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: iconBgColors,
+                  ),
+                  border: Border.all(color: Colors.white, width: 1.6),
+                ),
+                child: Icon(icon, color: iconColor, size: 17),
               ),
-              border: Border.all(color: Colors.white, width: 1.6),
-            ),
-            child: Icon(icon, color: iconColor, size: 17),
-          ),
-          const SizedBox(width: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.92),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white, width: 1.2),
-            ),
-            child: Text(
-              '$value',
-              style: GoogleFonts.fredoka(
-                color: valueTextColor,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                height: 0.95,
+              const SizedBox(width: 6),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: compact ? 5 : 6,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white, width: 1.2),
+                ),
+                child: Text(
+                  '$value',
+                  style: GoogleFonts.fredoka(
+                    color: valueTextColor,
+                    fontSize: compact ? 18 : 20,
+                    fontWeight: FontWeight.w600,
+                    height: 0.95,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.fredoka(
-                color: labelTextColor,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+              const SizedBox(width: 6),
+              Flexible(
+                fit: FlexFit.loose,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.fredoka(
+                    color: labelTextColor,
+                    fontSize: compact ? 13 : 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(width: 2),
-          Icon(
-            Icons.auto_awesome_rounded,
-            size: 12,
-            color: Colors.white.withValues(alpha: 0.9),
-          ),
-        ],
+              if (!compact) ...<Widget>[
+                const SizedBox(width: 2),
+                Icon(
+                  Icons.auto_awesome_rounded,
+                  size: 12,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -834,7 +885,7 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
                             ),
                           ),
                           Text(
-                            widget.level,
+                            _currentLevel,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -900,7 +951,7 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
                       ),
                     ),
                     Text(
-                      widget.level,
+                      _currentLevel,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1010,9 +1061,9 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
         color: const Color(0xFFFFA338),
       ),
       _buildSubjectTile(
-        title: 'Urdu',
-        subtitle: 'Huroof, alfaaz, jumlay',
-        icon: Icons.translate_rounded,
+        title: 'Gk',
+        subtitle: 'General knowledge adventures',
+        icon: Icons.public_rounded,
         color: const Color(0xFF7B6BFF),
       ),
     ];
@@ -1211,7 +1262,7 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
             drawer: Drawer(
               child: _KidMenuPanel(
                 nickname: widget.childName,
-                level: widget.level,
+                level: _currentLevel,
                 selectedAvatar: _selectedAvatar,
                 inDrawer: true,
                 onChooseAvatar: () {
@@ -1280,7 +1331,7 @@ class _KidDashboardScreenState extends State<KidDashboardScreen> {
                   width: 280,
                   child: _KidMenuPanel(
                     nickname: widget.childName,
-                    level: widget.level,
+                    level: _currentLevel,
                     selectedAvatar: _selectedAvatar,
                     onChooseAvatar: () => _openAvatarPicker(context),
                     onExit: widget.onExit,
@@ -1540,7 +1591,7 @@ class _KidMenuPanel extends StatelessWidget {
             _MenuTile(
               icon: Icons.leaderboard_outlined,
               title: 'Leaderboard',
-              subtitle: 'Top demo kids',
+              subtitle: 'Top kids in your level',
               onTap: () {
                 if (inDrawer) {
                   Navigator.of(context).pop();
@@ -1577,11 +1628,14 @@ class _SubjectLearningPathScreen extends StatefulWidget {
     required this.subjectName,
     required this.kidId,
     required this.kidLevel,
+    this.onLevelAdvanced,
   });
 
   final String subjectName;
   final String kidId;
   final String kidLevel;
+  final FutureOr<void> Function(String childId, String newLevel)?
+  onLevelAdvanced;
 
   @override
   State<_SubjectLearningPathScreen> createState() =>
@@ -1596,6 +1650,8 @@ class _SubjectLearningPathScreenState
   Set<int> _completedStages = <int>{};
   int _totalStars = 0;
   bool _loading = true;
+  List<_LectureModule> _customLectureModules = <_LectureModule>[];
+  late String _activeLevelLabel;
 
   IconData _subjectIcon() {
     final String name = widget.subjectName.toLowerCase();
@@ -1606,7 +1662,7 @@ class _SubjectLearningPathScreenState
       return Icons.calculate_rounded;
     }
     if (name.contains('urdu') || name.contains('gk')) {
-      return Icons.translate_rounded;
+      return Icons.public_rounded;
     }
     return Icons.lightbulb_rounded;
   }
@@ -1625,20 +1681,28 @@ class _SubjectLearningPathScreenState
     return _SubjectKind.gk;
   }
 
-  bool get _isLevelOne {
-    return widget.kidLevel.toLowerCase().contains('level 1');
+  int get _requestedLevelNumber {
+    return _levelNumberFromLabel(_activeLevelLabel);
   }
 
   String _subjectSlug(_SubjectKind kind) {
     return switch (kind) {
       _SubjectKind.english => 'english',
       _SubjectKind.math => 'math',
-      _SubjectKind.gk => 'urdu',
+      _SubjectKind.gk => 'gk',
     };
   }
 
+  String _subjectKeyForLevel(
+    int levelNumber,
+    _SubjectKind kind,
+    String suffix,
+  ) {
+    return '$_kidProgressPrefix.${widget.kidId}.level.${_levelStorageSlug(levelNumber)}.subject.${_subjectSlug(kind)}.$suffix';
+  }
+
   String _subjectKey(_SubjectKind kind, String suffix) {
-    return '$_kidProgressPrefix.${widget.kidId}.subject.${_subjectSlug(kind)}.$suffix';
+    return _subjectKeyForLevel(_requestedLevelNumber, kind, suffix);
   }
 
   String _starsKey() {
@@ -1651,7 +1715,7 @@ class _SubjectLearningPathScreenState
 
   Future<void> _loadProgress() async {
     final _SubjectKind kind = _subjectKind();
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _sharedPrefs(syncFirst: true);
     final int unlocked = max(
       1,
       prefs.getInt(_subjectKey(kind, 'unlocked')) ?? 1,
@@ -1664,6 +1728,10 @@ class _SubjectLearningPathScreenState
         .where((int stage) => stage >= 1 && stage <= 10)
         .toSet();
     final int stars = prefs.getInt(_starsKey()) ?? 0;
+    final List<_LectureModule> customModules = await _loadCustomLectureModules(
+      _requestedLevelNumber,
+      kind,
+    );
 
     if (!mounted) {
       return;
@@ -1672,6 +1740,7 @@ class _SubjectLearningPathScreenState
       _unlockedStage = unlocked;
       _completedStages = completed;
       _totalStars = stars;
+      _customLectureModules = customModules;
       _loading = false;
     });
   }
@@ -1681,156 +1750,82 @@ class _SubjectLearningPathScreenState
     required int unlocked,
     required Set<int> completed,
   }) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _sharedPrefs();
     await prefs.setInt(_subjectKey(kind, 'unlocked'), unlocked);
     final List<int> sortedCompleted = completed.toList()..sort();
     await prefs.setStringList(
       _subjectKey(kind, 'completed'),
       sortedCompleted.map((int stage) => '$stage').toList(),
     );
+    await _syncSharedKeysToRemote(prefs, <String>[
+      _subjectKey(kind, 'unlocked'),
+      _subjectKey(kind, 'completed'),
+    ]);
+  }
+
+  Future<List<_LectureModule>> _modulesForLevel(
+    int levelNumber,
+    _SubjectKind kind,
+  ) async {
+    final List<_LectureModule> customModules = await _loadCustomLectureModules(
+      levelNumber,
+      kind,
+    );
+    if (customModules.isNotEmpty) {
+      final List<_LectureModule> sortedCustom =
+          List<_LectureModule>.from(customModules)
+            ..sort((_LectureModule a, _LectureModule b) {
+              return a.stageNumber.compareTo(b.stageNumber);
+            });
+      return sortedCustom;
+    }
+    return _builtInLessonModules(kind, levelNumber);
+  }
+
+  Set<int> _completedStagesForLevel(
+    SharedPreferences prefs,
+    int levelNumber,
+    _SubjectKind kind,
+  ) {
+    return (prefs.getStringList(
+              _subjectKeyForLevel(levelNumber, kind, 'completed'),
+            ) ??
+            <String>[])
+        .map(int.tryParse)
+        .whereType<int>()
+        .where((int stage) => stage >= 1)
+        .toSet();
+  }
+
+  Future<bool> _isLevelFullyCompleted(
+    SharedPreferences prefs,
+    int levelNumber,
+  ) async {
+    for (final _SubjectKind kind in _SubjectKind.values) {
+      final List<_LectureModule> modules = await _modulesForLevel(
+        levelNumber,
+        kind,
+      );
+      final Set<int> requiredStages = modules
+          .map((_LectureModule module) => module.stageNumber)
+          .where((int stage) => stage >= 1)
+          .toSet();
+      if (requiredStages.isEmpty) {
+        return false;
+      }
+      final Set<int> completedStages = _completedStagesForLevel(
+        prefs,
+        levelNumber,
+        kind,
+      );
+      if (!completedStages.containsAll(requiredStages)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   List<_QuizQuestion> _quizBank(_SubjectKind kind) {
-    if (kind == _SubjectKind.gk) {
-      return const <_QuizQuestion>[
-        _QuizQuestion(
-          prompt: 'Urdu mein Alif se kaunsa lafz shuru hota hai?',
-          options: <String>['Anaar', 'Billi', 'Kitaab', 'Rassi'],
-          correctIndex: 0,
-          explanation: 'Alif se Anaar shuru hota hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Bay se kaunsa lafz hai?',
-          options: <String>['Pani', 'Billi', 'Topi', 'Doodh'],
-          correctIndex: 1,
-          explanation: 'Billi ka shuru Bay se hota hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Pay se kaunsa lafz shuru hota hai?',
-          options: <String>['Pani', 'Seb', 'Mez', 'Jug'],
-          correctIndex: 0,
-          explanation: 'Pani ka pehla harf Pay hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Seen se kaunsa lafz banta hai?',
-          options: <String>['Sitara', 'Anaar', 'Qalam', 'Ghar'],
-          correctIndex: 0,
-          explanation: 'Sitara Seen se shuru hota hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Teen harfi lafz kaun sa hai?',
-          options: <String>['ab', 'ana', 'ghar', 'is'],
-          correctIndex: 2,
-          explanation: 'Ghar teen harf ka lafz hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Urdu ginti mein 3 kya hota hai?',
-          options: <String>['Aik', 'Do', 'Teen', 'Chaar'],
-          correctIndex: 2,
-          explanation: '3 ko Urdu mein Teen kehte hain.',
-        ),
-        _QuizQuestion(
-          prompt: 'Jumla ka sahi aaghaz kaun sa hai?',
-          options: <String>[
-            'Main school jata hoon.',
-            'school main jata.',
-            'jata main school.',
-            'main school.',
-          ],
-          correctIndex: 0,
-          explanation: 'Pura aur seedha jumla pehla hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Adab ka lafz kaun sa hai?',
-          options: <String>['Shukriya', 'Jaldi', 'Khel', 'Daud'],
-          correctIndex: 0,
-          explanation: 'Shukriya adab aur tehzeeb ka lafz hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Urdu mein "school" ke liye sahi lafz kaunsa hai?',
-          options: <String>['Madrasa', 'Jungle', 'Bazaar', 'Darya'],
-          correctIndex: 0,
-          explanation: 'Madrasa school ke liye istemal hota hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Aakhri harf pehchano: "kitaab"',
-          options: <String>['k', 'b', 't', 'a'],
-          correctIndex: 1,
-          explanation: 'Kitaab ka aakhri harf B hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Urdu mein rang "green" ko kya kehte hain?',
-          options: <String>['Surkh', 'Sabz', 'Neela', 'Sufaid'],
-          correctIndex: 1,
-          explanation: 'Green ko Urdu mein Sabz kehte hain.',
-        ),
-        _QuizQuestion(
-          prompt: 'Sahi do harfi lafz chuno',
-          options: <String>['ab', 'ana', 'pani', 'darwaza'],
-          correctIndex: 0,
-          explanation: 'ab do harfi lafz hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Urdu mein 5 kya hota hai?',
-          options: <String>['Do', 'Paanch', 'Chay', 'Saat'],
-          correctIndex: 1,
-          explanation: '5 ko Paanch kehte hain.',
-        ),
-        _QuizQuestion(
-          prompt: 'Kaunsa lafz Ray se shuru hota hai?',
-          options: <String>['Rassi', 'Seb', 'Topi', 'Meem'],
-          correctIndex: 0,
-          explanation: 'Rassi Ray se shuru hota hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Kaunsa lafz Meem se shuru hota hai?',
-          options: <String>['Machli', 'Jug', 'Anaar', 'Billi'],
-          correctIndex: 0,
-          explanation: 'Machli ka pehla harf Meem hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Sawal ka sahi jawab chuno: "Aap ka naam kya hai?"',
-          options: <String>[
-            'Mera naam Ali hai.',
-            'Main kal gaya tha.',
-            'Pani thanda hai.',
-            'Aaj mausam acha hai.',
-          ],
-          correctIndex: 0,
-          explanation: 'Sawal naam ka hai, is liye pehla jawab sahi hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Urdu mein pehla number kaunsa hai?',
-          options: <String>['Aik', 'Do', 'Teen', 'Chaar'],
-          correctIndex: 0,
-          explanation: 'Pehla number Aik hota hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Kaunsa lafz school ki cheez hai?',
-          options: <String>['Qalam', 'Bus', 'Pankha', 'Darya'],
-          correctIndex: 0,
-          explanation: 'Qalam school mein istemal hota hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Sahi jumla kaunsa hai?',
-          options: <String>[
-            'Main pani peeta hoon.',
-            'pani main peeta.',
-            'peeta hoon main pani.',
-            'Main hoon peeta.',
-          ],
-          correctIndex: 0,
-          explanation: 'Pehla jumla grammatically sahi hai.',
-        ),
-        _QuizQuestion(
-          prompt: 'Kaunsa lafz "please" ka Urdu istemal hai?',
-          options: <String>['Meharbani', 'Daud', 'Khel', 'Sona'],
-          correctIndex: 0,
-          explanation: 'Meharbani/please adab ka lafz hai.',
-        ),
-      ];
-    }
-
     switch (kind) {
       case _SubjectKind.english:
         return const <_QuizQuestion>[
@@ -2280,6 +2275,7 @@ class _SubjectLearningPathScreenState
     }
   }
 
+  // ignore: unused_element
   List<_LectureSlide> _buildSlides({
     required List<String> titles,
     required List<String> bodies,
@@ -2317,6 +2313,7 @@ class _SubjectLearningPathScreenState
     return slides;
   }
 
+  // ignore: unused_element
   List<_LectureSlide> _englishSlides() {
     return _buildSlides(
       titles: const <String>[
@@ -2382,6 +2379,7 @@ class _SubjectLearningPathScreenState
     );
   }
 
+  // ignore: unused_element
   List<_LectureSlide> _mathSlides() {
     return _buildSlides(
       titles: const <String>[
@@ -2447,71 +2445,73 @@ class _SubjectLearningPathScreenState
     );
   }
 
+  // ignore: unused_element
   List<_LectureSlide> _gkSlides() {
     return _buildSlides(
       titles: const <String>[
-        'Harf Alif',
-        'Harf Bay',
-        'Harf Pay',
-        'Harf Tay',
-        'Harf Say',
-        'Harf Jeem',
-        'Harf Daal',
-        'Harf Ray',
-        'Harf Seen',
-        'Harf Meem',
+        'My Body Parts',
+        'Healthy Habits',
+        'Family and Helpers',
+        'Animals and Homes',
+        'Plants and Nature',
+        'Weather and Seasons',
+        'Safety Rules',
+        'Transport Around Us',
+        'Community Places',
+        'Care for Earth',
       ],
       bodies: const <String>[
-        'Alif ki pehchan karo aur awaaz saaf bolo.',
-        'Bay ko lafzon ke shuru mein pehchano.',
-        'Pay ki awaaz suno aur dohrayo.',
-        'Tay ka harf parh kar bolne ki practice karo.',
-        'Say ki awaaz ko dusre huroof se alag pehchano.',
-        'Jeem se banne wale asaan alfaaz parho.',
-        'Daal ka istemal asaan alfaaz mein karo.',
-        'Ray ko sahi talafuz ke saath bolo.',
-        'Seen ke lafz dhoondo aur parho.',
-        'Meem se shuru hone wale alfaaz yaad karo.',
+        'Learn major body parts and their use.',
+        'Daily habits keep our body clean and strong.',
+        'Family members and helpers support our lives.',
+        'Animals live in different homes and places.',
+        'Plants need sunlight, air, and water.',
+        'Weather changes and seasons have different feelings.',
+        'Simple rules keep us safe at home and on road.',
+        'Different transport helps us move around.',
+        'Learn places around us like school and hospital.',
+        'Protect nature by saving water and keeping places clean.',
       ],
       examples: const <String>[
-        'alif se anaar',
-        'bay se billi',
-        'pay se pani',
-        'tay se topi',
-        'say se seb',
-        'jeem se jug',
-        'daal se darwaza',
-        'ray se rassi',
-        'seen se sitara',
-        'meem se machli',
+        'eyes see, ears hear',
+        'wash hands before meals',
+        'teacher, doctor, firefighter',
+        'fish in water, bird in nest',
+        'water the plant daily',
+        'summer is hot, winter is cold',
+        'look right and left before crossing',
+        'bus, train, bike, car',
+        'school, park, hospital',
+        'turn off tap after use',
       ],
       phaseHints: const <String>[
-        'Dino ke saath harf ki awaaz suno.',
-        'Harf ko dekh kar zor se bolo.',
-        'Harf ko aik lafz mein istemal karo.',
+        'Dino introduces the topic with one picture idea.',
+        'Practice by matching the idea with a simple example.',
+        'Use it in a daily life situation.',
       ],
       icons: const <IconData>[
-        Icons.translate_rounded,
-        Icons.spellcheck_rounded,
-        Icons.hearing_rounded,
-        Icons.menu_book_rounded,
-        Icons.record_voice_over_rounded,
-        Icons.auto_stories_rounded,
-        Icons.notes_rounded,
-        Icons.read_more_rounded,
-        Icons.text_fields_rounded,
-        Icons.check_circle_rounded,
+        Icons.public_rounded,
+        Icons.pets_rounded,
+        Icons.flutter_dash_rounded,
+        Icons.eco_rounded,
+        Icons.cloud_rounded,
+        Icons.health_and_safety_rounded,
+        Icons.groups_rounded,
+        Icons.favorite_rounded,
+        Icons.directions_bus_rounded,
+        Icons.travel_explore_rounded,
       ],
       colors: const <Color>[
-        Color(0xFF7A6FFF),
-        Color(0xFF58CC02),
         Color(0xFF4BB9FF),
-        Color(0xFFFFC64A),
+        Color(0xFF58CC02),
+        Color(0xFFFFB84B),
+        Color(0xFF7A6FFF),
         Color(0xFFFF7F9D),
       ],
     );
   }
 
+  // ignore: unused_element
   List<_LectureSlide> _englishSlidesTwo() {
     return _buildSlides(
       titles: const <String>[
@@ -2577,6 +2577,7 @@ class _SubjectLearningPathScreenState
     );
   }
 
+  // ignore: unused_element
   List<_LectureSlide> _englishSlidesThree() {
     return _buildSlides(
       titles: const <String>[
@@ -2642,6 +2643,7 @@ class _SubjectLearningPathScreenState
     );
   }
 
+  // ignore: unused_element
   List<_LectureSlide> _mathSlidesTwo() {
     return _buildSlides(
       titles: const <String>[
@@ -2707,6 +2709,7 @@ class _SubjectLearningPathScreenState
     );
   }
 
+  // ignore: unused_element
   List<_LectureSlide> _mathSlidesThree() {
     return _buildSlides(
       titles: const <String>[
@@ -2772,181 +2775,205 @@ class _SubjectLearningPathScreenState
     );
   }
 
-  List<_LectureSlide> _urduSlidesTwo() {
+  // ignore: unused_element
+  List<_LectureSlide> _gkSlidesTwo() {
     return _buildSlides(
       titles: const <String>[
-        'Do Harfi Alfaaz',
-        'Teen Harfi Alfaaz',
-        'Shuru ka Harf',
-        'Aakhri ka Harf',
-        'Huroof Milao',
-        'Tasveer se Lafz',
-        'Rangon ke Naam',
-        'Adad 1 se 10',
-        'Asaan Jumlay',
-        'Parho aur Suno',
+        'Our Earth',
+        'Land and Water',
+        'National Symbols',
+        'Community Helpers',
+        'Healthy Food',
+        'Good Habits',
+        'Safety at Home',
+        'Safety on Road',
+        'Festivals Around Us',
+        'Plants and Animals Needs',
       ],
       bodies: const <String>[
-        'Do harfi alfaaz dekh kar parhna seekho.',
-        'Teen harfi alfaaz ko tod kar parho.',
-        'Lafz ka pehla harf pehchano.',
-        'Lafz ka aakhri harf pehchano.',
-        'Do huroof mila kar naya lafz banao.',
-        'Tasveer dekh kar sahi lafz chuno.',
-        'Urdu mein bunyadi rangon ke naam yaad karo.',
-        'Urdu ginti 1 se 10 tak bolo.',
-        'Chhote jumlay parho aur samjho.',
-        'Awaaz sun kar lafz repeat karo.',
+        'Earth is our home planet and we should protect it.',
+        'Know the difference between land areas and water areas.',
+        'Learn simple symbols of your country and respect them.',
+        'Helpers in society keep us safe and healthy.',
+        'Healthy food gives us strength to learn and play.',
+        'Daily habits build a strong and clean lifestyle.',
+        'Simple home safety rules prevent accidents.',
+        'Road safety rules protect everyone.',
+        'Different festivals teach joy and sharing.',
+        'Plants and animals both need care to grow.',
       ],
       examples: const <String>[
-        'ab, am, is',
-        'ana, pani, kalam',
-        'seb ka pehla harf s',
-        'kitab ka aakhri harf b',
-        'ba + l = bal',
-        'seb ki tasveer -> seb',
-        'surkh, sabz, neela',
-        'aik, do, teen',
-        'Ali school jata hai.',
-        'suno aur bolo',
+        'Earth has land and water',
+        'Sea and river are water bodies',
+        'Flag and anthem are national symbols',
+        'Doctor, teacher, police officer',
+        'Fruits and vegetables are healthy',
+        'Brush twice a day',
+        'Do not touch electric wires',
+        'Look right and left before crossing',
+        'Eid, Independence Day, spring festivals',
+        'Plants need sunlight and water',
       ],
       phaseHints: const <String>[
-        'Pehle lafz ko dheere se parho.',
-        'Ab isi lafz ko phir se bol kar practice karo.',
-        'Is lafz ko jumlay mein istemal karo.',
+        'Observe the idea and connect it to real life.',
+        'Practice by matching examples quickly.',
+        'Use one safety or habit rule today.',
       ],
       icons: const <IconData>[
-        Icons.looks_two_rounded,
-        Icons.looks_3_rounded,
-        Icons.first_page_rounded,
-        Icons.last_page_rounded,
-        Icons.merge_rounded,
-        Icons.image_search_rounded,
-        Icons.palette_rounded,
-        Icons.pin_rounded,
-        Icons.short_text_rounded,
-        Icons.volume_up_rounded,
-      ],
-      colors: const <Color>[
-        Color(0xFF7D6DFF),
-        Color(0xFF58CC02),
-        Color(0xFF47B7FF),
-        Color(0xFFFFBA4D),
-        Color(0xFFFF86A8),
-      ],
-    );
-  }
-
-  List<_LectureSlide> _urduSlidesThree() {
-    return _buildSlides(
-      titles: const <String>[
-        'Mera Naam',
-        'Mera Ghar',
-        'Mera School',
-        'Mera Khandan',
-        'Rozmarra Alfaaz',
-        'Sawal aur Jawab',
-        'Adab ke Alfaaz',
-        'Jumla Banana',
-        'Chhoti Kahani',
-        'Dobara Parhna',
-      ],
-      bodies: const <String>[
-        'Apna naam theek andaaz mein bolna aur likhna seekho.',
-        'Ghar se mutaliq alfaaz pehchano.',
-        'School ki cheezon ke naam Urdu mein bolo.',
-        'Khandan ke afrad ke naam pehchano.',
-        'Roz istemal hone wale alfaaz yaad karo.',
-        'Sawal ka asaan jawab dena seekho.',
-        'Please, shukriya, maaf kijiye jaise alfaaz istemal karo.',
-        'Alfaaz ko mila kar sahi jumla banao.',
-        'Do teen jumlon ki kahani parho.',
-        'Jo parh liya us ko dobara saaf parho.',
-      ],
-      examples: const <String>[
-        'Mera naam Ahmed hai.',
-        'ghar, kamra, darwaza',
-        'kitab, takhti, qalam',
-        'amma, abba, bhai, behen',
-        'pani, roti, doodh',
-        'Aap ka naam kya hai?',
-        'shukriya, please',
-        'Main school jata hoon.',
-        'Ali ne ped lagaya.',
-        'zor se parho',
-      ],
-      phaseHints: const <String>[
-        'Dino ke saath jumla suno aur samjho.',
-        'Jumla khud parho aur repeat karo.',
-        'Apna chhota jumla bol kar dikhao.',
-      ],
-      icons: const <IconData>[
-        Icons.person_rounded,
-        Icons.home_rounded,
-        Icons.school_rounded,
+        Icons.public_rounded,
+        Icons.map_rounded,
+        Icons.flag_rounded,
         Icons.groups_rounded,
-        Icons.list_alt_rounded,
-        Icons.quiz_rounded,
-        Icons.volunteer_activism_rounded,
-        Icons.notes_rounded,
-        Icons.auto_stories_rounded,
-        Icons.replay_rounded,
+        Icons.food_bank_rounded,
+        Icons.health_and_safety_rounded,
+        Icons.home_rounded,
+        Icons.traffic_rounded,
+        Icons.celebration_rounded,
+        Icons.eco_rounded,
       ],
       colors: const <Color>[
-        Color(0xFF7A6FFF),
-        Color(0xFF58CC02),
         Color(0xFF4BB9FF),
-        Color(0xFFFFC54A),
+        Color(0xFF58CC02),
+        Color(0xFFFFB84B),
+        Color(0xFF7A6FFF),
         Color(0xFFFF7F9D),
       ],
     );
   }
 
-  List<_LectureModule> _lectureModules(_SubjectKind kind) {
-    switch (kind) {
-      case _SubjectKind.english:
-        return <_LectureModule>[
-          _LectureModule(title: 'English Lecture 1', slides: _englishSlides()),
-          _LectureModule(
-            title: 'English Lecture 2',
-            slides: _englishSlidesTwo(),
-          ),
-          _LectureModule(
-            title: 'English Lecture 3',
-            slides: _englishSlidesThree(),
-          ),
-        ];
-      case _SubjectKind.math:
-        return <_LectureModule>[
-          _LectureModule(title: 'Math Lecture 1', slides: _mathSlides()),
-          _LectureModule(title: 'Math Lecture 2', slides: _mathSlidesTwo()),
-          _LectureModule(title: 'Math Lecture 3', slides: _mathSlidesThree()),
-        ];
-      case _SubjectKind.gk:
-        return <_LectureModule>[
-          _LectureModule(title: 'Urdu Lecture 1', slides: _gkSlides()),
-          _LectureModule(title: 'Urdu Lecture 2', slides: _urduSlidesTwo()),
-          _LectureModule(title: 'Urdu Lecture 3', slides: _urduSlidesThree()),
-        ];
+  // ignore: unused_element
+  List<_LectureSlide> _gkSlidesThree() {
+    return _buildSlides(
+      titles: const <String>[
+        'Solar System Basics',
+        'Day and Night',
+        'Weather Types',
+        'Seasons',
+        'Transport Types',
+        'Communication Methods',
+        'Landforms',
+        'Water Sources',
+        'Clean Earth Mission',
+        'GK Review Challenge',
+      ],
+      bodies: const <String>[
+        'Learn Sun, planets, and Earth as part of space family.',
+        'Earth rotation gives us day and night.',
+        'Weather changes as sunny, cloudy, rainy, and windy.',
+        'Each season has different temperature and clothes.',
+        'Transport can be road, rail, air, or water.',
+        'People communicate using speech, writing, and devices.',
+        'Mountains, plains, and deserts are major landforms.',
+        'Water comes from rain, rivers, lakes, and wells.',
+        'Reduce waste and keep your surroundings clean.',
+        'Use all GK concepts in one recap lesson.',
+      ],
+      examples: const <String>[
+        'Earth is the third planet from Sun',
+        'Sunrise is day, moonlight is night',
+        'Carry umbrella in rain',
+        'Wear warm clothes in winter',
+        'Bus, train, plane, boat',
+        'Phone call and letter are communication',
+        'Mountain is high, plain is flat',
+        'River water is fresh water',
+        'Use dustbin and recycle paper',
+        'Quick question game',
+      ],
+      phaseHints: const <String>[
+        'Connect this topic with your classroom world.',
+        'Practice one key fact and remember it.',
+        'Share one fact with family after class.',
+      ],
+      icons: const <IconData>[
+        Icons.wb_sunny_rounded,
+        Icons.nights_stay_rounded,
+        Icons.cloud_rounded,
+        Icons.thermostat_rounded,
+        Icons.directions_bus_rounded,
+        Icons.campaign_rounded,
+        Icons.terrain_rounded,
+        Icons.water_drop_rounded,
+        Icons.cleaning_services_rounded,
+        Icons.psychology_rounded,
+      ],
+      colors: const <Color>[
+        Color(0xFF4BB9FF),
+        Color(0xFF58CC02),
+        Color(0xFFFFB84B),
+        Color(0xFF7A6FFF),
+        Color(0xFFFF7F9D),
+      ],
+    );
+  }
+
+  int _requiredPassingScore(int totalQuestions) {
+    return max(1, (totalQuestions * 0.6).ceil());
+  }
+
+  int _recalculateTotalStars(SharedPreferences prefs) {
+    int total = 0;
+    final String stagePrefix = '$_kidProgressPrefix.${widget.kidId}.level.';
+    for (final String key in prefs.getKeys()) {
+      if (!key.startsWith(stagePrefix) || !key.endsWith('_stars')) {
+        continue;
+      }
+      total += max(0, prefs.getInt(key) ?? 0);
     }
+    return total;
+  }
+
+  List<_LectureModule> _lectureModules(_SubjectKind kind) {
+    if (_customLectureModules.isNotEmpty) {
+      final List<_LectureModule> modules = List<_LectureModule>.from(
+        _customLectureModules,
+      );
+      modules.sort((_LectureModule a, _LectureModule b) {
+        return a.stageNumber.compareTo(b.stageNumber);
+      });
+      return modules;
+    }
+    return _builtInLessonModules(kind, _requestedLevelNumber);
   }
 
   Future<void> _openStageLecture(int stage) async {
     final _SubjectKind kind = _subjectKind();
     final List<_LectureModule> modules = _lectureModules(kind);
-    if (stage < 1 || stage > modules.length) {
+    final String levelBeforeAdvance = _activeLevelLabel;
+    final int levelNumberBeforeAdvance = _requestedLevelNumber;
+    _LectureModule? selectedModule;
+    for (final _LectureModule module in modules) {
+      if (module.stageNumber == stage) {
+        selectedModule = module;
+        break;
+      }
+    }
+
+    if (selectedModule == null) {
       if (!mounted) {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Lecture for Stage $stage is coming soon. Right now Stages 1-${modules.length} are ready.',
+            'Lecture for Stage $stage is not ready yet. Add it in the admin panel or continue with available stages.',
           ),
         ),
       );
       return;
     }
+    final List<_QuizQuestion> stageQuiz = selectedModule.quizQuestions.isEmpty
+        ? _quizBank(kind)
+        : selectedModule.quizQuestions;
+    final _LectureModule lessonModule = selectedModule.quizQuestions.isEmpty
+        ? _LectureModule(
+            title: selectedModule.title,
+            slides: selectedModule.slides,
+            levelNumber: selectedModule.levelNumber,
+            stageNumber: selectedModule.stageNumber,
+            quizQuestions: stageQuiz,
+          )
+        : selectedModule;
 
     final _LectureQuizResult? result = await Navigator.of(context)
         .push<_LectureQuizResult>(
@@ -2954,8 +2981,7 @@ class _SubjectLearningPathScreenState
             builder: (BuildContext context) {
               return _SubjectLectureScreen(
                 subjectName: '${widget.subjectName} Lecture $stage',
-                module: modules[stage - 1],
-                quizBank: _quizBank(kind),
+                module: lessonModule,
               );
             },
           ),
@@ -2965,7 +2991,7 @@ class _SubjectLearningPathScreenState
       return;
     }
 
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final SharedPreferences prefs = await _sharedPrefs(syncFirst: true);
     final _SubjectKind subjectKind = _subjectKind();
     final int boundedScore = result.score < 0
         ? 0
@@ -2980,19 +3006,7 @@ class _SubjectLearningPathScreenState
     final int stageBest = max(previousBest, boundedScore);
     await prefs.setInt(stageStarsKey, stageBest);
 
-    int recalculatedStars = 0;
-    final String subjectPrefix = '$_kidProgressPrefix.${widget.kidId}.subject.';
-    for (final String key in prefs.getKeys()) {
-      if (!key.startsWith(subjectPrefix) || !key.endsWith('_stars')) {
-        continue;
-      }
-      final int stageValue = prefs.getInt(key) ?? 0;
-      recalculatedStars += stageValue < 0
-          ? 0
-          : stageValue > 10
-          ? 10
-          : stageValue;
-    }
+    final int recalculatedStars = _recalculateTotalStars(prefs);
     await prefs.setInt(_starsKey(), recalculatedStars);
 
     final int testsTaken = (prefs.getInt(_reportKey('tests_taken')) ?? 0) + 1;
@@ -3052,6 +3066,9 @@ class _SubjectLearningPathScreenState
 
     int updatedUnlocked = _unlockedStage;
     Set<int> updatedCompleted = _completedStages;
+    final int requiredScore = _requiredPassingScore(result.totalQuestions);
+    String? promotedLevelLabel;
+    bool finishedHighestLevel = false;
     if (result.passed) {
       updatedCompleted = <int>{..._completedStages, stage};
       updatedUnlocked = max(_unlockedStage, min(stage + 1, 10));
@@ -3060,7 +3077,38 @@ class _SubjectLearningPathScreenState
         unlocked: updatedUnlocked,
         completed: updatedCompleted,
       );
+      final bool levelFullyCompleted = await _isLevelFullyCompleted(
+        prefs,
+        levelNumberBeforeAdvance,
+      );
+      if (levelFullyCompleted) {
+        if (levelNumberBeforeAdvance < _learnovaKidLevels.length) {
+          promotedLevelLabel = _levelLabelFromNumber(
+            levelNumberBeforeAdvance + 1,
+          );
+          _activeLevelLabel = promotedLevelLabel;
+          await widget.onLevelAdvanced?.call(widget.kidId, promotedLevelLabel);
+        } else {
+          finishedHighestLevel = true;
+        }
+      }
     }
+
+    final List<String> changedKeys = <String>[
+      stageStarsKey,
+      _starsKey(),
+      _reportKey('tests_taken'),
+      _reportKey('highest_mark'),
+      _reportKey('attempts'),
+      _reportKey('attempts_json'),
+    ];
+    if (result.passed) {
+      changedKeys.addAll(<String>[
+        _subjectKey(subjectKind, 'unlocked'),
+        _subjectKey(subjectKind, 'completed'),
+      ]);
+    }
+    await _syncSharedKeysToRemote(prefs, changedKeys);
 
     if (!mounted) {
       return;
@@ -3073,16 +3121,65 @@ class _SubjectLearningPathScreenState
 
     final String message = result.passed
         ? (stage < modules.length
-              ? 'Passed Stage $stage with $boundedScore/10. Stage ${stage + 1} unlocked. Total stars: $recalculatedStars. Stage best: $stageBest.'
-              : 'Awesome! You completed all ${modules.length} Level 1 lectures in ${widget.subjectName}. Total stars: $recalculatedStars.')
-        : 'Score $boundedScore/10 on Stage $stage. Need 6/10 to unlock next lecture. Total stars: $recalculatedStars. Stage best: $stageBest.';
+              ? 'Passed Stage $stage with $boundedScore/${result.totalQuestions}. Stage ${stage + 1} unlocked. Total stars: $recalculatedStars. Stage best: $stageBest.'
+              : 'Awesome! You completed the available ${widget.subjectName} lectures for this level. Total stars: $recalculatedStars.')
+        : 'Score $boundedScore/${result.totalQuestions} on Stage $stage. Need $requiredScore/${result.totalQuestions} to unlock next lecture. Total stars: $recalculatedStars. Stage best: $stageBest.';
+    if (promotedLevelLabel != null) {
+      await showDialog<void>(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: const Text('Level Up!'),
+            content: Text(
+              'Beautiful work! You finished every subject in $levelBeforeAdvance. $promotedLevelLabel is now ready for your next adventure.',
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Let\'s Go'),
+              ),
+            ],
+          );
+        },
+      );
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).maybePop();
+      return;
+    }
+
+    if (finishedHighestLevel) {
+      await showDialog<void>(
+        context: context,
+        builder: (BuildContext dialogContext) {
+          return AlertDialog(
+            title: const Text('Amazing!'),
+            content: Text(
+              'You completed every subject in $levelBeforeAdvance. Dino is super proud of you.',
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Yay!'),
+              ),
+            ],
+          );
+        },
+      );
+      if (!mounted) {
+        return;
+      }
+    }
+
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _onTapStage(int stage) {
-    final int availableStages = _lectureModules(_subjectKind()).length;
+    final List<_LectureModule> modules = _lectureModules(_subjectKind());
+    final int availableStages = modules.length;
     if (stage > _unlockedStage) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -3094,18 +3191,10 @@ class _SubjectLearningPathScreenState
       return;
     }
 
-    if (!_isLevelOne) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Level-based lectures are coming. Level 1 lecture flow is live now.',
-          ),
-        ),
-      );
-      return;
-    }
-
-    if (stage <= availableStages) {
+    final bool stageExists = modules.any(
+      (_LectureModule module) => module.stageNumber == stage,
+    );
+    if (stageExists) {
       _openStageLecture(stage);
       return;
     }
@@ -3113,7 +3202,7 @@ class _SubjectLearningPathScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Stage $stage is unlocked. For Level 1, Stages 1 to $availableStages are ready now.',
+          'Stage $stage is unlocked, but content is ready only for $availableStages lecture slots right now.',
         ),
       ),
     );
@@ -3122,6 +3211,7 @@ class _SubjectLearningPathScreenState
   @override
   void initState() {
     super.initState();
+    _activeLevelLabel = widget.kidLevel;
     _loadProgress();
   }
 
@@ -3129,6 +3219,9 @@ class _SubjectLearningPathScreenState
   Widget build(BuildContext context) {
     final LearnovaPalette palette = _palette(context);
     final _SubjectKind subjectKind = _subjectKind();
+    final List<_LectureModule> modules = _lectureModules(subjectKind);
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    final bool compactPathHeader = screenWidth < 370;
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.subjectName)),
@@ -3170,7 +3263,12 @@ class _SubjectLearningPathScreenState
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
                           Container(
-                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                            padding: EdgeInsets.fromLTRB(
+                              compactPathHeader ? 14 : 16,
+                              compactPathHeader ? 12 : 14,
+                              compactPathHeader ? 14 : 16,
+                              compactPathHeader ? 12 : 14,
+                            ),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(24),
                               gradient: LinearGradient(
@@ -3200,8 +3298,8 @@ class _SubjectLearningPathScreenState
                                 Row(
                                   children: <Widget>[
                                     Container(
-                                      width: 52,
-                                      height: 52,
+                                      width: compactPathHeader ? 46 : 52,
+                                      height: compactPathHeader ? 46 : 52,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         color: Colors.white.withValues(
@@ -3211,15 +3309,19 @@ class _SubjectLearningPathScreenState
                                       child: Icon(
                                         _subjectIcon(),
                                         color: Colors.white,
-                                        size: 28,
+                                        size: compactPathHeader ? 25 : 28,
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
+                                    SizedBox(
+                                      width: compactPathHeader ? 10 : 12,
+                                    ),
                                     Expanded(
                                       child: Text(
                                         widget.subjectName,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.fredoka(
-                                          fontSize: 31,
+                                          fontSize: compactPathHeader ? 27 : 31,
                                           color: Colors.white,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -3227,19 +3329,19 @@ class _SubjectLearningPathScreenState
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
+                                SizedBox(height: compactPathHeader ? 6 : 8),
                                 Text(
                                   'Play Path 1 to 10',
                                   style: GoogleFonts.fredoka(
                                     color: Colors.white,
-                                    fontSize: 20,
+                                    fontSize: compactPathHeader ? 18 : 20,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(height: 10),
+                                SizedBox(height: compactPathHeader ? 8 : 10),
                                 Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
+                                  spacing: compactPathHeader ? 6 : 8,
+                                  runSpacing: compactPathHeader ? 6 : 8,
                                   children: <Widget>[
                                     _PathInfoChip(
                                       icon: Icons.lock_open_rounded,
@@ -3251,9 +3353,9 @@ class _SubjectLearningPathScreenState
                                     ),
                                     _PathInfoChip(
                                       icon: Icons.workspace_premium_rounded,
-                                      text: _isLevelOne
-                                          ? 'Level 1 lectures 1-3 + quizzes ready'
-                                          : 'Level 1 module currently active',
+                                      text: modules.isEmpty
+                                          ? 'Add lesson content for this level in admin'
+                                          : '${modules.length} lecture slots ready for ${_levelLabelFromNumber(_requestedLevelNumber)}',
                                     ),
                                   ],
                                 ),
@@ -3282,10 +3384,19 @@ class _SubjectLearningPathScreenState
 }
 
 class _LectureModule {
-  const _LectureModule({required this.title, required this.slides});
+  const _LectureModule({
+    required this.title,
+    required this.slides,
+    this.levelNumber = 1,
+    this.stageNumber = 1,
+    this.quizQuestions = const <_QuizQuestion>[],
+  });
 
   final String title;
   final List<_LectureSlide> slides;
+  final int levelNumber;
+  final int stageNumber;
+  final List<_QuizQuestion> quizQuestions;
 }
 
 class _LectureSlide {
@@ -3361,12 +3472,10 @@ class _SubjectLectureScreen extends StatefulWidget {
   const _SubjectLectureScreen({
     required this.subjectName,
     required this.module,
-    required this.quizBank,
   });
 
   final String subjectName;
   final _LectureModule module;
-  final List<_QuizQuestion> quizBank;
 
   @override
   State<_SubjectLectureScreen> createState() => _SubjectLectureScreenState();
@@ -3384,9 +3493,6 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
   _VoicePace _voicePace = _VoicePace.normal;
   int _voiceSessionId = 0;
   Map<String, String>? _preferredVoice;
-  List<Map<String, String>> _boyVoices = <Map<String, String>>[];
-  List<Map<String, String>> _girlVoices = <Map<String, String>>[];
-  List<Map<String, String>> _neutralVoices = <Map<String, String>>[];
   String _spokenWord = '';
   int _spokenStart = -1;
   int _spokenEnd = -1;
@@ -3394,43 +3500,17 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
 
   Future<void> _applyVoiceProfile() async {
     final bool normal = _voicePace == _VoicePace.normal;
-    final Map<String, String>? selectedVoice = _pickVoiceForPlayback();
-    if (selectedVoice != null) {
-      await _tts.setVoice(selectedVoice);
+    if (_preferredVoice != null) {
+      await _tts.setVoice(_preferredVoice!);
     }
-    await _tts.setPitch(normal ? 1.03 : 1.0);
-    await _tts.setSpeechRate(normal ? 0.41 : 0.3);
+    const double basePitch = 1.02;
+    await _tts.setPitch(normal ? basePitch : basePitch - 0.03);
+    await _tts.setSpeechRate(normal ? 0.43 : 0.31);
     await _tts.setVolume(1.0);
   }
 
   String _normalizeLocale(String value) {
     return value.replaceAll('_', '-').toLowerCase();
-  }
-
-  bool _looksMaleVoice(String combined) {
-    return combined.contains('male') ||
-        combined.contains('boy') ||
-        combined.contains('man') ||
-        combined.contains('daniel') ||
-        combined.contains('alex') ||
-        combined.contains('fred') ||
-        combined.contains('tom') ||
-        combined.contains('david') ||
-        combined.contains('ryan');
-  }
-
-  bool _looksFemaleVoice(String combined) {
-    return combined.contains('female') ||
-        combined.contains('girl') ||
-        combined.contains('woman') ||
-        combined.contains('samantha') ||
-        combined.contains('jenny') ||
-        combined.contains('aria') ||
-        combined.contains('ava') ||
-        combined.contains('karen') ||
-        combined.contains('lisa') ||
-        combined.contains('zira') ||
-        combined.contains('salli');
   }
 
   int _voiceQualityScore(String locale, String combined) {
@@ -3452,11 +3532,25 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
         combined.contains('premium')) {
       score += 24;
     }
+    if (combined.contains('studio') ||
+        combined.contains('journey') ||
+        combined.contains('high quality')) {
+      score += 14;
+    }
     if (combined.contains('child') || combined.contains('kid')) {
       score += 20;
     }
+    if (combined.contains('young') ||
+        combined.contains('junior') ||
+        combined.contains('youth') ||
+        combined.contains('friendly')) {
+      score += 12;
+    }
     if (combined.contains('robot') || combined.contains('espeak')) {
       score -= 20;
+    }
+    if (combined.contains('legacy') || combined.contains('compact')) {
+      score -= 8;
     }
     return score;
   }
@@ -3467,9 +3561,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       if (rawVoices is! List<dynamic>) {
         return;
       }
-      final List<_VoiceChoice> boyChoices = <_VoiceChoice>[];
-      final List<_VoiceChoice> girlChoices = <_VoiceChoice>[];
-      final List<_VoiceChoice> neutralChoices = <_VoiceChoice>[];
+      final List<_VoiceChoice> allChoices = <_VoiceChoice>[];
 
       for (final dynamic item in rawVoices) {
         if (item is! Map) {
@@ -3493,63 +3585,14 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
           voice: <String, String>{'name': name, 'locale': localeRaw},
           score: score,
         );
-        if (_looksFemaleVoice(combined)) {
-          girlChoices.add(choice);
-        } else if (_looksMaleVoice(combined)) {
-          boyChoices.add(choice);
-        } else {
-          neutralChoices.add(choice);
-        }
+        allChoices.add(choice);
       }
 
-      void sortChoices(List<_VoiceChoice> list) {
-        list.sort(
-          (_VoiceChoice a, _VoiceChoice b) => b.score.compareTo(a.score),
-        );
-      }
-
-      sortChoices(boyChoices);
-      sortChoices(girlChoices);
-      sortChoices(neutralChoices);
-
-      _boyVoices = boyChoices
-          .map((_VoiceChoice choice) => choice.voice)
-          .toList(growable: false);
-      _girlVoices = girlChoices
-          .map((_VoiceChoice choice) => choice.voice)
-          .toList(growable: false);
-      _neutralVoices = neutralChoices
-          .map((_VoiceChoice choice) => choice.voice)
-          .toList(growable: false);
-
-      final List<_VoiceChoice> allChoices = <_VoiceChoice>[
-        ...boyChoices,
-        ...girlChoices,
-        ...neutralChoices,
-      ]..sort((_VoiceChoice a, _VoiceChoice b) => b.score.compareTo(a.score));
+      allChoices.sort(
+        (_VoiceChoice a, _VoiceChoice b) => b.score.compareTo(a.score),
+      );
       _preferredVoice = allChoices.isEmpty ? null : allChoices.first.voice;
     } catch (_) {}
-  }
-
-  Map<String, String>? _pickVoiceForPlayback() {
-    final bool preferGirl = _random.nextBool();
-    final List<Map<String, String>> primary = preferGirl
-        ? _girlVoices
-        : _boyVoices;
-    final List<Map<String, String>> secondary = preferGirl
-        ? _boyVoices
-        : _girlVoices;
-
-    if (primary.isNotEmpty) {
-      return primary[_random.nextInt(primary.length)];
-    }
-    if (secondary.isNotEmpty) {
-      return secondary[_random.nextInt(secondary.length)];
-    }
-    if (_neutralVoices.isNotEmpty) {
-      return _neutralVoices[_random.nextInt(_neutralVoices.length)];
-    }
-    return _preferredVoice;
   }
 
   Future<void> _configureTts() async {
@@ -3623,7 +3666,7 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       _NarrationChunk(section: _NarrationSection.body, text: slide.body),
       _NarrationChunk(
         section: _NarrationSection.example,
-        text: 'Try: ${slide.example}',
+        text: 'Let us try it together. ${slide.example}',
       ),
       _NarrationChunk(
         section: _NarrationSection.coach,
@@ -3743,54 +3786,66 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     final String subject = widget.subjectName.toLowerCase();
     if (subject.contains('english')) {
       const List<String> lines = <String>[
-        'Point to the first letter and say it with Dino.',
-        'Great voice. Say the word one more time.',
-        'Awesome reading. Tap play and listen again.',
-        'Perfect effort. Keep going, reading star.',
+        'Listen first, then say the key word with a bright reading voice.',
+        'Touch each sound gently and read the whole word together.',
+        'Lovely reading. Say the example once more, nice and clear.',
+        'Now try it by yourself, then check with Dino.',
+        'Great job. Keep your eyes on the words and read smoothly.',
+        'You are doing well. Read the full line like a little story star.',
+        'Think about the meaning, then say the sentence proudly.',
+        'Quick review time. Tell Dino the three big ideas you learned.',
+        'You remembered a lot. Hold the key words in your smart brain.',
+        'Quiz time is next. Read carefully, smile, and pick your best answer.',
       ];
       return lines[slideNumber % lines.length];
     }
     if (subject.contains('math')) {
       const List<String> lines = <String>[
-        'Count slowly with your finger.',
-        'Add step by step with Dino.',
-        'Great! Check the numbers again.',
-        'Perfect. You are solving like a star.',
-      ];
-      return lines[slideNumber % lines.length];
-    }
-    if (subject.contains('urdu')) {
-      const List<String> lines = <String>[
-        'Awaaz suno, lafz bolo, phir dobara repeat karo.',
-        'Shabash! Harf ko dekh kar zor se parho.',
-        'Bahut acha! Ab isi lafz ko jumlay mein bolo.',
-        'Excellent! Dino ke saath practice jari rakho.',
+        'Count each item one time only and say the number clearly.',
+        'Use your finger, move slowly, and solve one small step at a time.',
+        'Nice thinking. Check the numbers again before you answer.',
+        'Now try the example by yourself and let Dino cheer you on.',
+        'Keep it neat and calm. Math gets easy when you go step by step.',
+        'Brilliant work. Say the answer aloud like a tiny math champion.',
+        'Think, solve, and check. Your careful brain is doing great.',
+        'Review the important numbers before the quiz begins.',
+        'You are ready. Remember the trick you practiced on this slide.',
+        'Quiz time is here. Look closely, count carefully, and choose the best answer.',
       ];
       return lines[slideNumber % lines.length];
     }
     const List<String> lines = <String>[
-      'Look, listen, and remember this fact.',
-      'Great! Say this fact with me.',
-      'Awesome. You are learning fast.',
-      'Nice work. One more fun fact.',
+      'Look carefully, listen closely, and remember the big fact.',
+      'Say the fact with Dino in a clear, happy voice.',
+      'Wonderful learning. Think about where you can see this in real life.',
+      'Now try the example and tell Dino what you notice.',
+      'Great job. One small fact at a time makes you super smart.',
+      'You remembered that well. Say the main idea once again.',
+      'Think about home, school, or nature and connect this fact there.',
+      'Quick review time. Tell the most important idea in your own words.',
+      'Awesome memory. Keep this fact ready for the quiz.',
+      'Quiz time is coming. Read slowly and pick the answer that fits best.',
     ];
     return lines[slideNumber % lines.length];
   }
 
+  int _requiredPassingScore() {
+    return max(1, (widget.module.quizQuestions.length * 0.6).ceil());
+  }
+
   List<_QuizQuestion> _randomQuizSet() {
-    if (widget.quizBank.length <= 10) {
-      final List<_QuizQuestion> fallback = List<_QuizQuestion>.from(
-        widget.quizBank,
-      )..shuffle(_random);
+    final List<_QuizQuestion> source = widget.module.quizQuestions;
+    if (source.length <= 10) {
+      final List<_QuizQuestion> fallback = List<_QuizQuestion>.from(source)
+        ..shuffle(_random);
       return fallback;
     }
 
     List<_QuizQuestion> selected = <_QuizQuestion>[];
     String signature = '';
     for (int attempt = 0; attempt < 6; attempt++) {
-      final List<_QuizQuestion> shuffled = List<_QuizQuestion>.from(
-        widget.quizBank,
-      )..shuffle(_random);
+      final List<_QuizQuestion> shuffled = List<_QuizQuestion>.from(source)
+        ..shuffle(_random);
       selected = shuffled.take(10).toList();
       signature = selected.map((q) => q.prompt).join('|');
       if (signature != _lastQuizSignature) {
@@ -3803,6 +3858,12 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
 
   Future<void> _startQuiz() async {
     if (_openingQuiz) {
+      return;
+    }
+    if (widget.module.quizQuestions.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This lecture does not have a quiz yet.')),
+      );
       return;
     }
     await _stopVoice();
@@ -3880,7 +3941,12 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
               shape: BoxShape.circle,
               color: active ? const Color(0xFFDCF8C8) : Colors.transparent,
             ),
-            child: Center(child: child),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(3),
+                child: FittedBox(fit: BoxFit.scaleDown, child: child),
+              ),
+            ),
           ),
         ),
       ),
@@ -3909,7 +3975,8 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
           ),
         ),
         Container(
-          height: 90,
+          height: 96,
+          padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
@@ -3919,12 +3986,28 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
             children: <Widget>[
               Expanded(
                 child: _voiceBubbleButton(
-                  child: Icon(
-                    Icons.volume_up_rounded,
-                    color: normalActive
-                        ? const Color(0xFF1493E5)
-                        : const Color(0xFF2BA3F7),
-                    size: 34,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(
+                        Icons.volume_up_rounded,
+                        color: normalActive
+                            ? const Color(0xFF1493E5)
+                            : const Color(0xFF2BA3F7),
+                        size: 28,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Play',
+                        style: TextStyle(
+                          color: normalActive
+                              ? const Color(0xFF1493E5)
+                              : const Color(0xFF2BA3F7),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                   active: normalActive,
                   onTap: () {
@@ -3939,14 +4022,30 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
               Container(width: 2, color: const Color(0xFFDADDE1)),
               Expanded(
                 child: _voiceBubbleButton(
-                  child: Text(
-                    '\u{1F422}',
-                    style: TextStyle(
-                      fontSize: 30,
-                      color: slowActive
-                          ? const Color(0xFF1493E5)
-                          : const Color(0xFF2BA3F7),
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        '\u{1F422}',
+                        style: TextStyle(
+                          fontSize: 26,
+                          color: slowActive
+                              ? const Color(0xFF1493E5)
+                              : const Color(0xFF2BA3F7),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Slow',
+                        style: TextStyle(
+                          color: slowActive
+                              ? const Color(0xFF1493E5)
+                              : const Color(0xFF2BA3F7),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                   active: slowActive,
                   onTap: () {
@@ -4037,89 +4136,127 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
       ),
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: <Widget>[
-                SizedBox(
-                  width: 154,
-                  height: 162,
-                  child: Stack(
+        child: LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final bool compactHeader = constraints.maxWidth < 420;
+            final bool veryCompactHeader = constraints.maxWidth < 360;
+            final double mascotBoxWidth = compactHeader
+                ? (veryCompactHeader ? 98 : 112)
+                : 154;
+            final double mascotBoxHeight = compactHeader
+                ? (veryCompactHeader ? 106 : 118)
+                : 162;
+            final double mascotSize = compactHeader
+                ? (veryCompactHeader ? 90 : 100)
+                : 138;
+            final Widget mascot = SizedBox(
+              width: mascotBoxWidth,
+              height: mascotBoxHeight,
+              child: Stack(
+                children: <Widget>[
+                  Positioned.fill(
+                    child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
+                      child: DinoInstructorAvatar(
+                        accentColor: slide.accentColor,
+                        moodIndex: slideNumber,
+                        speaking: _speaking,
+                        size: mascotSize,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+
+            final Widget narratorPanel = compactHeader
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Positioned.fill(
-                        child: Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
-                          child: DinoInstructorAvatar(
-                            accentColor: slide.accentColor,
-                            moodIndex: slideNumber,
-                            speaking: _speaking,
-                            size: 138,
+                      mascot,
+                      SizedBox(width: veryCompactHeader ? 8 : 10),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: veryCompactHeader ? 2 : 6,
+                          ),
+                          child: _buildVoiceBubble(),
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: <Widget>[
+                      mascot,
+                      const SizedBox(width: 10),
+                      Expanded(child: _buildVoiceBubble()),
+                    ],
+                  );
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                narratorPanel,
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFFD8F7BF),
+                    border: Border.all(
+                      color: const Color(0xFF8DDD57),
+                      width: 2,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      RichText(
+                        text: TextSpan(
+                          children: _highlightedSpans(
+                            section: _NarrationSection.body,
+                            text: slide.body,
+                            baseStyle: TextStyle(
+                              color: const Color(0xFF4A6A30),
+                              fontSize: questionFont,
+                              fontWeight: FontWeight.w700,
+                              height: 1.28,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      RichText(
+                        text: TextSpan(
+                          children: _highlightedSpans(
+                            section: _NarrationSection.example,
+                            text: 'Try: ${slide.example}',
+                            baseStyle: const TextStyle(
+                              color: Color(0xFF3E7B23),
+                              fontSize: 19,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(child: _buildVoiceBubble()),
+                const SizedBox(height: 8),
+                Text(
+                  _coachLine(slideNumber),
+                  style: TextStyle(
+                    color: palette.textSecondary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: const Color(0xFFD8F7BF),
-                border: Border.all(color: const Color(0xFF8DDD57), width: 2),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  RichText(
-                    text: TextSpan(
-                      children: _highlightedSpans(
-                        section: _NarrationSection.body,
-                        text: slide.body,
-                        baseStyle: TextStyle(
-                          color: const Color(0xFF4A6A30),
-                          fontSize: questionFont,
-                          fontWeight: FontWeight.w700,
-                          height: 1.28,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  RichText(
-                    text: TextSpan(
-                      children: _highlightedSpans(
-                        section: _NarrationSection.example,
-                        text: 'Try: ${slide.example}',
-                        baseStyle: TextStyle(
-                          color: const Color(0xFF3E7B23),
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _coachLine(slideNumber),
-              style: TextStyle(
-                color: palette.textSecondary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -4143,203 +4280,228 @@ class _SubjectLectureScreenState extends State<_SubjectLectureScreen> {
     final LearnovaPalette palette = _palette(context);
     final bool isLastSlide = _slideIndex == widget.module.slides.length - 1;
     final _LectureSlide currentSlide = widget.module.slides[_slideIndex];
+    final Size screenSize = MediaQuery.sizeOf(context);
+    final bool compactHeight =
+        screenSize.height < 820 || screenSize.width < 390;
+    final Widget progressHeader = Row(
+      children: <Widget>[
+        IconButton(
+          onPressed: () {
+            _stopVoice();
+            Navigator.of(context).maybePop();
+          },
+          icon: const Icon(
+            Icons.close_rounded,
+            color: Color(0xFFA3A7AE),
+            size: 38,
+          ),
+          splashRadius: 22,
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: (_slideIndex + 1) / max(widget.module.slides.length, 1),
+              minHeight: 14,
+              backgroundColor: const Color(0xFFE3E7EA),
+              color: const Color(0xFF58CC02),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFE0F1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFFFB9DE)),
+          ),
+          child: Text(
+            '${_slideIndex + 1}/${widget.module.slides.length}',
+            style: const TextStyle(
+              color: Color(0xFFE0509A),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
+    );
+    final Widget lessonTitle = Text(
+      currentSlide.title,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: GoogleFonts.fredoka(
+        fontSize: max(
+          compactHeight ? 26 : 28,
+          min(
+            compactHeight ? 38 : 43,
+            screenSize.width * (compactHeight ? 0.09 : 0.1),
+          ),
+        ),
+        color: palette.textPrimary,
+        fontWeight: FontWeight.w600,
+        height: 1.03,
+      ),
+    );
+    final Widget lessonPager = PageView.builder(
+      controller: _pageController,
+      itemCount: widget.module.slides.length,
+      onPageChanged: (int value) {
+        _stopVoice();
+        setState(() {
+          _slideIndex = value;
+          _speaking = false;
+        });
+      },
+      itemBuilder: (BuildContext context, int index) {
+        return _buildSlideCard(
+          widget.module.slides[index],
+          palette,
+          slideNumber: index,
+        );
+      },
+    );
+    final Widget footerPanel = Container(
+      padding: EdgeInsets.fromLTRB(
+        10,
+        compactHeight ? 8 : 10,
+        10,
+        compactHeight ? 8 : 10,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: palette.borderSoft),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: <Widget>[
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final bool compact = constraints.maxWidth < 430;
+              final bool stacked = constraints.maxWidth < 360;
+              final Widget backButton = OutlinedButton.icon(
+                onPressed: _slideIndex == 0 ? null : _goPreviousSlide,
+                icon: const Icon(Icons.arrow_back_rounded),
+                label: Text(compact ? 'Back' : 'Previous'),
+              );
+              final Widget playButton = OutlinedButton.icon(
+                onPressed: _speaking ? _stopVoice : _playVoice,
+                icon: Icon(
+                  _speaking
+                      ? Icons.stop_circle_rounded
+                      : Icons.volume_up_rounded,
+                ),
+                label: Text(
+                  _speaking
+                      ? (compact ? 'Stop' : 'Stop Sound')
+                      : (compact ? 'Play' : 'Play Sound'),
+                ),
+              );
+              final Widget nextButton = ElevatedButton.icon(
+                onPressed: _openingQuiz ? null : _goNextOrQuiz,
+                icon: Icon(
+                  isLastSlide
+                      ? Icons.quiz_rounded
+                      : Icons.arrow_forward_rounded,
+                ),
+                label: Text(
+                  _openingQuiz
+                      ? 'Opening...'
+                      : isLastSlide
+                      ? (compact ? 'Quiz' : 'Start Quiz')
+                      : (compact ? 'Next' : 'Next Slide'),
+                ),
+              );
+
+              if (stacked) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Expanded(child: backButton),
+                        const SizedBox(width: 8),
+                        Expanded(child: playButton),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    nextButton,
+                  ],
+                );
+              }
+
+              return Row(
+                children: <Widget>[
+                  Expanded(child: backButton),
+                  const SizedBox(width: 8),
+                  Expanded(child: playButton),
+                  const SizedBox(width: 8),
+                  Expanded(child: nextButton),
+                ],
+              );
+            },
+          ),
+          SizedBox(height: compactHeight ? 6 : 8),
+          Text(
+            'Need ${_requiredPassingScore()}/${max(widget.module.quizQuestions.length, 1)} to unlock next lecture.',
+            style: TextStyle(
+              color: palette.textSecondary,
+              fontWeight: FontWeight.w700,
+              fontSize: compactHeight ? 12 : 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+    final List<Widget> lessonChildren = <Widget>[
+      progressHeader,
+      SizedBox(height: compactHeight ? 8 : 12),
+      lessonTitle,
+      SizedBox(height: compactHeight ? 6 : 8),
+      if (compactHeight)
+        SizedBox(
+          height: min(400, max(300, screenSize.height * 0.44)),
+          child: lessonPager,
+        )
+      else
+        Expanded(child: lessonPager),
+      SizedBox(height: compactHeight ? 6 : 8),
+      footerPanel,
+    ];
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 14),
+          padding: EdgeInsets.fromLTRB(
+            12,
+            compactHeight ? 8 : 10,
+            12,
+            compactHeight ? 10 : 14,
+          ),
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 820),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      IconButton(
-                        onPressed: () {
-                          _stopVoice();
-                          Navigator.of(context).maybePop();
-                        },
-                        icon: const Icon(
-                          Icons.close_rounded,
-                          color: Color(0xFFA3A7AE),
-                          size: 38,
-                        ),
-                        splashRadius: 22,
+              child: compactHeight
+                  ? SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: lessonChildren,
                       ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(999),
-                          child: LinearProgressIndicator(
-                            value:
-                                (_slideIndex + 1) /
-                                max(widget.module.slides.length, 1),
-                            minHeight: 14,
-                            backgroundColor: const Color(0xFFE3E7EA),
-                            color: const Color(0xFF58CC02),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFE0F1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFFB9DE)),
-                        ),
-                        child: Text(
-                          '${_slideIndex + 1}/${widget.module.slides.length}',
-                          style: const TextStyle(
-                            color: Color(0xFFE0509A),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    currentSlide.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.fredoka(
-                      fontSize: 43,
-                      color: palette.textPrimary,
-                      fontWeight: FontWeight.w600,
-                      height: 1.03,
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: lessonChildren,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: widget.module.slides.length,
-                      onPageChanged: (int value) {
-                        _stopVoice();
-                        setState(() {
-                          _slideIndex = value;
-                          _speaking = false;
-                        });
-                      },
-                      itemBuilder: (BuildContext context, int index) {
-                        return _buildSlideCard(
-                          widget.module.slides[index],
-                          palette,
-                          slideNumber: index,
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: palette.borderSoft),
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: <Widget>[
-                        LayoutBuilder(
-                          builder:
-                              (
-                                BuildContext context,
-                                BoxConstraints constraints,
-                              ) {
-                                final bool compact = constraints.maxWidth < 430;
-                                return Row(
-                                  children: <Widget>[
-                                    Expanded(
-                                      child: OutlinedButton.icon(
-                                        onPressed: _slideIndex == 0
-                                            ? null
-                                            : _goPreviousSlide,
-                                        icon: const Icon(
-                                          Icons.arrow_back_rounded,
-                                        ),
-                                        label: Text(
-                                          compact ? 'Back' : 'Previous',
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: OutlinedButton.icon(
-                                        onPressed: _speaking
-                                            ? _stopVoice
-                                            : _playVoice,
-                                        icon: Icon(
-                                          _speaking
-                                              ? Icons.stop_circle_rounded
-                                              : Icons.volume_up_rounded,
-                                        ),
-                                        label: Text(
-                                          _speaking
-                                              ? (compact
-                                                    ? 'Stop'
-                                                    : 'Stop Sound')
-                                              : (compact
-                                                    ? 'Play'
-                                                    : 'Play Sound'),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: ElevatedButton.icon(
-                                        onPressed: _openingQuiz
-                                            ? null
-                                            : _goNextOrQuiz,
-                                        icon: Icon(
-                                          isLastSlide
-                                              ? Icons.quiz_rounded
-                                              : Icons.arrow_forward_rounded,
-                                        ),
-                                        label: Text(
-                                          _openingQuiz
-                                              ? 'Opening...'
-                                              : isLastSlide
-                                              ? (compact
-                                                    ? 'Quiz'
-                                                    : 'Start Quiz')
-                                              : (compact
-                                                    ? 'Next'
-                                                    : 'Next Slide'),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Need 6/10 to unlock next lecture.',
-                          style: TextStyle(
-                            color: palette.textSecondary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),
@@ -4406,7 +4568,8 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
   }
 
   void _finishQuiz() {
-    final bool passed = _score >= 6;
+    final bool passed =
+        _score >= max(1, (widget.questions.length * 0.6).ceil());
     Navigator.of(context).pop(
       _LectureQuizResult(
         score: _score,
@@ -4448,7 +4611,8 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
   Widget build(BuildContext context) {
     final LearnovaPalette palette = _palette(context);
     if (_finished) {
-      final bool passed = _score >= 6;
+      final int requiredScore = max(1, (widget.questions.length * 0.6).ceil());
+      final bool passed = _score >= requiredScore;
       return Scaffold(
         appBar: AppBar(title: Text('${widget.subjectName} Quiz')),
         body: DinoPageOverlay(
@@ -4534,7 +4698,7 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                         Text(
                           passed
                               ? 'You unlocked the next lecture.'
-                              : 'You need at least 6/${widget.questions.length} to unlock next lecture.',
+                              : 'You need at least $requiredScore/${widget.questions.length} to unlock next lecture.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: palette.textSecondary,
@@ -4682,6 +4846,7 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 840),
                 child: Column(
+                  key: ValueKey<int>(_index),
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     Container(
@@ -4770,6 +4935,7 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                     ),
                     const SizedBox(height: 12),
                     Container(
+                      key: ValueKey<String>('quiz-question-${question.prompt}'),
                       padding: const EdgeInsets.all(16),
                       decoration: _cardDecoration(context),
                       child: Text(
@@ -4784,6 +4950,9 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                     const SizedBox(height: 12),
                     Expanded(
                       child: ListView.separated(
+                        key: ValueKey<String>(
+                          'quiz-options-$_index-${question.prompt}',
+                        ),
                         itemCount: question.options.length,
                         separatorBuilder: (_, _) => const SizedBox(height: 10),
                         itemBuilder: (BuildContext context, int optionIndex) {
@@ -4807,6 +4976,9 @@ class _SubjectQuizScreenState extends State<_SubjectQuizScreen> {
                           }
 
                           return Material(
+                            key: ValueKey<String>(
+                              'quiz-option-$_index-$optionIndex-${question.options[optionIndex]}',
+                            ),
                             color: Colors.transparent,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(20),
@@ -4955,32 +5127,321 @@ class _PathInfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        color: Colors.white.withValues(alpha: 0.2),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Icon(icon, size: 17, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
+    final double maxChipWidth = min(
+      MediaQuery.sizeOf(context).width * 0.78,
+      360,
+    );
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxChipWidth),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          color: Colors.white.withValues(alpha: 0.2),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(icon, size: 17, color: Colors.white),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                text,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                softWrap: true,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
 enum _SubjectKind { english, math, gk }
+
+const String _adminContentPrefix = 'learnova.admin.content';
+const String _legacyAdminContentPrefix = 'learnova.admin.content';
+
+String _adminSubjectSlug(_SubjectKind kind) {
+  return switch (kind) {
+    _SubjectKind.english => 'english',
+    _SubjectKind.math => 'math',
+    _SubjectKind.gk => 'gk',
+  };
+}
+
+String _adminModulesKey(int levelNumber, _SubjectKind kind) {
+  return '$_adminContentPrefix.level.${_levelStorageSlug(levelNumber)}.subject.${_adminSubjectSlug(kind)}.modules';
+}
+
+String _legacyAdminLecturesKey(_SubjectKind kind) {
+  return '$_legacyAdminContentPrefix.${_adminSubjectSlug(kind)}.lectures';
+}
+
+String _legacyAdminQuizKey(_SubjectKind kind) {
+  return '$_legacyAdminContentPrefix.${_adminSubjectSlug(kind)}.quiz';
+}
+
+IconData _adminSubjectIcon(_SubjectKind kind) {
+  return switch (kind) {
+    _SubjectKind.english => Icons.menu_book_rounded,
+    _SubjectKind.math => Icons.calculate_rounded,
+    _SubjectKind.gk => Icons.public_rounded,
+  };
+}
+
+Color _adminSubjectColor(_SubjectKind kind) {
+  return switch (kind) {
+    _SubjectKind.english => const Color(0xFF45B8FF),
+    _SubjectKind.math => const Color(0xFFFFA338),
+    _SubjectKind.gk => const Color(0xFF58CC02),
+  };
+}
+
+Map<String, dynamic> _lectureModuleToMap(_LectureModule module) {
+  return <String, dynamic>{
+    'levelNumber': module.levelNumber,
+    'stageNumber': module.stageNumber,
+    'title': module.title,
+    'slides': module.slides
+        .map(
+          (_LectureSlide slide) => <String, dynamic>{
+            'title': slide.title,
+            'body': slide.body,
+            'example': slide.example,
+          },
+        )
+        .toList(),
+    'quizQuestions': module.quizQuestions.map(_quizQuestionToMap).toList(),
+  };
+}
+
+_LectureModule? _lectureModuleFromDynamic(
+  dynamic value,
+  _SubjectKind kind, {
+  required int fallbackLevelNumber,
+}) {
+  if (value is! Map<String, dynamic>) {
+    return null;
+  }
+  final String title = '${value['title'] ?? ''}'.trim();
+  if (title.isEmpty) {
+    return null;
+  }
+
+  final int levelNumber = value['levelNumber'] is int
+      ? value['levelNumber'] as int
+      : int.tryParse('${value['levelNumber']}') ?? fallbackLevelNumber;
+  final int stageNumber = value['stageNumber'] is int
+      ? value['stageNumber'] as int
+      : int.tryParse('${value['stageNumber']}') ?? 1;
+
+  final dynamic rawSlides = value['slides'];
+  final List<_LectureSlide> slides = <_LectureSlide>[];
+  if (rawSlides is List<dynamic>) {
+    for (final dynamic item in rawSlides) {
+      if (item is! Map<String, dynamic>) {
+        continue;
+      }
+      final String slideTitle = '${item['title'] ?? ''}'.trim();
+      final String body = '${item['body'] ?? ''}'.trim();
+      final String example = '${item['example'] ?? ''}'.trim();
+      if (slideTitle.isEmpty || body.isEmpty || example.isEmpty) {
+        continue;
+      }
+      slides.add(
+        _LectureSlide(
+          title: slideTitle,
+          body: body,
+          example: example,
+          icon: _adminSubjectIcon(kind),
+          accentColor: _adminSubjectColor(kind),
+        ),
+      );
+    }
+  }
+
+  final dynamic rawQuizQuestions = value['quizQuestions'];
+  final List<_QuizQuestion> quizQuestions = <_QuizQuestion>[];
+  if (rawQuizQuestions is List<dynamic>) {
+    for (final dynamic item in rawQuizQuestions) {
+      final _QuizQuestion? question = _quizQuestionFromDynamic(item);
+      if (question != null) {
+        quizQuestions.add(question);
+      }
+    }
+  }
+
+  if (slides.isEmpty) {
+    return _LectureModule(
+      levelNumber: levelNumber,
+      stageNumber: stageNumber,
+      title: title,
+      slides: <_LectureSlide>[
+        _LectureSlide(
+          title: title,
+          body: 'Tap play to listen and learn with Dino.',
+          example: 'Example coming soon',
+          icon: _adminSubjectIcon(kind),
+          accentColor: _adminSubjectColor(kind),
+        ),
+      ],
+      quizQuestions: quizQuestions,
+    );
+  }
+  return _LectureModule(
+    levelNumber: levelNumber,
+    stageNumber: stageNumber,
+    title: title,
+    slides: slides,
+    quizQuestions: quizQuestions,
+  );
+}
+
+Map<String, dynamic> _quizQuestionToMap(_QuizQuestion question) {
+  return <String, dynamic>{
+    'prompt': question.prompt,
+    'options': question.options,
+    'correctIndex': question.correctIndex,
+    'explanation': question.explanation,
+  };
+}
+
+_QuizQuestion? _quizQuestionFromDynamic(dynamic value) {
+  if (value is! Map<String, dynamic>) {
+    return null;
+  }
+  final String prompt = '${value['prompt'] ?? ''}'.trim();
+  if (prompt.isEmpty) {
+    return null;
+  }
+  final dynamic rawOptions = value['options'];
+  if (rawOptions is! List<dynamic> || rawOptions.length < 4) {
+    return null;
+  }
+  final List<String> options = rawOptions
+      .map((dynamic item) => '${item ?? ''}'.trim())
+      .toList();
+  if (options.any((String option) => option.isEmpty)) {
+    return null;
+  }
+
+  final int correct = value['correctIndex'] is int
+      ? value['correctIndex'] as int
+      : int.tryParse('${value['correctIndex']}') ?? 0;
+  if (correct < 0 || correct >= options.length) {
+    return null;
+  }
+
+  return _QuizQuestion(
+    prompt: prompt,
+    options: options,
+    correctIndex: correct,
+    explanation: '${value['explanation'] ?? ''}'.trim(),
+  );
+}
+
+Future<List<_LectureModule>> _loadCustomLectureModules(
+  int levelNumber,
+  _SubjectKind kind,
+) async {
+  final SharedPreferences prefs = await _sharedPrefs(syncFirst: true);
+  final List<String> raw =
+      prefs.getStringList(_adminModulesKey(levelNumber, kind)) ?? <String>[];
+  final List<String> legacyRaw =
+      prefs.getStringList(_legacyAdminLecturesKey(kind)) ?? <String>[];
+  final List<String> source = raw.isNotEmpty ? raw : legacyRaw;
+  final List<_LectureModule> modules = <_LectureModule>[];
+  int stageSeed = 1;
+  for (final String item in source) {
+    try {
+      final dynamic decoded = jsonDecode(item);
+      final _LectureModule? module = _lectureModuleFromDynamic(
+        decoded,
+        kind,
+        fallbackLevelNumber: levelNumber,
+      );
+      if (module != null) {
+        final int stageNumber = module.stageNumber > 0
+            ? module.stageNumber
+            : stageSeed;
+        modules.add(
+          _LectureModule(
+            levelNumber: levelNumber,
+            stageNumber: stageNumber,
+            title: module.title,
+            slides: module.slides,
+            quizQuestions: module.quizQuestions,
+          ),
+        );
+        stageSeed += 1;
+      }
+    } catch (_) {
+      continue;
+    }
+  }
+  modules.sort(
+    (_LectureModule a, _LectureModule b) =>
+        a.stageNumber.compareTo(b.stageNumber),
+  );
+  return modules;
+}
+
+Future<void> _saveCustomLectureModules(
+  int levelNumber,
+  _SubjectKind kind,
+  List<_LectureModule> modules,
+) async {
+  final SharedPreferences prefs = await _sharedPrefs();
+  if (modules.isEmpty) {
+    await prefs.remove(_adminModulesKey(levelNumber, kind));
+    await _syncRemovedSharedKeys(prefs, <String>[
+      _adminModulesKey(levelNumber, kind),
+    ]);
+    return;
+  }
+  final List<String> raw = modules
+      .map(
+        (_LectureModule module) => jsonEncode(
+          _lectureModuleToMap(
+            _LectureModule(
+              levelNumber: levelNumber,
+              stageNumber: module.stageNumber,
+              title: module.title,
+              slides: module.slides,
+              quizQuestions: module.quizQuestions,
+            ),
+          ),
+        ),
+      )
+      .toList();
+  await prefs.setStringList(_adminModulesKey(levelNumber, kind), raw);
+  await _syncSharedKeysToRemote(prefs, <String>[
+    _adminModulesKey(levelNumber, kind),
+  ]);
+}
+
+Future<void> _clearCustomSubjectContent(
+  int levelNumber,
+  _SubjectKind kind,
+) async {
+  final SharedPreferences prefs = await _sharedPrefs();
+  await prefs.remove(_adminModulesKey(levelNumber, kind));
+  await prefs.remove(_legacyAdminLecturesKey(kind));
+  await prefs.remove(_legacyAdminQuizKey(kind));
+  await _syncRemovedSharedKeys(prefs, <String>[
+    _adminModulesKey(levelNumber, kind),
+    _legacyAdminLecturesKey(kind),
+    _legacyAdminQuizKey(kind),
+  ]);
+}
 
 class _PlayfulPathBackground extends StatelessWidget {
   const _PlayfulPathBackground({required this.kind});
@@ -5888,7 +6349,10 @@ class _LearningPathMap extends StatelessWidget {
       children: <Widget>[
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.sizeOf(context).width < 360 ? 12 : 14,
+            vertical: MediaQuery.sizeOf(context).width < 360 ? 9 : 10,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             color: Colors.white.withValues(alpha: 0.62),
@@ -5916,12 +6380,44 @@ class _LearningPathMap extends StatelessWidget {
         LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
             final double width = constraints.maxWidth;
-            final double nodeRadius = width >= 720 ? 46 : 40;
+            final bool compactWidth = width < 360;
+            final bool extraCompactWidth = width < 330;
+            final double nodeRadius = width >= 720
+                ? 46
+                : extraCompactWidth
+                ? 34
+                : compactWidth
+                ? 36
+                : 40;
             final double nodeSize = nodeRadius * 2;
-            final double verticalGap = width >= 720 ? 134 : 122;
-            final double topPadding = width >= 720 ? 72 : 68;
-            final double leftX = width * (width >= 720 ? 0.22 : 0.2);
-            final double rightX = width * (width >= 720 ? 0.78 : 0.8);
+            final double verticalGap = width >= 720
+                ? 134
+                : extraCompactWidth
+                ? 108
+                : compactWidth
+                ? 114
+                : 122;
+            final double topPadding = width >= 720
+                ? 72
+                : extraCompactWidth
+                ? 58
+                : compactWidth
+                ? 62
+                : 68;
+            final double leftX =
+                width *
+                (width >= 720
+                    ? 0.22
+                    : compactWidth
+                    ? 0.22
+                    : 0.2);
+            final double rightX =
+                width *
+                (width >= 720
+                    ? 0.78
+                    : compactWidth
+                    ? 0.78
+                    : 0.8);
 
             final List<Offset> centers = List<Offset>.generate(totalStages, (
               int index,
@@ -6151,9 +6647,14 @@ class _StageNode extends StatelessWidget {
         const SizedBox(height: 7),
         Text(
           'Stage $stageNumber',
+          maxLines: 1,
+          overflow: TextOverflow.fade,
+          softWrap: false,
+          textAlign: TextAlign.center,
           style: TextStyle(
             color: palette.textSecondary,
             fontWeight: FontWeight.w700,
+            fontSize: radius < 38 ? 11 : 13,
           ),
         ),
       ],
@@ -6363,6 +6864,7 @@ class DashboardShell extends StatelessWidget {
               child: _DashboardMenu(
                 roleTitle: roleTitle,
                 onExit: onExit,
+                onOpenThemePicker: onOpenThemePicker,
                 inDrawer: true,
                 accountEmail: menuAccountEmail,
                 linkedKids: menuLinkedKids,
@@ -6390,6 +6892,7 @@ class DashboardShell extends StatelessWidget {
                 child: _DashboardMenu(
                   roleTitle: roleTitle,
                   onExit: onExit,
+                  onOpenThemePicker: onOpenThemePicker,
                   accountEmail: menuAccountEmail,
                   linkedKids: menuLinkedKids,
                   onOpenKidManagement: onOpenKidManagement,
@@ -6669,6 +7172,7 @@ class _DashboardMenu extends StatelessWidget {
   const _DashboardMenu({
     required this.roleTitle,
     required this.onExit,
+    required this.onOpenThemePicker,
     this.accountEmail,
     this.linkedKids,
     this.onOpenKidManagement,
@@ -6677,6 +7181,7 @@ class _DashboardMenu extends StatelessWidget {
 
   final String roleTitle;
   final NavigationHandler onExit;
+  final ThemePickerHandler onOpenThemePicker;
   final String? accountEmail;
   final int? linkedKids;
   final Future<void> Function()? onOpenKidManagement;
@@ -6817,42 +7322,20 @@ class _DashboardMenu extends StatelessWidget {
               _MenuTile(
                 icon: Icons.analytics_outlined,
                 title: 'Kid Reports',
-                subtitle: 'Streaks, stars, tests, and progress',
+                subtitle: 'Review progress overview',
                 onTap: () {
-                  showMenuInfo(
-                    'Kid reports are available below in the parent dashboard.',
-                  );
+                  showMenuInfo('Kid reports are available on this dashboard.');
                 },
               ),
-            if (isParent)
-              _MenuTile(
-                icon: Icons.tune_rounded,
-                title: 'Learning Settings',
-                subtitle: 'Levels, flow, and controls',
-                onTap: () {
-                  showMenuInfo('Learning settings panel will be added next.');
-                },
-              ),
-            if (isParent)
-              _MenuTile(
-                icon: Icons.support_agent_rounded,
-                title: 'Help & Support',
-                subtitle: 'Guides for parents',
-                onTap: () {
-                  showMenuInfo(
-                    'Support center will be connected in backend phase.',
-                  );
-                },
-              ),
-            if (!isParent)
-              _MenuTile(
-                icon: Icons.menu_book_outlined,
-                title: 'Menu',
-                subtitle: 'More options soon',
-                onTap: () {
-                  showMenuInfo('Menu placeholder: more options will be added.');
-                },
-              ),
+            _MenuTile(
+              icon: Icons.palette_outlined,
+              title: 'Theme Picker',
+              subtitle: 'Change the app look',
+              onTap: () {
+                closeDrawerIfNeeded();
+                onOpenThemePicker(context);
+              },
+            ),
             const Spacer(),
             Padding(
               padding: const EdgeInsets.all(14),
@@ -6916,67 +7399,6 @@ class _MenuTile extends StatelessWidget {
             style: TextStyle(color: palette.menuSubtext),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DashboardInfoCard extends StatelessWidget {
-  const _DashboardInfoCard({
-    required this.icon,
-    required this.title,
-    required this.message,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final LearnovaPalette palette = _palette(context);
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(18),
-      decoration: _cardDecoration(context),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: palette.surfaceSoft,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(icon, color: palette.textPrimary, size: 30),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    color: palette.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  message,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: palette.textSecondary,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

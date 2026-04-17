@@ -1,0 +1,10 @@
+{
+  "name": "learnova-core-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared state API for Learnova demo sync",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  }
+}

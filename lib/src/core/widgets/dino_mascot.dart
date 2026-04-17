@@ -74,14 +74,31 @@ class _DinoPageOverlayState extends State<DinoPageOverlay> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        final double maxLeft = max(
-          0,
-          constraints.maxWidth - (widget.size * 1.5) - widget.right - 8,
+        final EdgeInsets safe = MediaQuery.paddingOf(context);
+        final double bubbleWidth = min(220, widget.size * 2.45);
+        final double dinoWidth = widget.size * 1.16;
+        final double dinoHeight = widget.size * 1.24;
+        final double dragWidth = max(bubbleWidth, dinoWidth) + 12;
+        final double dragHeight =
+            dinoHeight + (widget.message.trim().isNotEmpty ? 96 : 0) + 12;
+        final double leftOverflowAllowance = max(0, dragWidth - dinoWidth);
+        final double topOverflowAllowance = max(0, dragHeight - dinoHeight);
+        final double minLeft = max(6.0, safe.left + 6) - leftOverflowAllowance;
+        final double minTop = max(6.0, safe.top + 6) - topOverflowAllowance;
+        final double originLeft = max(
+          minLeft,
+          constraints.maxWidth - dragWidth - max(widget.right, safe.right + 8),
         );
-        final double maxUp = max(
-          0,
-          constraints.maxHeight - (widget.size * 1.9) - widget.bottom - 8,
+        final double originTop = max(
+          minTop,
+          constraints.maxHeight -
+              dragHeight -
+              max(widget.bottom, safe.bottom + 8),
         );
+        final double maxLeftTravel = max(0, originLeft - minLeft);
+        final double maxUpTravel = max(0, originTop - minTop);
+        final double currentLeft = originLeft + _dragOffset.dx;
+        final double currentTop = originTop + _dragOffset.dy;
         final Widget mascot = DinoMascotAssistant(
           size: widget.size,
           message: widget.message,
@@ -93,30 +110,40 @@ class _DinoPageOverlayState extends State<DinoPageOverlay> {
         );
 
         final Widget movable = widget.draggable
-            ? GestureDetector(
-                onPanUpdate: (DragUpdateDetails details) {
+            ? _ImmediateDeltaDragSurface(
+                onDelta: (Offset delta) {
                   setState(() {
-                    final double nextX = (_dragOffset.dx + details.delta.dx)
-                        .clamp(-maxLeft, 0);
-                    final double nextY = (_dragOffset.dy + details.delta.dy)
-                        .clamp(-maxUp, 0);
+                    final double nextX = (_dragOffset.dx + delta.dx).clamp(
+                      -maxLeftTravel,
+                      0,
+                    );
+                    final double nextY = (_dragOffset.dy + delta.dy).clamp(
+                      -maxUpTravel,
+                      0,
+                    );
                     _dragOffset = Offset(nextX, nextY);
                   });
                 },
-                child: mascot,
+                child: SizedBox(
+                  width: dragWidth,
+                  height: dragHeight,
+                  child: Align(alignment: Alignment.bottomRight, child: mascot),
+                ),
               )
             : mascot;
 
         return Stack(
+          clipBehavior: Clip.none,
           children: <Widget>[
             Positioned.fill(child: widget.child),
             Positioned(
-              right: widget.right,
-              bottom: widget.bottom,
-              child: SafeArea(
-                top: false,
-                left: false,
-                child: Transform.translate(offset: _dragOffset, child: movable),
+              left: currentLeft,
+              top: currentTop,
+              child: RepaintBoundary(
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: movable,
+                ),
               ),
             ),
           ],
@@ -124,6 +151,53 @@ class _DinoPageOverlayState extends State<DinoPageOverlay> {
       },
     );
   }
+}
+
+class _ImmediateDeltaDragSurface extends StatelessWidget {
+  const _ImmediateDeltaDragSurface({
+    required this.child,
+    required this.onDelta,
+  });
+
+  final Widget child;
+  final ValueChanged<Offset> onDelta;
+
+  @override
+  Widget build(BuildContext context) {
+    return RawGestureDetector(
+      behavior: HitTestBehavior.deferToChild,
+      gestures: <Type, GestureRecognizerFactory<GestureRecognizer>>{
+        ImmediateMultiDragGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<
+              ImmediateMultiDragGestureRecognizer
+            >(ImmediateMultiDragGestureRecognizer.new, (
+              ImmediateMultiDragGestureRecognizer instance,
+            ) {
+              instance.onStart = (Offset position) {
+                return _ImmediateDeltaDrag(onDelta: onDelta);
+              };
+            }),
+      },
+      child: child,
+    );
+  }
+}
+
+class _ImmediateDeltaDrag extends Drag {
+  _ImmediateDeltaDrag({required this.onDelta});
+
+  final ValueChanged<Offset> onDelta;
+
+  @override
+  void update(DragUpdateDetails details) {
+    onDelta(details.delta);
+  }
+
+  @override
+  void end(DragEndDetails details) {}
+
+  @override
+  void cancel() {}
 }
 
 class DinoMascotAssistant extends StatefulWidget {

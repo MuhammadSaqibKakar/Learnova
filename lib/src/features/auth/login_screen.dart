@@ -119,15 +119,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final String identifier = _identifierController.text.trim();
     final String password = _passwordController.text.trim();
-    await widget.onRememberMeChanged(_rememberMe, identifier, password);
+    final String? errorMessage = await widget.onLogin(
+      context,
+      identifier,
+      password,
+    );
+
     if (!mounted) {
       return;
     }
 
-    final String? errorMessage = widget.onLogin(context, identifier, password);
-
     if (errorMessage != null) {
       _showMessage(context, errorMessage, color: _palette(context).error);
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    await widget.onRememberMeChanged(_rememberMe, identifier, password);
+    if (!mounted) {
+      return;
     }
 
     if (mounted) {
